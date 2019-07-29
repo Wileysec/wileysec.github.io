@@ -171,11 +171,12 @@ header #logo img {
 }
 #follow-icons {
 	font-size: 0.7em;
-	margin-top: -0.7em;
-	margin-bottom: 1.5em;
+	margin:1.5em;
+	text-align: center;
 }
 #follow-icons a {
 	color: #ccc;
+	margin:0px 5px;
 }	
 #follow-icons span {
 	vertical-align:top;
@@ -236,7 +237,7 @@ h3.post-title {
 }
 /* Footer */
 .pagination {
-	margin-bottom:1em;
+	margin:1em 0px;
 }
 footer a {
 	font-weight:300;
@@ -463,4 +464,39 @@ pre .coffeescript .title {
 pre .keyword,
 pre .javascript .function {
   color: #c9c;
+}
+
+/*自定义样式*/
+.center{
+	text-align: center;
+}
+
+#logo img{
+	display:block;
+	margin:0 auto;
+}
+.float-left{
+	float:left;
+}
+.float-right{
+	float:right;
+}
+.clear-both{
+	clear:both;
+}
+#art{
+	margin-top:0px;
+	margin-bottom:1.3em;
+}
+.newer-posts{
+	margin-right:15px;
+}
+.older-posts{
+	margin-left:15px;
+}
+#footer{
+	margin-top:3.5em;
+}
+.links{
+	text-align: center;
 }
