@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Wiley&#39;s Blog</title>
+  <title>Wiley的部落格小黑屋</title>
   
   <subtitle>信息安全爱好者，未来的CTFer，喜欢写小工具。</subtitle>
   <link href="/atom.xml" rel="self"/>
