@@ -5,9 +5,9 @@
   <subtitle>信息安全爱好者，未来的CTFer，喜欢写小工具。</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="https://wileysec.com/"/>
+  <link href="https://wileysec.github.io/"/>
   <updated>2019-07-31T13:15:22.936Z</updated>
-  <id>https://wileysec.com/</id>
+  <id>https://wileysec.github.io/</id>
   
   <author>
     <name>Wiley</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>新博客，新开始！</title>
-    <link href="https://wileysec.com/2019/07/28/%E6%96%B0%E5%8D%9A%E5%AE%A2%EF%BC%8C%E6%96%B0%E5%BC%80%E5%A7%8B%EF%BC%81/"/>
-    <id>https://wileysec.com/2019/07/28/新博客，新开始！/</id>
+    <link href="https://wileysec.github.io/2019/07/28/%E6%96%B0%E5%8D%9A%E5%AE%A2%EF%BC%8C%E6%96%B0%E5%BC%80%E5%A7%8B%EF%BC%81/"/>
+    <id>https://wileysec.github.io/2019/07/28/新博客，新开始！/</id>
     <published>2019-07-28T15:04:30.191Z</published>
     <updated>2019-07-31T13:15:22.936Z</updated>
     
@@ -36,10 +36,10 @@
     
     </summary>
     
-      <category term="生活" scheme="https://wileysec.com/categories/%E7%94%9F%E6%B4%BB/"/>
+      <category term="生活" scheme="https://wileysec.github.io/categories/%E7%94%9F%E6%B4%BB/"/>
     
     
-      <category term="生活" scheme="https://wileysec.com/tags/%E7%94%9F%E6%B4%BB/"/>
+      <category term="生活" scheme="https://wileysec.github.io/tags/%E7%94%9F%E6%B4%BB/"/>
     
   </entry>
   
