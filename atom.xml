@@ -5,9 +5,9 @@
   <subtitle>信息安全爱好者，未来的CTFer，喜欢写小工具。</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="https://wileysec.github.io/"/>
-  <updated>2019-07-29T07:12:23.035Z</updated>
-  <id>https://wileysec.github.io/</id>
+  <link href="https://wileysec.com/"/>
+  <updated>2019-07-31T13:15:22.936Z</updated>
+  <id>https://wileysec.com/</id>
   
   <author>
     <name>Wiley</name>
@@ -18,24 +18,28 @@
   
   <entry>
     <title>新博客，新开始！</title>
-    <link href="https://wileysec.github.io/2019/07/28/%E6%96%B0%E5%8D%9A%E5%AE%A2%EF%BC%8C%E6%96%B0%E5%BC%80%E5%A7%8B%EF%BC%81/"/>
-    <id>https://wileysec.github.io/2019/07/28/新博客，新开始！/</id>
+    <link href="https://wileysec.com/2019/07/28/%E6%96%B0%E5%8D%9A%E5%AE%A2%EF%BC%8C%E6%96%B0%E5%BC%80%E5%A7%8B%EF%BC%81/"/>
+    <id>https://wileysec.com/2019/07/28/新博客，新开始！/</id>
     <published>2019-07-28T15:04:30.191Z</published>
-    <updated>2019-07-29T07:12:23.035Z</updated>
+    <updated>2019-07-31T13:15:22.936Z</updated>
     
-    <content type="html"><![CDATA[<p>已更换为Hexo程序博客，旧博客请访问：<a href="http://blog.wileysec.com" target="_blank" rel="noopener">http://blog.wileysec.com</a></p><p>新博客，新开始！</p>]]></content>
+    <content type="html"><![CDATA[<p>已更换为Hexo程序博客，旧博客不再提供访问。</p><p>新博客，新的开始！</p>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;p&gt;已更换为Hexo程序博客，旧博客请访问：&lt;a href=&quot;http://blog.wileysec.com&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://blog.wileysec.com&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;新博客，新开始！&lt;/p&gt;
+        &lt;p&gt;已更换为Hexo程序博客，旧博客不再提供访问。&lt;/p&gt;
+&lt;p&gt;新博客，新的开始！&lt;/p&gt;
 
       
     
     </summary>
     
+      <category term="生活" scheme="https://wileysec.com/categories/%E7%94%9F%E6%B4%BB/"/>
+    
+    
+      <category term="生活" scheme="https://wileysec.com/tags/%E7%94%9F%E6%B4%BB/"/>
     
   </entry>
   
