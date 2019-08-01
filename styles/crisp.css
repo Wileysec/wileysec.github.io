@@ -594,7 +594,6 @@ pre .javascript .function {
 }
 .full-toc .post-toc .post-toc-content ol {
   margin: 0;
-  padding: 0 10px 10px 15px;
   line-height: 1.6;
 }
 .full-toc .post-toc .post-toc-content ol li {
@@ -607,4 +606,8 @@ pre .javascript .function {
 }
 .full-toc .post-toc a:hover {
   color: #309e85;
+}
+.toc-item{
+	margin-left:15px;
+	list-style-type:none;
 }
