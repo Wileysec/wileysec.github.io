@@ -97,21 +97,12 @@
 <!-- Table of Contents -->
 <div class="full-toc">
     <button class="post-toc-menu">TOC</button>
-<div class="post-toc">
-	<span class="post-toc-title">文章目录</span>
-    <div class="post-toc-content">
-    	
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Github工具"><span class="toc-text">Github工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实战技巧"><span class="toc-text">实战技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#远程端口不是默认的3389，可以通过下面方法查看"><span class="toc-text">远程端口不是默认的3389，可以通过下面方法查看</span></a></li></ol></li></ol>
+        </div>
     </div>
-</div>
-<script>
-	$('.post-toc-menu').click(function(){
-		if($('.post-toc').hasClass('open')){
-			$('.post-toc').removeClass('open');
-		}else{
-			$('.post-toc').addClass('open');
-		}
-	});
-</script>
 </div>
 
 <script>
@@ -122,6 +113,13 @@
        imghref = $(aobj).attr('src');
        $('#fancybox' + i).attr('href',imghref);
     }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
 </script>
 
 
