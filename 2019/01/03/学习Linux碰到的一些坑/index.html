@@ -67,13 +67,13 @@
 <p>执行<code>apt-get install fcitx-config-gtk</code>安装完这个包后，再打开fcitx打开输入法配置，添加搜狗输入法，成功激活搜狗输入法，可以正常使用了。</p>
 <h2 id="调整图标大小"><a href="#调整图标大小" class="headerlink" title="调整图标大小"></a>调整图标大小</h2><p>按住Ctrl键，滚动鼠标滚轮调整。</p>
 <h2 id="Kali-Linux更新源问题"><a href="#Kali-Linux更新源问题" class="headerlink" title="Kali Linux更新源问题"></a>Kali Linux更新源问题</h2><p>在我安装完Kali Linux之后，更新源的时候出现了问题，百度后解决。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/3381761563.png" alt="1.png"></p>
+<p><img src="/uploads/2019/01/3381761563.png" alt="1.png"></p>
 <p>提示从存储库更新是不安全的。</p>
 <p>输入命令 <code>wget -q -O - https://archive.kali.org/archive-key.asc | apt-key add</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/70373519.png" alt="2.png"></p>
+<p><img src="/uploads/2019/01/70373519.png" alt="2.png"></p>
 <p>可以看到是报了404错误，而且也提示了这个错误。</p>
 <p>这里只需要换个更新源就可以了。我换了个清华大学源就解决了。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/2920023583.png" alt="3.png"></p>
+<p><img src="/uploads/2019/01/2920023583.png" alt="3.png"></p>
 
   </section>
   <footer class="post-footer">
@@ -121,15 +121,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

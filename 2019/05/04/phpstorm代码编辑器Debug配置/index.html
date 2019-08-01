@@ -65,25 +65,25 @@
 <h2 id="phpstorm配置"><a href="#phpstorm配置" class="headerlink" title="phpstorm配置"></a>phpstorm配置</h2><p>第一步，依次点击菜单栏 <code>File &gt; Settings &gt; PHP &gt; Servers</code>，填写服务器端的相关信息</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">name: localhost，host: localhost，port: 80，debugger: XDebug</span><br></pre></td></tr></table></figure>
 
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/1856835512.png" alt></p>
+<p><img src="/uploads/2019/05/1856835512.png" alt></p>
 <p>如果你的host域名是自定义的，也可以设置你的自定义域名。</p>
 <p>第二步，点击 debug 选项，找到Xdebug，设置端口为9000</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/2809799657.png" alt></p>
+<p><img src="/uploads/2019/05/2809799657.png" alt></p>
 <p>第三步，点击 DBGp Proxy 选项，填写如下信息：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IDE key: PHPSTORM</span><br><span class="line">host: localhost</span><br><span class="line">port: 80</span><br></pre></td></tr></table></figure>
 
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/3536457791.png" alt></p>
+<p><img src="/uploads/2019/05/3536457791.png" alt></p>
 <p>这里的IDE key和你php.ini的配置里面的 xdebug.idekey 值一致</p>
 <p>设置完毕后，点击 Ok 退出即可。</p>
 <p>第四步，依次点击菜单栏 <code>Run &gt; Edit Configurations</code> 弹出调试配置窗口后，点击左上角 + 号，选择 <code>PHP Web Page</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/415465187.png" alt></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/543611114.png" alt></p>
+<p><img src="/uploads/2019/05/415465187.png" alt></p>
+<p><img src="/uploads/2019/05/543611114.png" alt></p>
 <p>这里的startURL就是debug调试的位置，可以是一个文件，本文例子我用的是 <code>a.php</code> 作为调试对象</p>
 <h2 id="Xdebug-Helper插件调试"><a href="#Xdebug-Helper插件调试" class="headerlink" title="Xdebug Helper插件调试"></a>Xdebug Helper插件调试</h2><p>下载 <code>Xdebug Helper</code> 插件，安装后点击选项，IDE key选择PHPSTORM</p>
 <p>设置完后，可以在代码处设置断点，开始调试。</p>
-<p>依次点击 类似于小电话的按钮 <img src="https://www.wileysec.com/usr/uploads/2019/05/1321903580.png" alt> <code>&gt;</code> 再点击小甲虫debug</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/1492097275.png" alt></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/05/4026277350.png" alt></p>
+<p>依次点击 类似于小电话的按钮 <img src="/uploads/2019/05/1321903580.png" alt> <code>&gt;</code> 再点击小甲虫debug</p>
+<p><img src="/uploads/2019/05/1492097275.png" alt></p>
+<p><img src="/uploads/2019/05/4026277350.png" alt></p>
 <p>可以看到，已经可以调试了。</p>
 
   </section>
@@ -132,15 +132,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

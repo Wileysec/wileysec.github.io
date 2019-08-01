@@ -162,15 +162,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

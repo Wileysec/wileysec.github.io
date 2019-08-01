@@ -58,7 +58,7 @@
 
 <h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>漏洞文件位置：</p>
 <p><code>\thinkphp\library\think\Request.php</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/1097993408.png" alt="1.png"></p>
+<p><img src="/uploads/2019/01/1097993408.png" alt="1.png"></p>
 <p>来看下这段代码：</p>
 <p><code>$this-&gt;method = strtoupper($_POST[$this-&gt;config[&#39;var_method&#39;]]);</code></p>
 <p><code>$method = strtolower($this-&gt;method);</code></p>
@@ -70,12 +70,12 @@
 <p>其实和上次漏洞差不多，覆盖<code>$filter</code>属性值。</p>
 <h2 id="复现漏洞"><a href="#复现漏洞" class="headerlink" title="复现漏洞"></a>复现漏洞</h2><p>从而可以构造一个Payload：</p>
 <p><code>c=system&amp;f=whoami&amp;_method=filter</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/87099438.png" alt="3.png"></p>
+<p><img src="/uploads/2019/01/87099438.png" alt="3.png"></p>
 <p>这里会爆一个错误，导致不能被执行。这就是这个漏洞的很鸡肋的地方，需要在public/index.php文件中跳过报错提示。</p>
 <p><code>error_reporting(0);</code></p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/2232158449.png" alt="4.png"></p>
+<p><img src="/uploads/2019/01/2232158449.png" alt="4.png"></p>
 <p>再试试看，就可以成功命令执行了。</p>
-<p><img src="https://www.wileysec.com/usr/uploads/2019/01/3257758428.png" alt="2.png"></p>
+<p><img src="/uploads/2019/01/3257758428.png" alt="2.png"></p>
 <h2 id="漏洞总结"><a href="#漏洞总结" class="headerlink" title="漏洞总结"></a>漏洞总结</h2><p>总结：该漏洞只能在屏蔽异常和错误才能触发。其实还是比较鸡肋的。</p>
 
   </section>
@@ -124,15 +124,13 @@
 </div>
 
 <script>
-    $(".post-content p").each(function(){
-      imglength = $(this).find('img').length;
-      for(i=0;i<imglength;i++){
-           obj = $(".post-content p img")[i];
-           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-           imghref = $(aobj).attr('src');
-           $('#fancybox' + i).attr('href',imghref);
-        }
-    });
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
 </script>
 
 
