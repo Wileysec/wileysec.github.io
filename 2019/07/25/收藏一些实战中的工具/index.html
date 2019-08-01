@@ -100,22 +100,7 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <p>收藏一些实战中的工具和技巧</p>
-<a id="more"></a>
-
-<h2 id="Github工具"><a href="#Github工具" class="headerlink" title="Github工具"></a>Github工具</h2><p>1.进程隐藏工具<br><a href="https://github.com/gianlucaborello/libprocesshider" target="_blank" rel="noopener">https://github.com/gianlucaborello/libprocesshider</a></p>
-<p><a href="https://github.com/f0rb1dd3n/Reptile" target="_blank" rel="noopener">https://github.com/f0rb1dd3n/Reptile</a></p>
-<p>2.流量代理工具proxy<br><a href="https://github.com/vzex/dog-tunnel" target="_blank" rel="noopener">https://github.com/vzex/dog-tunnel</a></p>
-<p>3.冰蝎一句话木马<br><a href="https://github.com/chinatso/-v1.0" target="_blank" rel="noopener">https://github.com/chinatso/-v1.0</a></p>
-<p>4.Linux辅助提权工具LinEnum.sh<br><a href="https://github.com/rebootuser/LinEnum" target="_blank" rel="noopener">https://github.com/rebootuser/LinEnum</a></p>
-<p>5.脏牛提权工具c0w64<br><a href="https://github.com/Brucetg/DirtyCow-EXP" target="_blank" rel="noopener">https://github.com/Brucetg/DirtyCow-EXP</a></p>
-<p>6.内网流量代理工具agent.exe<br><a href="https://github.com/cnlh/nps" target="_blank" rel="noopener">https://github.com/cnlh/nps</a></p>
-<h2 id="实战技巧"><a href="#实战技巧" class="headerlink" title="实战技巧"></a>实战技巧</h2><p>强制开启3389 REG ADDHKLM\SYSTEM\CurrentControlSet\Control\Terminal” “Server /vfDenyTSConnections /t REG_DWORD /d 00000000 /f</p>
-<p>sqlmap.py -m 1.txt –batch –smart SQLMAP批量检测注入点</p>
-<h4 id="远程端口不是默认的3389，可以通过下面方法查看"><a href="#远程端口不是默认的3389，可以通过下面方法查看" class="headerlink" title="远程端口不是默认的3389，可以通过下面方法查看"></a>远程端口不是默认的3389，可以通过下面方法查看</h4><p>tasklist /svc 查看一下服务</p>
-<p>找到 <code>svchost.exe</code> 为 <code>TermService</code> 的进程ID，接着 netstat /ano</p>
-<p>找到ID为上面的进程ID的端口号，就是修改后的3389端口</p>
-
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Github工具"><span class="toc-text">Github工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实战技巧"><span class="toc-text">实战技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#远程端口不是默认的3389，可以通过下面方法查看"><span class="toc-text">远程端口不是默认的3389，可以通过下面方法查看</span></a></li></ol></li></ol>
         </div>
     </div>
 </div>
