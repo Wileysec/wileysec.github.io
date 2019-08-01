@@ -50,13 +50,6 @@
 <article class="post">
   July 28, 2019
   
-    <span class="taglist">  &middot; 
-    
-    
-      <a href="/tags/生活/">生活</a> 
-    
-    </span>
-  
 
   <h1 class="post-title">新博客，新开始！</h1>
   <section class="post-content article-entry">
@@ -75,6 +68,10 @@
 </article>
 
 <nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/07/25/收藏一些实战中的工具/">
+        &laquo; 收藏一些实战中的工具
+    </a>
     
     
     <div class="clear-both"></div>
@@ -101,15 +98,15 @@
 </div>
 
 <script>
-  $(".post-content p").each(function(){
-    imglength = $(this).find('img').length;
-    for(i=0;i<imglength;i++){
-         obj = $(".post-content p img")[i];
-         aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
-         imghref = $(aobj).attr('src');
-         $('#fancybox' + i).attr('href',imghref);
-      }
-  });
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
 </script>
 
 

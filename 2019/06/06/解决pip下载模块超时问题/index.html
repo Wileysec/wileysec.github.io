@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>解决pip下载模块超时问题 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  June 6, 2019
+  
+
+  <h1 class="post-title">解决pip下载模块超时问题</h1>
+  <section class="post-content article-entry">
+    <p>最近用pip安装pwntools模块，速度慢不说还超时下载不了。其实只要改下pip源就可以了，让pip源使用国内镜像，提升下载速度和安装成功率。速度快到飞起 ~ ~</p>
+<a id="more"></a>
+
+<h2 id="pip更新源"><a href="#pip更新源" class="headerlink" title="pip更新源"></a>pip更新源</h2><p>清华：<a href="https://pypi.tuna.tsinghua.edu.cn/simple" target="_blank" rel="noopener">https://pypi.tuna.tsinghua.edu.cn/simple</a></p>
+<p>阿里云：<a href="http://mirrors.aliyun.com/pypi/simple/" target="_blank" rel="noopener">http://mirrors.aliyun.com/pypi/simple/</a></p>
+<p>中国科技大学 <a href="https://pypi.mirrors.ustc.edu.cn/simple/" target="_blank" rel="noopener">https://pypi.mirrors.ustc.edu.cn/simple/</a></p>
+<p>华中理工大学：<a href="http://pypi.hustunique.com/" target="_blank" rel="noopener">http://pypi.hustunique.com/</a></p>
+<p>山东理工大学：<a href="http://pypi.sdutlinux.org/" target="_blank" rel="noopener">http://pypi.sdutlinux.org/</a> </p>
+<p>豆瓣：<a href="http://pypi.douban.com/simple/" target="_blank" rel="noopener">http://pypi.douban.com/simple/</a></p>
+<p>最新版的Ubuntu需要使用https</p>
+<h2 id="临时使用pip源"><a href="#临时使用pip源" class="headerlink" title="临时使用pip源"></a>临时使用pip源</h2><p>使用pip的时候加参数-i <a href="https://pypi.tuna.tsinghua.edu.cn/simple" target="_blank" rel="noopener">https://pypi.tuna.tsinghua.edu.cn/simple</a></p>
+<p><code>pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pwntools</code></p>
+<h2 id="修改配置文件配置pip源"><a href="#修改配置文件配置pip源" class="headerlink" title="修改配置文件配置pip源"></a>修改配置文件配置pip源</h2><p>Linux下输入 <code>vim ~/.pip/pip.conf</code> 创建或修改一个pip配置文件</p>
+<p>输入一下配置信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">index-url = https://pypi.tuna.tsinghua.edu.cn/simple</span><br><span class="line">[install]</span><br><span class="line">trusted-host = mirrors.aliyun.com</span><br></pre></td></tr></table></figure>
+
+<p>Windows下，在user目录中创建一个pip目录，如：C:\Users\xx\pip，新建文件pip.ini。</p>
+<p>配置信息和上面一致。</p>
+<h2 id="遇到了一个小问题"><a href="#遇到了一个小问题" class="headerlink" title="遇到了一个小问题"></a>遇到了一个小问题</h2><p>安装 <code>pwntools</code> 过程中出现了这个错误</p>
+<p><code>error: Setup script exited with error: command &#39;x86_64-linux-gnu-gcc&#39; failed with exit status 1</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential autoconf libtool pkg-config python-opengl python-imaging python-pyrex python-pyside.qtopengl idle-python2.7 qt4-dev-tools qt4-designer libqtgui4 libqtcore4 libqt4-xml libqt4-test libqt4-script libqt4-network libqt4-dbus python-qt4 python-qt4-gl libgle3 python-dev</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo python -m pip install --upgrade --force pip</span><br></pre></td></tr></table></figure>
+
+<p>其后再安装又出现错误</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR: Cannot uninstall &apos;pyserial&apos;. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install --ignore-installed pyserial</span><br></pre></td></tr></table></figure>
+
+<p>再安装pwntools即可解决。</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/05/04/phpstorm代码编辑器Debug配置/">
+        &laquo; phpstorm代码编辑器Debug配置
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/06/14/神州数码DCN信息安全管理与评估国赛_第二阶段文件包含漏洞/">
+        神州数码DCN信息安全管理与评估国赛 第二阶段文件包含漏洞 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

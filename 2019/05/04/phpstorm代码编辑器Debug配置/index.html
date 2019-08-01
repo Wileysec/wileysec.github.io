@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>phpstorm代码编辑器Debug配置 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  May 4, 2019
+  
+
+  <h1 class="post-title">phpstorm代码编辑器Debug配置</h1>
+  <section class="post-content article-entry">
+    <p>本文将讲述在phpstorm中，如何配置debug进行代码调试</p>
+<a id="more"></a>
+
+<h2 id="下载并配置Xdebug"><a href="#下载并配置Xdebug" class="headerlink" title="下载并配置Xdebug"></a>下载并配置Xdebug</h2><p>PHP扩展 Xdebug <a href="https://xdebug.org" target="_blank" rel="noopener">https://xdebug.org</a></p>
+<p>下载哪个版本？请复制你本机的phpinfo信息到 <a href="https://xdebug.org/wizard.php" target="_blank" rel="noopener">https://xdebug.org/wizard.php</a> 会生成需要下载的版本</p>
+<p>下载好后放入当前php版本目录的ext文件夹中，然后设置当前php版本的php.ini配置信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">zend_extension = &quot;c:/wamp64/bin/php/php7.2.4/zend_ext/php_xdebug-2.6.0-7.2-vc15-x86_64.dll&quot;</span><br><span class="line">xdebug.remote_enable =1</span><br><span class="line">xdebug.remote_handler = dbgp</span><br><span class="line">xdebug.remote_host = localhost</span><br><span class="line">xdebug.remote_mode = req</span><br><span class="line">xdebug.remote_port = 9000</span><br><span class="line">xdebug.idekey=PHPSTORM</span><br></pre></td></tr></table></figure>
+
+<p>配置完后，重启Apache服务。</p>
+<h2 id="phpstorm配置"><a href="#phpstorm配置" class="headerlink" title="phpstorm配置"></a>phpstorm配置</h2><p>第一步，依次点击菜单栏 <code>File &gt; Settings &gt; PHP &gt; Servers</code>，填写服务器端的相关信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">name: localhost，host: localhost，port: 80，debugger: XDebug</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/1856835512.png" alt></p>
+<p>如果你的host域名是自定义的，也可以设置你的自定义域名。</p>
+<p>第二步，点击 debug 选项，找到Xdebug，设置端口为9000</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/2809799657.png" alt></p>
+<p>第三步，点击 DBGp Proxy 选项，填写如下信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IDE key: PHPSTORM</span><br><span class="line">host: localhost</span><br><span class="line">port: 80</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/3536457791.png" alt></p>
+<p>这里的IDE key和你php.ini的配置里面的 xdebug.idekey 值一致</p>
+<p>设置完毕后，点击 Ok 退出即可。</p>
+<p>第四步，依次点击菜单栏 <code>Run &gt; Edit Configurations</code> 弹出调试配置窗口后，点击左上角 + 号，选择 <code>PHP Web Page</code></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/415465187.png" alt></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/543611114.png" alt></p>
+<p>这里的startURL就是debug调试的位置，可以是一个文件，本文例子我用的是 <code>a.php</code> 作为调试对象</p>
+<h2 id="Xdebug-Helper插件调试"><a href="#Xdebug-Helper插件调试" class="headerlink" title="Xdebug Helper插件调试"></a>Xdebug Helper插件调试</h2><p>下载 <code>Xdebug Helper</code> 插件，安装后点击选项，IDE key选择PHPSTORM</p>
+<p>设置完后，可以在代码处设置断点，开始调试。</p>
+<p>依次点击 类似于小电话的按钮 <img src="https://www.wileysec.com/usr/uploads/2019/05/1321903580.png" alt> <code>&gt;</code> 再点击小甲虫debug</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/1492097275.png" alt></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/05/4026277350.png" alt></p>
+<p>可以看到，已经可以调试了。</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/04/22/腾讯云配置CDN后403资源被锁定问题/">
+        &laquo; 腾讯云配置CDN后403资源被锁定问题
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/06/06/解决pip下载模块超时问题/">
+        解决pip下载模块超时问题 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

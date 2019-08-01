@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>deituiCMS系统代码执行漏洞 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  March 19, 2019
+  
+
+  <h1 class="post-title">deituiCMS系统代码执行漏洞</h1>
+  <section class="post-content article-entry">
+    <p>本文将讲述deitui系统的程序安装的代码执行漏洞。</p>
+<a id="more"></a>
+
+<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/03/2856314297.png" alt="de5.png"></p>
+<p>可以看到这个<code>Config.php</code>文件中，定义了一个常量，这个常量的值就是安装CMS的时候填写的表前缀。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;sky_&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>这段代码，我们怎么让它代码执行？</p>
+<p>是不是立马能想到让它闭合+注释就可以做到？</p>
+<p>构造完的代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;&quot;);phpinfo();//sky_&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>那么，payload就是：<code>&quot;);phpinfo();//</code></p>
+<h2 id="代码执行"><a href="#代码执行" class="headerlink" title="代码执行"></a>代码执行</h2><p><img src="https://www.wileysec.com/usr/uploads/2019/03/885568156.png" alt="de.png"></p>
+<p>填入payload，并且下一步。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/03/338812295.png" alt="de1.png"></p>
+<p>这里，为什么就已经代码执行了？</p>
+<p>因为在<code>install.php</code>文件中包含了<code>config.php</code>，所以造成了代码执行。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/03/1097299596.png" alt="de2.png"></p>
+<p>这时候，我们访问admin.php就发现已经执行了phpinfo函数了，因为admin.php已包含了config.php文件。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/03/1820781498.png" alt="de3.png"></p>
+<p>看一下config.php发现的确是将payload写入了文件，并且能够代码执行。</p>
+<p>其实这个还是比较好修复的，在用户输入的时候对特殊字符进行过滤，表前缀这种东西为毛要有特殊字符呢，对吧？</p>
+<h2 id="漏洞总结"><a href="#漏洞总结" class="headerlink" title="漏洞总结"></a>漏洞总结</h2><p>这个由于是必须要在可以安装CMS的时候可以利用，所以有点鸡肋吧。如果是可以安装的话，好像都可以getshell哦~</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/03/07/关于MySQL数据库开启日志文件的坑/">
+        &laquo; 关于MySQL数据库开启日志文件的坑
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/04/13/CentOS5.5_Yum源不能使用问题/">
+        CentOS5.5 Yum源不能使用问题 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

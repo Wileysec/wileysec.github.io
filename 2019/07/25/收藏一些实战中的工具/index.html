@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>收藏一些实战中的工具 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  July 25, 2019
+  
+
+  <h1 class="post-title">收藏一些实战中的工具</h1>
+  <section class="post-content article-entry">
+    <p>收藏一些实战中的工具和技巧</p>
+<a id="more"></a>
+
+<h2 id="Github工具"><a href="#Github工具" class="headerlink" title="Github工具"></a>Github工具</h2><p>1.进程隐藏工具<br><a href="https://github.com/gianlucaborello/libprocesshider" target="_blank" rel="noopener">https://github.com/gianlucaborello/libprocesshider</a></p>
+<p><a href="https://github.com/f0rb1dd3n/Reptile" target="_blank" rel="noopener">https://github.com/f0rb1dd3n/Reptile</a></p>
+<p>2.流量代理工具proxy<br><a href="https://github.com/vzex/dog-tunnel" target="_blank" rel="noopener">https://github.com/vzex/dog-tunnel</a></p>
+<p>3.冰蝎一句话木马<br><a href="https://github.com/chinatso/-v1.0" target="_blank" rel="noopener">https://github.com/chinatso/-v1.0</a></p>
+<p>4.Linux辅助提权工具LinEnum.sh<br><a href="https://github.com/rebootuser/LinEnum" target="_blank" rel="noopener">https://github.com/rebootuser/LinEnum</a></p>
+<p>5.脏牛提权工具c0w64<br><a href="https://github.com/Brucetg/DirtyCow-EXP" target="_blank" rel="noopener">https://github.com/Brucetg/DirtyCow-EXP</a></p>
+<p>6.内网流量代理工具agent.exe<br><a href="https://github.com/cnlh/nps" target="_blank" rel="noopener">https://github.com/cnlh/nps</a></p>
+<h2 id="实战技巧"><a href="#实战技巧" class="headerlink" title="实战技巧"></a>实战技巧</h2><p>强制开启3389 REG ADDHKLM\SYSTEM\CurrentControlSet\Control\Terminal” “Server /vfDenyTSConnections /t REG_DWORD /d 00000000 /f</p>
+<p>sqlmap.py -m 1.txt –batch –smart SQLMAP批量检测注入点</p>
+<h4 id="远程端口不是默认的3389，可以通过下面方法查看"><a href="#远程端口不是默认的3389，可以通过下面方法查看" class="headerlink" title="远程端口不是默认的3389，可以通过下面方法查看"></a>远程端口不是默认的3389，可以通过下面方法查看</h4><p>tasklist /svc 查看一下服务</p>
+<p>找到 <code>svchost.exe</code> 为 <code>TermService</code> 的进程ID，接着 netstat /ano</p>
+<p>找到ID为上面的进程ID的端口号，就是修改后的3389端口</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/07/15/Discuz_ML!_V3.X代码执行漏洞复现/">
+        &laquo; Discuz ML! V3.X代码执行漏洞复现
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/07/28/新博客，新开始！/">
+        新博客，新开始！ &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

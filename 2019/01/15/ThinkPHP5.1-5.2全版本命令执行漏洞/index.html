@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>ThinkPHP5.1-5.2全版本命令执行漏洞 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  January 15, 2019
+  
+
+  <h1 class="post-title">ThinkPHP5.1-5.2全版本命令执行漏洞</h1>
+  <section class="post-content article-entry">
+    <p>本文将讲述ThinkPHP5.1-5.2全版本命令执行漏洞。上个月被爆代码执行漏洞，今年1月份又被爆ThinkPHP5.0代码执行漏洞，今天再次被爆新漏洞了。虽然比较鸡肋，但是还是有危害性的。</p>
+<a id="more"></a>
+
+<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>漏洞文件位置：</p>
+<p><code>\thinkphp\library\think\Request.php</code></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/1097993408.png" alt="1.png"></p>
+<p>来看下这段代码：</p>
+<p><code>$this-&gt;method = strtoupper($_POST[$this-&gt;config[&#39;var_method&#39;]]);</code></p>
+<p><code>$method = strtolower($this-&gt;method);</code></p>
+<p><code>$this-&gt;{$method} = $_POST;</code></p>
+<p><code>$this-&gt;method</code>是配置文件中的<code>var_method</code>对应的值<code>_method</code></p>
+<p>然后来了一波大写转换 小写转换</p>
+<p><code>$method</code>变量就是<code>$this-&gt;method</code></p>
+<p>最终<code>$this-&gt;{$method} = $_POST;</code>这里存在变量覆盖</p>
+<p>其实和上次漏洞差不多，覆盖<code>$filter</code>属性值。</p>
+<h2 id="复现漏洞"><a href="#复现漏洞" class="headerlink" title="复现漏洞"></a>复现漏洞</h2><p>从而可以构造一个Payload：</p>
+<p><code>c=system&amp;f=whoami&amp;_method=filter</code></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/87099438.png" alt="3.png"></p>
+<p>这里会爆一个错误，导致不能被执行。这就是这个漏洞的很鸡肋的地方，需要在public/index.php文件中跳过报错提示。</p>
+<p><code>error_reporting(0);</code></p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/2232158449.png" alt="4.png"></p>
+<p>再试试看，就可以成功命令执行了。</p>
+<p><img src="https://www.wileysec.com/usr/uploads/2019/01/3257758428.png" alt="2.png"></p>
+<h2 id="漏洞总结"><a href="#漏洞总结" class="headerlink" title="漏洞总结"></a>漏洞总结</h2><p>总结：该漏洞只能在屏蔽异常和错误才能触发。其实还是比较鸡肋的。</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/01/07/CVE-2018-15982 Adobe Flash Player漏洞复现/">
+        &laquo; CVE-2018-15982 Adobe Flash Player漏洞复现
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/2019/01/23/phpwind后台备份SQL注入漏洞/">
+        phpwind后台备份SQL注入漏洞 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+<div class="post-toc">
+	<span class="post-toc-title">文章目录</span>
+    <div class="post-toc-content">
+    	
+    </div>
+</div>
+<script>
+	$('.post-toc-menu').click(function(){
+		if($('.post-toc').hasClass('open')){
+			$('.post-toc').removeClass('open');
+		}else{
+			$('.post-toc').addClass('open');
+		}
+	});
+</script>
+</div>
+
+<script>
+    $(".post-content p").each(function(){
+      imglength = $(this).find('img').length;
+      for(i=0;i<imglength;i++){
+           obj = $(".post-content p img")[i];
+           aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+           imghref = $(aobj).attr('src');
+           $('#fancybox' + i).attr('href',imghref);
+        }
+    });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+
