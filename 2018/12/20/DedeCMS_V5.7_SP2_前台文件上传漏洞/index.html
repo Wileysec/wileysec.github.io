@@ -109,7 +109,31 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-漏洞概述"><span class="toc-text">0x01 漏洞概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-漏洞复现"><span class="toc-text">0x02 漏洞复现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-漏洞分析"><span class="toc-text">0x03 漏洞分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-漏洞总结"><span class="toc-text">0x04 漏洞总结</span></a></li></ol>
+          <p>本文为复现Dedecms V5.7 SP2 前台文件上传漏洞</p>
+<a id="more"></a>
+
+<h2 id="0x01-漏洞概述"><a href="#0x01-漏洞概述" class="headerlink" title="0x01 漏洞概述"></a>0x01 漏洞概述</h2><p>漏洞名称：<code>DedeCMS V5.7 SP2前台文件上传漏洞</code><br>上报日期：<code>2018-12-11</code><br>影响版本：<code>DedeCMS V5.7 SP2正式版</code><br>CVE编号：<code>CVE-2018-20129</code></p>
+<p>最新的DEDECMS系统存在前台会员中心文件上传漏洞，需要管理员权限，后期上传图片改php文件名时需要管理员的权限。</p>
+<h2 id="0x02-漏洞复现"><a href="#0x02-漏洞复现" class="headerlink" title="0x02 漏洞复现"></a>0x02 漏洞复现</h2><p>首先，进入会员中心，必须是管理员的权限，因为后面上传文件有权限限制。进入会员中心后进入内容中心模块，然后发布一个文章。点击下面的编辑器的上传图片按钮。</p>
+<p><img src="/uploads/2018/12/3586276177.jpg" alt="2.jpg"></p>
+<p>点击上传，选择准备好的一句话图片木马文件</p>
+<p><img src="/uploads/2018/12/1522812095.jpg" alt="3.jpg"></p>
+<p>再用burp工具抓包，将1.jpg改为1.jpg.p*hp</p>
+<p><img src="/uploads/2018/12/1682562689.jpg" alt="4.jpg"></p>
+<p>然后重新请求发送数据包，成功的getshell了，并返回了木马地址。</p>
+<p><img src="/uploads/2018/12/3515155459.jpg" alt="5.jpg"></p>
+<p>用中国菜刀连接看看，成功连接</p>
+<p><img src="/uploads/2018/12/2964225811.jpg" alt="6.jpg"></p>
+<h2 id="0x03-漏洞分析"><a href="#0x03-漏洞分析" class="headerlink" title="0x03 漏洞分析"></a>0x03 漏洞分析</h2><p>在\include\dialog\select_images_post.php中的36行，过滤了一些看起来不正常(异常)<br>的字符。</p>
+<p><img src="/uploads/2018/12/3588779709.jpg" alt="7.jpg"></p>
+<p>同时，在38行处判断了文件名是否包含了$cfg_imgtype的字符。</p>
+<p><img src="/uploads/2018/12/3627487423.jpg" alt="10.jpg"></p>
+<p>从而可以判断，不仅仅只有*可以绕过，% ？ &lt;&gt; :都是可以绕过的。</p>
+<p>举例：% ?绕过截图</p>
+<p><img src="/uploads/2018/12/3704589524.jpg" alt="8.jpg"></p>
+<p><img src="/uploads/2018/12/429935467.jpg" alt="9.jpg"></p>
+<h2 id="0x04-漏洞总结"><a href="#0x04-漏洞总结" class="headerlink" title="0x04 漏洞总结"></a>0x04 漏洞总结</h2><p>个人感觉比较适合拿下了后台，没有方法Getshell的小伙伴们，可直接通过这个漏洞上传木马到服务器，从而Getshell。普通用户上传是有限制的，没有权限上传php的文件，只有上传图片的权限。</p>
+
         </div>
     </div>
 </div>

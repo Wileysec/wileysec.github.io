@@ -99,7 +99,21 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#资源被锁定"><span class="toc-text">资源被锁定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关闭热备源站"><span class="toc-text">关闭热备源站</span></a></li></ol>
+          <p>本文将讲述在配置腾讯云CDN加速后，配置了热备源站导致了403资源被锁定的问题。</p>
+<a id="more"></a>
+
+<h2 id="资源被锁定"><a href="#资源被锁定" class="headerlink" title="资源被锁定"></a>资源被锁定</h2><p>访问一个加密的文章后，出现了资源被锁定情况。</p>
+<p><code>The requested resource is currently locked.</code></p>
+<p><img src="/uploads/2019/04/93980421.png" alt="1162081675_971021_1555845790307.png"></p>
+<p>我向腾讯云提交工单后，解决了该问题。</p>
+<p><img src="/uploads/2019/04/3555739728.png" alt="5cbc6ecf933e5.png"></p>
+<p>腾讯云工程师的回答是：核实您源站对加密资源会返回403，导致触发热备源，您的热备源也是接入CDN的。同属于一个加速平台，导致陷入一个循环请求的状态，您把热备源删掉，或者更换一个没有绑定CDN的域名。</p>
+<h2 id="关闭热备源站"><a href="#关闭热备源站" class="headerlink" title="关闭热备源站"></a>关闭热备源站</h2><p><img src="/uploads/2019/04/2226053022.png" alt="Snipaste_2019-04-22_08-53-21.png"></p>
+<p>可以看到，我确实开启了热备源站，而且该源站还是本域名，都是配置了CDN的，所以导致陷入一个循环请求的状态。</p>
+<p><img src="/uploads/2019/04/3162213804.png" alt="Snipaste_2019-04-22_08-53-44.png"></p>
+<p><img src="/uploads/2019/04/1205932884.png" alt="Snipaste_2019-04-22_08-56-47.png"></p>
+<p>将该热备源站删除后，可以看到可以正常访问了。</p>
+
         </div>
     </div>
 </div>

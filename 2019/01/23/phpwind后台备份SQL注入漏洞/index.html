@@ -109,7 +109,31 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-漏洞概述"><span class="toc-text">0x01 漏洞概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-代码分析"><span class="toc-text">0x02 代码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-漏洞复现"><span class="toc-text">0x03 漏洞复现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-总结"><span class="toc-text">0x04 总结</span></a></li></ol>
+          <p>本文将复现phpwind后台备份功能SQL注入漏洞</p>
+<a id="more"></a>
+
+<h2 id="0x01-漏洞概述"><a href="#0x01-漏洞概述" class="headerlink" title="0x01 漏洞概述"></a>0x01 漏洞概述</h2><p>漏洞程序：phpwind</p>
+<p>漏洞影响版本：<a href="/uploads/2019/01/1550609772.zip">phpwind_v9.0.2_utf8_20170401</a></p>
+<p>phpwind在后台的备份功能上，存在SQL注入漏洞。可对数据库进行任何的操作。由于需要拿到后台，所以影响范围相对来说还是比较小的。</p>
+<h2 id="0x02-代码分析"><a href="#0x02-代码分析" class="headerlink" title="0x02 代码分析"></a>0x02 代码分析</h2><p>该代码位于 <code>src/applications/backup/admin/BackupController.php</code>中，可以看到是调用了backupTable这个方法。</p>
+<p>跟踪一下这个函数，看看会进行什么操作。</p>
+<p><img src="/uploads/2019/01/554505418.png" alt="4.png"></p>
+<p><code>backupTable</code>这个函数，首先执行DROP其数据表，然后对其进行CREATE创建表对表进行数据插入，进行备份。</p>
+<p><img src="/uploads/2019/01/4200322402.png" alt="5.png"></p>
+<h2 id="0x03-漏洞复现"><a href="#0x03-漏洞复现" class="headerlink" title="0x03 漏洞复现"></a>0x03 漏洞复现</h2><p>那么我们是否可以利用该操作，达到我们想要的目的呢？比如在Mysql数据库的表里插入一个新的用户？<br>其Payload如下：`; insert into mysql.user(Host,User) values(‘localhost’, ‘ceshi’);`;</p>
+<p>前面的`; 为了闭合代码中的SQL语句中的`字符。</p>
+<p>后面的`; 让前面的和我们构造的SQL语句合并一起执行。</p>
+<p>点击备份，我们先抓包看看。</p>
+<p><img src="/uploads/2019/01/741870172.png" alt="3.png"></p>
+<p>可以看到，这些都是我们需要备份的数据表，何须这么多？只留一个备份表参数就行了，然后构造payload再发包。</p>
+<p><img src="/uploads/2019/01/1306320311.png" alt="2.png"></p>
+<p>可以看到，已经出现了语法错误。</p>
+<p><img src="/uploads/2019/01/2573665840.png" alt="1.png"></p>
+<p>放包后，页面上也弹出了报错提示。</p>
+<p>此时，我们已经成功将ceshi这个用户添加到了mysql数据库中的user表中。</p>
+<p><img src="/uploads/2019/01/933083463.png" alt="6.png"></p>
+<h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>其实这个漏洞还是比较鸡肋的，首先需要拿到后台，才可以有备份功能，拿到了后台说不定可以上传漏洞getshell了。又或许可以用sqlmap中的—os-shell去写shell，还需要dba权限。</p>
+
         </div>
     </div>
 </div>

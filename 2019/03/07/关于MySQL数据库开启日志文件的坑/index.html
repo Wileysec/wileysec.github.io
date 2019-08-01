@@ -95,7 +95,17 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#安装MySQL"><span class="toc-text">安装MySQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#设置MySQL开启日志功能"><span class="toc-text">设置MySQL开启日志功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#设置MySQL日志文件存储文件位置"><span class="toc-text">设置MySQL日志文件存储文件位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#大坑"><span class="toc-text">大坑</span></a></li></ol>
+          <p>本文将给大家绕过一个Linux系统里面的MySQL开启日志的一个坑。</p>
+<a id="more"></a>
+
+<h2 id="安装MySQL"><a href="#安装MySQL" class="headerlink" title="安装MySQL"></a>安装MySQL</h2><p><code>yum install -y mysql-server mysql mysql-deve</code> 在Centos下安装MySQL。</p>
+<h2 id="设置MySQL开启日志功能"><a href="#设置MySQL开启日志功能" class="headerlink" title="设置MySQL开启日志功能"></a>设置MySQL开启日志功能</h2><p><code>set global general_log=on;</code> 这条SQL命令可以让MySQL开启日志记录功能。</p>
+<p><code>show variables like &#39;general_log&#39;;</code> 查看general_log配置</p>
+<h2 id="设置MySQL日志文件存储文件位置"><a href="#设置MySQL日志文件存储文件位置" class="headerlink" title="设置MySQL日志文件存储文件位置"></a>设置MySQL日志文件存储文件位置</h2><p><code>set global general_log_file=&#39;/var/log/access.log&#39;;</code> 设置MySQL日志存储文件的位置。</p>
+<p>由于比赛环境是需要在 <code>/var/log/</code> 下创建一个 <code>access.log</code> 的文件，所以改为这个文件保存。</p>
+<h2 id="大坑"><a href="#大坑" class="headerlink" title="大坑"></a>大坑</h2><p>当换了log日志文件之后，需要更改<code>access.log</code>文件的权限。</p>
+<p>使用命令<code>chmod 777 access.log</code>进行更改文件的权限，使其能够写入文件。</p>
+
         </div>
     </div>
 </div>

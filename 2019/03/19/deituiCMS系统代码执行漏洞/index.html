@@ -109,7 +109,31 @@
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#代码分析"><span class="toc-text">代码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#代码执行"><span class="toc-text">代码执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞总结"><span class="toc-text">漏洞总结</span></a></li></ol>
+          <p>本文将讲述deitui系统的程序安装的代码执行漏洞。</p>
+<a id="more"></a>
+
+<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p><img src="/uploads/2019/03/2856314297.png" alt="de5.png"></p>
+<p>可以看到这个<code>Config.php</code>文件中，定义了一个常量，这个常量的值就是安装CMS的时候填写的表前缀。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;sky_&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>这段代码，我们怎么让它代码执行？</p>
+<p>是不是立马能想到让它闭合+注释就可以做到？</p>
+<p>构造完的代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;&quot;);phpinfo();//sky_&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>那么，payload就是：<code>&quot;);phpinfo();//</code></p>
+<h2 id="代码执行"><a href="#代码执行" class="headerlink" title="代码执行"></a>代码执行</h2><p><img src="/uploads/2019/03/885568156.png" alt="de.png"></p>
+<p>填入payload，并且下一步。</p>
+<p><img src="/uploads/2019/03/338812295.png" alt="de1.png"></p>
+<p>这里，为什么就已经代码执行了？</p>
+<p>因为在<code>install.php</code>文件中包含了<code>config.php</code>，所以造成了代码执行。</p>
+<p><img src="/uploads/2019/03/1097299596.png" alt="de2.png"></p>
+<p>这时候，我们访问admin.php就发现已经执行了phpinfo函数了，因为admin.php已包含了config.php文件。</p>
+<p><img src="/uploads/2019/03/1820781498.png" alt="de3.png"></p>
+<p>看一下config.php发现的确是将payload写入了文件，并且能够代码执行。</p>
+<p>其实这个还是比较好修复的，在用户输入的时候对特殊字符进行过滤，表前缀这种东西为毛要有特殊字符呢，对吧？</p>
+<h2 id="漏洞总结"><a href="#漏洞总结" class="headerlink" title="漏洞总结"></a>漏洞总结</h2><p>这个由于是必须要在可以安装CMS的时候可以利用，所以有点鸡肋吧。如果是可以安装的话，好像都可以getshell哦~</p>
+
         </div>
     </div>
 </div>
