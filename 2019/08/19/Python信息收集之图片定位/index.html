@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>Python信息收集之图片定位 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="./team.html">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  August 19, 2019
+  
+
+  <h1 class="post-title">Python信息收集之图片定位</h1>
+  <section class="post-content article-entry">
+    <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本脚本主要是对JPG格式的图片收集其EXIF信息，获取GPS定位数据，并算出精准定位的GPS数据，通过百度地图API接口获取该GPS的详细位置，也可通过第三方GPS定位查询精准位置。</p>
+<p>那么，什么是EXIF?</p>
+<p>EXIF是可交换图像文件格式（英语：Exchangeable image file format，官方简称Exif），是专门为数码相机的照片设定的，可以记录数码照片的属性信息和拍摄数据。</p>
+<p>Exif可以附加于JPEG、TIFF、RIFF等文件之中，为其增加有关数码相机拍摄信息的内容和索引图或图像处理软件的版本信息。</p>
+<p>Windows 7操作系统具备对Exif的原生支持，通过鼠标右键点击图片打开菜单，点击属性并切换到详细信息标签下即可直接查看Exif信息。</p>
+<p>Exif信息是可以被任意编辑的，因此只有参考的功能。Exif信息以0xFFE1作为开头标记，后两个字节表示Exif信息的长度。所以Exif信息最大为64 kb，而内部采用TIFF格式。</p>
+<p>利用该脚本，我们可以做什么?</p>
+<p>其实博主写该脚本，目的是为了能够收集图片的GPS信息，达到GPS精准定位，收集详细信息。</p>
+<h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用?"></a>如何使用?</h2><p>Github项目地址：<a href="https://github.com/Wileysec/Photo_GPS" target="_blank" rel="noopener">https://github.com/Wileysec/Photo_GPS</a></p>
+<p>将该脚本下载到本地运行，需要安装Python模块 <code>exifread</code> <code>requests</code></p>
+<h4 id="修改API配置"><a href="#修改API配置" class="headerlink" title="修改API配置"></a>修改API配置</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> accres[<span class="string">'error'</span>] == <span class="number">0</span>:</span><br><span class="line">    api = <span class="string">"http://api.map.baidu.com/reverse_geocoding/v3/?ak=你的百度地图AK密钥&amp;output=json&amp;coordtype=wgs84ll&amp;location=&#123;0&#125;,&#123;1&#125;"</span>.format(accres[<span class="string">'baidu'</span>][<span class="string">'lat'</span>],accres[<span class="string">'baidu'</span>][<span class="string">'lng'</span>])</span><br><span class="line">    response = requests.get(api)</span><br><span class="line">    content = response.text</span><br><span class="line">    address = json.loads(content)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    api = <span class="string">"http://api.map.baidu.com/reverse_geocoding/v3/?ak=你的百度地图AK密钥&amp;output=json&amp;coordtype=wgs84ll&amp;location=&#123;0&#125;,&#123;1&#125;"</span>.format(lat, lng)</span><br><span class="line">    response = requests.get(api)</span><br><span class="line">    content = response.text</span><br><span class="line">    address = json.loads(content)</span><br></pre></td></tr></table></figure>
+
+<p>将脚本中的 67 和 72 行的AK密钥换成你在百度地图申请的AK密钥</p>
+<h2 id="获取信息"><a href="#获取信息" class="headerlink" title="获取信息"></a>获取信息</h2><p>由于EXIF附加在JPG图片格式中，所以图片原文件必须为JPG格式，且在拍照时已将EXIF信息写入到JPG图片中，否则获取不到任何信息。</p>
+<p>这里，我在我的学校新生群拿到一张学生拍的录取通知书作为案例</p>
+<p><img src="/uploads/2019/08/19/2019-08-19-101220.png" alt></p>
+<p>先保存该图片为JPG图片，放到与脚本同级目录下</p>
+<p>运行 <code>python3 photo_gps.py 3.jpg</code>，该脚本是在Python3下开发，请使用Python3运行该脚本</p>
+<p><img src="/uploads/2019/08/19/2019-08-19-101005.png" alt></p>
+<p>这样，我们就成功的获取了EXIF信息，并且获得了GPS信息</p>
+<p>如果GPS信息为 <code>该照片无GPS信息</code> 则有可能该手机拍照时没有勾选将GPS信息写入图片选项。</p>
+<p>如果给出的地址不够详细，可打开 <a href="http://map.yanue.net/gps.html" target="_blank" rel="noopener">http://map.yanue.net/gps.html</a> 该地址，输入经纬度查询，亲测这个比较准，百度地图是有限制的不会精准到几米距离，而这个查询是可以精准到几米距离的。</p>
+<p><img src="/uploads/2019/08/19/2019-08-19-101435.png" alt></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>经过博主亲自测试，小米8手机有时候不会带EXIF信息，小米6X手机有时候会但是没有GPS信息，苹果手机不会带任何信息，华为 OPP0 VIVO都会带入EXIF信息，其他手机你们自测。</p>
+<p>亲测QQ空间 微信朋友圈的图片是获取不到信息的，因为都进行了压缩，将EXIF信息全部删除了。但是QQ 微信传输时是不会压缩和删除的，就算发的不是原图也能获取到。</p>
+<p>脚本好用记得给个 <code>Star</code></p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/2019/08/18/分享一些API接口/">
+        &laquo; 分享一些API接口
+    </a>
+    
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何使用"><span class="toc-text">如何使用?</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#修改API配置"><span class="toc-text">修改API配置</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#获取信息"><span class="toc-text">获取信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li>
+        </div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+
