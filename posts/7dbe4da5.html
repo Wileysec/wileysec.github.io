@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>Xiuno BBS后台Getshell漏洞 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="./team.html">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  August 9, 2019
+  
+
+  <h1 class="post-title">Xiuno BBS后台Getshell漏洞</h1>
+  <section class="post-content article-entry">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+<div id="hbe-security">
+  <div class="hbe-input-container">
+  <input type="password" class="hbe-form-control" id="pass" placeholder="该文章已加密，请输入密码后再访问！">
+    <label for="pass">该文章已加密，请输入密码后再访问！</label>
+    <div class="bottom-line"></div>
+  </div>
+</div>
+<div id="decryptionError" style="display: none;">Incorrect Password!</div>
+<div id="noContentError" style="display: none;">No content to display!</div>
+<div id="encrypt-blog" style="display:none">
+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
+</div>
+<script src="/lib/crypto-js.js"></script><script src="/lib/blog-encrypt.js"></script><link href="/css/blog-encrypt.css" rel="stylesheet" type="text/css">
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/posts/818e114e.html">
+        &laquo; 新博客，新开始！
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/posts/d9798b00.html">
+        分享一些API接口 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          
+        </div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+
