@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>MySQL删除重复数据并重置ID自增 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="https://ctf.dog/qqlovelab/" target="_blank">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  September 4, 2019
+  
+
+  <h1 class="post-title">MySQL删除重复数据并重置ID自增</h1>
+  <section class="post-content article-entry">
+    <p>在开发测试中，常常遇到重复数据过多，自增的ID随着数据的删除变得凌乱了起来。今天分享一下，我在开发测试中使用的MySQL删除重复数据并重置ID自增SQL语句。</p>
+<h3 id="删除重复数据只保留一条"><a href="#删除重复数据只保留一条" class="headerlink" title="删除重复数据只保留一条"></a>删除重复数据只保留一条</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> userlist <span class="keyword">WHERE</span> (username,<span class="keyword">password</span>) <span class="keyword">IN</span> (<span class="keyword">SELECT</span> username,<span class="keyword">password</span> <span class="keyword">FROM</span> (<span class="keyword">SELECT</span> username,<span class="keyword">password</span> <span class="keyword">FROM</span> userlist <span class="keyword">GROUP</span> <span class="keyword">BY</span> username,<span class="keyword">password</span> <span class="keyword">HAVING</span> <span class="keyword">COUNT</span>(*)&gt;<span class="number">1</span>) s1) <span class="keyword">AND</span> <span class="keyword">id</span> <span class="keyword">NOT</span> <span class="keyword">in</span> (<span class="keyword">SELECT</span> <span class="keyword">id</span> <span class="keyword">FROM</span> (<span class="keyword">SELECT</span> <span class="keyword">id</span> <span class="keyword">FROM</span> userlist <span class="keyword">GROUP</span> <span class="keyword">BY</span> username,<span class="keyword">password</span> <span class="keyword">HAVING</span> <span class="keyword">COUNT</span>(*)&gt;<span class="number">1</span>)s2);</span><br></pre></td></tr></table></figure>
+
+<h3 id="重置ID自增"><a href="#重置ID自增" class="headerlink" title="重置ID自增"></a>重置ID自增</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> userlist <span class="keyword">drop</span> <span class="keyword">id</span>;</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> userlist <span class="keyword">add</span> <span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">255</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">first</span>;</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> userlist <span class="keyword">modify</span> <span class="keyword">column</span> <span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">255</span>) <span class="keyword">not</span> <span class="literal">null</span> auto_increment,<span class="keyword">add</span> primary <span class="keyword">key</span>(<span class="keyword">id</span>);</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> userlist <span class="keyword">order</span> <span class="keyword">by</span> <span class="keyword">id</span>;</span><br></pre></td></tr></table></figure>
+
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/posts/a87ba10.html">
+        &laquo; Dnslog盲注
+    </a>
+    
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#删除重复数据只保留一条"><span class="toc-text">删除重复数据只保留一条</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#重置ID自增"><span class="toc-text">重置ID自增</span></a></li></ol>
+        </div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+
