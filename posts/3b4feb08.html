@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>Google Hacking学习笔记 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="https://ctf.dog/qqlovelab/" target="_blank">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  September 12, 2019
+  
+
+  <h1 class="post-title">Google Hacking学习笔记</h1>
+  <section class="post-content article-entry">
+    <h2 id="Google-Hacking基本语法"><a href="#Google-Hacking基本语法" class="headerlink" title="Google Hacking基本语法"></a>Google Hacking基本语法</h2><p><code>intext</code> : 将返回所有在网页正文部分包含关键词的网页</p>
+<p><code>intitle</code> : 将返回所有网页标题中包含关键词的网页</p>
+<p><code>cache</code> : 搜索google里关于某些内容的缓存</p>
+<p><code>define</code> : 搜索某个词语的定义</p>
+<p><code>filetype</code> : 搜索指定的文件类型，如：.bak，.mdb，.inc等</p>
+<p><code>info</code> : 查找指定站点的一些基本信息</p>
+<p><code>inurl</code> : 搜索我们指定的字符是否存在于URL中</p>
+<p><code>Link</code> : link:xx.com可以返回所有和xx.com做了链接的URL</p>
+<p><code>site</code> : site:xx.com将返回所有和这个站有关的URL</p>
+<p><code>+</code> : 把google可能忽略的字列如查询范围</p>
+<p><code>-</code> : 把某个字忽略，例子：新加 -坡</p>
+<p><code>~</code> : 同意词</p>
+<p><code>.</code> : 单一的通配符</p>
+<p><code>*</code> : 通配符，可代表多个字母</p>
+<p><code>“”</code> : 精确查询</p>
+<h2 id="需要注意"><a href="#需要注意" class="headerlink" title="需要注意"></a>需要注意</h2><p>Google查询是不区分大小写的（除布尔操作符OR，OR在表示布尔含义时一定要大写）</p>
+<p>Google通配符 (*仅代表搜索词组中的一个词。在一个词的开始或结尾使用星号和直接使用这个单词的效果相同)</p>
+<p>短语搜索要带上单引号<br>32个单词的限制；（如一串英文单词，如果用*部分替换单词，可以扩展搜索单词的数量）<br>最常用的：”关键字” ，双引号会使Google强制搜索包含关键字的内容<br>+和“”: +后面关键字；”关键字” （+后面不能有空格） ，双引号会使Google强制搜索包含关键字的内容<br>NOT 和 – : 从查询中忽略一个单词，-后不能跟空格<br>OR 和 | ：查找搜索中的一个或另外一个关键字；在google处理搜索查询中，运算符之间没有优先级，一律从左往右<br>.句号可以匹配任意字符<br>入侵需要用到的Google Hacking语法</p>
+<h2 id="文件类"><a href="#文件类" class="headerlink" title="文件类"></a>文件类</h2><h3 id="目录列表的查找"><a href="#目录列表的查找" class="headerlink" title="目录列表的查找"></a>目录列表的查找</h3><p>目录列表能列出存在于一个web服务器上的文件和目录</p>
+<p>查找目录列表</p>
+<p>实例：</p>
+<p>intitle:index.of 这里的休止符代表的是单个字母的通配符</p>
+<p>实例：</p>
+<p>intitle:index.of “parent directory”</p>
+<p>intitle:index.of name size</p>
+<h3 id="（特定版本的）服务器"><a href="#（特定版本的）服务器" class="headerlink" title="（特定版本的）服务器"></a>（特定版本的）服务器</h3><p>能被攻击者用来决定攻击web服务器最佳方法的一小段信息，就是确切的服务器版本</p>
+<p>实例：</p>
+<p>intitle:index.of “server at”</p>
+<p>intitle:index.of “Apache/1.3.27 Server at”</p>
+<p>还可以确定服务器的操作系统、模块和其他信息</p>
+<p>把操作系统写在括号里</p>
+<p>Apache/1/3/26(Unix)<br>CentOS<br>Debian<br>Debian GNU/Linux<br>Fedora<br>FreeBSD<br>Linux/SUSE<br>Linux/SuSE<br>NETWRE<br>Red Hat<br>Ubuntu<br>UNIX<br>Win32<br>攻击者能结合这个操作系统标签里的信息以及web服务器的版本制定有针对性的攻击</p>
+<p>三、扩展遍历技术</p>
+<p>经常会出现web页面的备份文件，他们有泄露源码的倾向。常常在配置错误的时候出现这种问题，把php代码备份到不是以php结尾的文件中，比如bak</p>
+<p>实例：</p>
+<p>intitle:index.of index.php.bak</p>
+<p>inurl:index.php.bak</p>
+<p>四、配置文件的查找</p>
+<p>配置文件的存在说明服务就在附近</p>
+<p>实例：</p>
+<p>filetype:conf inurl:firewall</p>
+<p>注意：</p>
+<p>1.除了配置文件名conf的使用，也可以组合其他的通用的命名规则来查找其他等价的命名规则</p>
+<p>inurl:conf OR inurl:config OR inurl:cfg</p>
+<p>五、日志文件的查找</p>
+<p>日志文件中也记录着日志很多的敏感信息</p>
+<p>日志文件也有一个默认的名字可以被我们用作基础的搜索，最常见的扩展名就是log了</p>
+<p>实例：</p>
+<p>filetype:log inurl:log</p>
+<p>ext log log</p>
+<p>filetype:log username putty</p>
+<p>六、office文档</p>
+<p>实例：</p>
+<p>filetype:xls inurl:password.xls</p>
+<p>filetype:xls username password email</p>
+<p>数据库、后台类<br>一、登录入口</p>
+<p>登录入口是第一道防线，很容易泄露软硬件的信息</p>
+<p>查找入口一般使用关键字login</p>
+<p>大的厂商一般会把版权的注意事项放在页面的底部</p>
+<p>实例：</p>
+<p>intitle:login intext:版权信息</p>
+<p>二、错误消息</p>
+<p>数据库的错误消息能够用来分析操作系统和web服务器的版本，还可能更多</p>
+<p>SQL command not properly ended</p>
+<p>这个表示没有在sql语句的最后找到正确的终止符，所以可能会被用于注入攻击</p>
+<p>三、数据库的转储</p>
+<p>数据库基于文本的转换在网络上是很常见的，使用数据库的转储数据库管理员能完整地重建数据库，也就意味着一个完整的转储的细节并不只是数据表格的结构还有每张表的每一条记录。</p>
+<p>攻击者可以搜索转储的标题 # Dumping data for table并且通过执行必要的关键词 username password等能够缩小范围</p>
+<p>实例：</p>
+<h1 id="Dumping-data-for-table-user-username-password-pass"><a href="#Dumping-data-for-table-user-username-password-pass" class="headerlink" title="Dumping data for table(user|username|password|pass)"></a>Dumping data for table(user|username|password|pass)</h1><p>还可以关注一些由别的工具添加到数据库转储中最后的文件名</p>
+<p>实例：</p>
+<p>filetype:sql sql</p>
+<p>四、真实的数据库文件</p>
+<p>攻击者还能直接搜索到数据库本身，并不适合所有的数据库系统，只适合哪些有着特定名字或者扩展名的数据库,因为是二进制文件，所以没法在里面搜索字符</p>
+<p>实例：</p>
+<p>filetype:mdb inurl:com</p>
+<p>查找漏洞寻找目标<br>一、查找漏洞代码</p>
+<p>实例：</p>
+<p>inurl:exploits</p>
+<p>二、查找公开漏洞的网站</p>
+<p>查找漏洞代码的一种方法就是关乎源代码中的文件扩展名，然后搜索该代码中的特定的内容。</p>
+<p>实例：</p>
+<p>filetype:c exploit</p>
+<p>使用下面的命令把这些网站从转储的google结果页面中隔离出来</p>
+<p>实例：</p>
+<p>grep Cached exploit_file|awk =F “-” ‘{print $1}’|sort -u</p>
+<p>或者也可以使用 lynx -dump</p>
+<p>三、利用常见的代码字符串查找漏洞</p>
+<p>关注源代码中的常用字符，一种重要的方法就会是关注源代码中的包含的文件或者头文件的引用。以C文件为例，通常会被包含在一个 #include中，不管文件的扩展名是什么</p>
+<p>实例：</p>
+<p>“#include” usage expoit</p>
+<p>四、查找易受攻击的目标</p>
+<p>利用漏洞的公告查找目标，软件供货商和安全研究员会定期发布关于易受攻击的软件的报告，这些报告会显示一个受影响软件供应商网站的链接，我们的目标是通过建立一个查询字符串来找到网页上易受攻击的目标。</p>
+<p>特别有用的是使用 Powered by xxxx</p>
+<p>常用的命令<br>查找网站后台</p>
+<p>site:xx.com intext:管理</p>
+<p>site:xx.com inurl:login</p>
+<p>site:xx.com intitle:后台</p>
+<p>查看服务器使用的程序</p>
+<p>site:xx.com filetype:asp</p>
+<p>site:xx.com filetype:php</p>
+<p>site:xx.com filetype:jsp</p>
+<p>查看上传漏洞</p>
+<p>site:xx.com inurl:file</p>
+<p>site:xx.com inurl:load</p>
+<p>查找注射点</p>
+<p>site:xx.com filetype:asp</p>
+<p>site:tw inurl:asp?id= 这个是找台湾的</p>
+<p>site:jp inurl:asp?id= 这个是找日本的</p>
+<p>site:ko inurl:asp?id= 这个是找韩国的</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/posts/77d1b8e0.html">
+        &laquo; CVE-2019-0708远程桌面代码执行漏洞复现
+    </a>
+    
+    
+    <a class="newer-posts float-right" href="/posts/2d0d5df.html">
+        路由器摄像头默认常用密码 &raquo;
+    </a>
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Google-Hacking基本语法"><span class="toc-text">Google Hacking基本语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#需要注意"><span class="toc-text">需要注意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件类"><span class="toc-text">文件类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#目录列表的查找"><span class="toc-text">目录列表的查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#（特定版本的）服务器"><span class="toc-text">（特定版本的）服务器</span></a></li></ol></li></ol><li class="toc-item toc-level-1"><a class="toc-link" href="#Dumping-data-for-table-user-username-password-pass"><span class="toc-text">Dumping data for table(user|username|password|pass)</span></a>
+        </li></div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+
