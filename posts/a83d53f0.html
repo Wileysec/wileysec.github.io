@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+    <head><meta name="generator" content="Hexo 3.9.0">
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content>
+        <meta name="keywords" content>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/img/avatar.jpg">
+        <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
+        <title>理解Jsonp跨域请求 | Wiley的部落格小黑屋</title>
+        <meta name="description" content="{{meta_description}}">
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    </head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <h1 class="center"><a href="/">Wiley</a></h1>
+            <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
+            <span id="follow-icons">
+      <a href="http://github.com/Wileysec"><i class="fa fa-github-square fa-2x"></i></a>
+        <a href="mailto:wileysec@qq.com"><i class="fa fa-envelope-square fa-2x"></i></a>
+            <a href="/atom.xml"><i class="fa fa-rss-square fa-2x"></i></a>
+  </span>
+
+<h6 class="links">
+  <a href="/About">About</a>
+  <a href="/Links">Links</a>
+  <a href="https://ctf.dog/qqlovelab/" target="_blank">Team</a>
+</h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  December 2, 2019
+  
+
+  <h1 class="post-title">理解Jsonp跨域请求</h1>
+  <section class="post-content article-entry">
+    <p>在学习面试题Jsonp劫持漏洞时，不太懂Jsonp，所以学习了一下Jsonp，记录一下我自己理解Jsonp的跨域请求</p>
+<h2 id="什么是Jsonp"><a href="#什么是Jsonp" class="headerlink" title="什么是Jsonp?"></a>什么是Jsonp?</h2><p>在我们使用Ajax请求普通文件时不同域数据是没有权限访问的</p>
+<p>其实有几个标签是可以跨域访问的，例如：<code>&lt;img&gt;</code> <code>&lt;script&gt;</code> <code>&lt;frame&gt;</code>，比如我们引用js文件时就跨域跨域</p>
+<p>其实Jsonp很好理解，如果客户端需要跨域访问服务端数据，我们可以在服务端将数据装入js格式文件里，供客户端进行调用</p>
+<p>所以Jsonp需要客户端和服务端的配合，两者缺一不可</p>
+<h2 id="Jsonp客户端实现"><a href="#Jsonp客户端实现" class="headerlink" title="Jsonp客户端实现"></a>Jsonp客户端实现</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    function callback(result)&#123;</span><br><span class="line">        alert(result.name);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://study.io/index.php?jsoncallback=callback"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>http://study.io/index.php?jsoncallback=callback</code> 我们通过传入参数形式，将我们客户端的回调函数名请求发送给服务端，这样服务端就可以根据客户端的函数名封装数据成js格式的文件供客户端调用</p>
+<h2 id="Jsonp服务端实现"><a href="#Jsonp服务端实现" class="headerlink" title="Jsonp服务端实现"></a>Jsonp服务端实现</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">header(<span class="string">"Content-type: application/json"</span>);</span><br><span class="line"></span><br><span class="line">$jsoncallback = $_GET[<span class="string">'jsoncallback'</span>];</span><br><span class="line"></span><br><span class="line">$json_data = <span class="string">'&#123;"id":1,"name":"hello"&#125;'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> $jsoncallback . <span class="string">"("</span> . $json_data . <span class="string">")"</span>;</span><br></pre></td></tr></table></figure>
+
+<p>服务端的 <code>echo $jsoncallback . &quot;(&quot; . $json_data . &quot;)&quot;;</code> 执行结果就是<br><code>callback({&quot;id&quot;:1,&quot;name&quot;:&quot;hello&quot;})</code> 成功的将数据装入js格式文件里供客户端调用</p>
+<p><code>callback({&quot;id&quot;:1,&quot;name&quot;:&quot;hello&quot;})</code> 其实就是一个函数，里面有参数 <code>{&quot;id&quot;:1,&quot;name&quot;:&quot;hello&quot;}</code></p>
+<h2 id="Jsonp客户端调用"><a href="#Jsonp客户端调用" class="headerlink" title="Jsonp客户端调用"></a>Jsonp客户端调用</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callback</span>(<span class="params">result</span>)</span>&#123;</span><br><span class="line">    alert(result.name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>客户端调用回调函数时，<code>result</code> 就是js格式化后文件里面的 <code>{&quot;id&quot;:1,&quot;name&quot;:&quot;hello&quot;}</code></p>
+<p>此时浏览器将弹出对话框输出了 <code>hello</code>，成功跨域请求获取数据</p>
+<p>如果想让Ajax支持跨域请求，我们可以在Ajax中加入参数 <code>dataType: &quot;jsonp&quot;</code> 即可</p>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>Wiley</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="older-posts float-left" href="/posts/e4009c0f.html">
+        &laquo; WEB安全漏洞系列之XXE漏洞学习
+    </a>
+    
+    
+    <div class="clear-both"></div>
+</nav>
+
+<!-- Table of Contents -->
+<div class="full-toc">
+    <button class="post-toc-menu">TOC</button>
+    <div class="post-toc">
+      <span class="post-toc-title">文章目录</span>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是Jsonp"><span class="toc-text">什么是Jsonp?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jsonp客户端实现"><span class="toc-text">Jsonp客户端实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jsonp服务端实现"><span class="toc-text">Jsonp服务端实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jsonp客户端调用"><span class="toc-text">Jsonp客户端调用</span></a></li></ol>
+        </div>
+    </div>
+</div>
+
+<script>
+  imglength = $('.post-content p').find('img').length;
+  for(i=0;i<imglength;i++){
+       obj = $(".post-content p img")[i];
+       aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+       imghref = $(aobj).attr('src');
+       $('#fancybox' + i).attr('href',imghref);
+    }
+  $('.post-toc-menu').click(function(){
+    if($('.post-toc').hasClass('open')){
+      $('.post-toc').removeClass('open');
+    }else{
+      $('.post-toc').addClass('open');
+    }
+  });
+</script>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
+        </footer>
+    </body>
+</html>
+
+

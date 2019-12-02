@@ -11,7 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="/img/avatar.jpg">
         <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
-        <title>Archives: 2019 | Wiley的部落格小黑屋</title>
+        <title>渗透测试工程师面试题学习 | Wiley的部落格小黑屋</title>
         <meta name="description" content="{{meta_description}}">
         <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
@@ -25,7 +25,7 @@
         <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
     </head>
     
-		<body class="home-template">
+		<body class="post-template">
 	
 
         <header id="header">
@@ -46,77 +46,40 @@
         </header>
 
         <main id="content">
-        <h1 id="art">Articles</h1>
+        
 
-<section>
-  <h3 class="post-title">
-  <a href="/posts/fdaa077e.html">ThinkPHP5.1-5.2全版本命令执行漏洞</a>
-  
-  <span class="separator"> &middot; </span>
-  
-  January 15, 2019
-  
-  
-    <span class="taglist">  &middot; 
-    
-    
-      <a href="/categories/技术文章/">技术文章</a> 
-    
-      <a href="/categories/技术文章/安全漏洞/">安全漏洞</a> 
-    
-    
-  
-  </span></h3>
-</section>
-
-<section>
-  <h3 class="post-title">
-  <a href="/posts/1ce7de45.html">CVE-2018-15982 Adobe Flash Player漏洞复现</a>
-  
-  <span class="separator"> &middot; </span>
-  
-  January 7, 2019
-  
-  
-    <span class="taglist">  &middot; 
-    
-    
-      <a href="/categories/技术文章/">技术文章</a> 
-    
-      <a href="/categories/技术文章/安全漏洞/">安全漏洞</a> 
-    
-    
-  
-  </span></h3>
-</section>
-
-<section>
-  <h3 class="post-title">
-  <a href="/posts/b4249420.html">学习Linux碰到的一些坑</a>
-  
-  <span class="separator"> &middot; </span>
-  
-  January 3, 2019
-  
-  
-    <span class="taglist">  &middot; 
-    
-    
-      <a href="/categories/技术文章/">技术文章</a> 
-    
-      <a href="/categories/技术文章/Linux/">Linux</a> 
-    
-    
-  
-  </span></h3>
-</section>
-
-<nav class="pagination" role="pagination">
-  <a class="newer-posts" href="/archives/2019/page/3/">&laquo; Prev Posts</a>
-  <span class="page-number"> Page 4 of 4 </span>
-  
-</nav>
-
+<article class="post page">
+  <h1 class="post-title">渗透测试工程师面试题学习</h1>
+  <section class="post-content article-entry">
+    <p>由于快要去面试了 所以现在得学习一下面试题 预祝我面试成功吧</p>
+<p>我面试的公司主要是做渗透测试工作和APP安全这一块，去的是我学长公司，学长也是把很多面试题都发我了，让我学习下，这里主要是我做个总结。</p>
+<h2 id="Web安全"><a href="#Web安全" class="headerlink" title="Web安全"></a>Web安全</h2><h3 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h3><p>漏洞原理：没有对用户输入的数据进行过滤，导致用户可操控SQL语句，用户输入的数据被当作或拼接SQL语句执行</p>
+<p>小Tips：</p>
+<ul>
+<li>mysql_real_escape_string() 防御函数存在绕过，利用宽字节注入可绕过，若没有单引号保护则可直接执行 <code>and 1=1</code> 查询数据</li>
+</ul>
+<p>漏洞防御：</p>
+<ul>
+<li><p>使用PHP的PDO预处理执行SQL语句或MySQLi的参数化查询</p>
+</li>
+<li><p>前端后端严格对用户输入的数据进行过滤，如参数为整型时必须为<code>int</code>类型，为字符串类型时必须是<code>string</code>类型</p>
+</li>
+</ul>
+<h3 id="XSS跨站脚本攻击"><a href="#XSS跨站脚本攻击" class="headerlink" title="XSS跨站脚本攻击"></a>XSS跨站脚本攻击</h3><p>漏洞原理：没有对用户输入的数据进行过滤，导致可执行用户输入的恶意JS脚本，获取用户Cookies或对用户浏览器进行控制</p>
+<p>漏洞防御：</p>
+<ul>
+<li><p>输入输出都进行过滤</p>
+</li>
+<li><p>使用PHP函数 <code>htmlentities()</code> <code>htmlspecialchars()</code> </p>
+</li>
+<li><p>前端使用JavaScript中 <code>escape</code> 函数进行编码</p>
+</li>
+<li><p>设置Cookie时，使用<code>HttpOnly</code>参数，禁止脚本获取Cookie</p>
+</li>
+</ul>
+<h3 id="Jsonp劫持漏洞"><a href="#Jsonp劫持漏洞" class="headerlink" title="Jsonp劫持漏洞"></a>Jsonp劫持漏洞</h3>
+  </section>
+</article>
         </main>
         <footer id="footer">
             <section id="footer-message">&copy; 2019 <a href="https://wileysec.github.io">Wiley</a> Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.</section>
