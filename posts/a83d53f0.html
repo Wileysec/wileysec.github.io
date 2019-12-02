@@ -56,7 +56,7 @@
   <section class="post-content article-entry">
     <p>在学习面试题Jsonp劫持漏洞时，不太懂Jsonp，所以学习了一下Jsonp，记录一下我自己理解Jsonp的跨域请求</p>
 <h2 id="什么是Jsonp"><a href="#什么是Jsonp" class="headerlink" title="什么是Jsonp?"></a>什么是Jsonp?</h2><p>在我们使用Ajax请求普通文件时不同域数据是没有权限访问的</p>
-<p>其实有几个标签是可以跨域访问的，例如：<code>&lt;img&gt;</code> <code>&lt;script&gt;</code> <code>&lt;frame&gt;</code>，比如我们引用js文件时就跨域跨域</p>
+<p>其实有几个标签是可以跨域访问的，例如：<code>&lt;img&gt;</code> <code>&lt;script&gt;</code> <code>&lt;frame&gt;</code>，比如我们引用js文件时就可以跨域请求访问</p>
 <p>其实Jsonp很好理解，如果客户端需要跨域访问服务端数据，我们可以在服务端将数据装入js格式文件里，供客户端进行调用</p>
 <p>所以Jsonp需要客户端和服务端的配合，两者缺一不可</p>
 <h2 id="Jsonp客户端实现"><a href="#Jsonp客户端实现" class="headerlink" title="Jsonp客户端实现"></a>Jsonp客户端实现</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    function callback(result)&#123;</span><br><span class="line">        alert(result.name);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://study.io/index.php?jsoncallback=callback"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
