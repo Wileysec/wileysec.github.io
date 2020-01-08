@@ -57,7 +57,7 @@
     <p>文件包含漏洞、文件上传漏洞的一些漏洞利用总结</p>
 <a id="more"></a>
 
-<h2 id="文件包含"><a href="#文件包含" class="headerlink" title="文件包含"></a>文件包含</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">include</span> <span class="string">"inc/"</span>.$_GET[<span class="string">'file'</span>].<span class="string">".php"</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="文件包含"><a href="#文件包含" class="headerlink" title="文件包含"></a>文件包含</h2><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">include</span> <span class="string">"inc/"</span>.$_GET[<span class="string">'file'</span>].<span class="string">".php"</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="本地文件包含："><a href="#本地文件包含：" class="headerlink" title="本地文件包含："></a>本地文件包含：</h4><p><code>?file=test.txt</code></p>
 <p><code>?file=./../../test.txt</code></p>
