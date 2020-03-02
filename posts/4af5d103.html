@@ -60,18 +60,18 @@
 <h2 id="下载并配置Xdebug"><a href="#下载并配置Xdebug" class="headerlink" title="下载并配置Xdebug"></a>下载并配置Xdebug</h2><p>PHP扩展 Xdebug <a href="https://xdebug.org" target="_blank" rel="noopener">https://xdebug.org</a></p>
 <p>下载哪个版本？请复制你本机的phpinfo信息到 <a href="https://xdebug.org/wizard.php" target="_blank" rel="noopener">https://xdebug.org/wizard.php</a> 会生成需要下载的版本</p>
 <p>下载好后放入当前php版本目录的ext文件夹中，然后设置当前php版本的php.ini配置信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">zend_extension = &quot;c:/wamp64/bin/php/php7.2.4/zend_ext/php_xdebug-2.6.0-7.2-vc15-x86_64.dll&quot;</span><br><span class="line">xdebug.remote_enable =1</span><br><span class="line">xdebug.remote_handler = dbgp</span><br><span class="line">xdebug.remote_host = localhost</span><br><span class="line">xdebug.remote_mode = req</span><br><span class="line">xdebug.remote_port = 9000</span><br><span class="line">xdebug.idekey=PHPSTORM</span><br></pre></td></tr></table></figure>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="attr">zend_extension</span> = <span class="string">"c:/wamp64/bin/php/php7.2.4/zend_ext/php_xdebug-2.6.0-7.2-vc15-x86_64.dll"</span></span><br><span class="line"><span class="attr">xdebug.remote_enable</span> =<span class="number">1</span></span><br><span class="line"><span class="attr">xdebug.remote_handler</span> = dbgp</span><br><span class="line"><span class="attr">xdebug.remote_host</span> = localhost</span><br><span class="line"><span class="attr">xdebug.remote_mode</span> = req</span><br><span class="line"><span class="attr">xdebug.remote_port</span> = <span class="number">9000</span></span><br><span class="line"><span class="attr">xdebug.idekey</span>=PHPSTORM</span><br></pre></td></tr></table></figure>
 
 <p>配置完后，重启Apache服务。</p>
 <h2 id="phpstorm配置"><a href="#phpstorm配置" class="headerlink" title="phpstorm配置"></a>phpstorm配置</h2><p>第一步，依次点击菜单栏 <code>File &gt; Settings &gt; PHP &gt; Servers</code>，填写服务器端的相关信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">name: localhost，host: localhost，port: 80，debugger: XDebug</span><br></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line"><span class="string">name:</span> localhost，<span class="string">host:</span> localhost，<span class="string">port:</span> <span class="number">80</span>，<span class="string">debugger:</span> XDebug</span><br></pre></td></tr></table></figure>
 
 <p><img src="/uploads/2019/05/1856835512.png" alt></p>
 <p>如果你的host域名是自定义的，也可以设置你的自定义域名。</p>
 <p>第二步，点击 debug 选项，找到Xdebug，设置端口为9000</p>
 <p><img src="/uploads/2019/05/2809799657.png" alt></p>
 <p>第三步，点击 DBGp Proxy 选项，填写如下信息：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">IDE key: PHPSTORM</span><br><span class="line">host: localhost</span><br><span class="line">port: 80</span><br></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">IDE <span class="string">key:</span> PHPSTORM</span><br><span class="line"><span class="string">host:</span> localhost</span><br><span class="line"><span class="string">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
 
 <p><img src="/uploads/2019/05/3536457791.png" alt></p>
 <p>这里的IDE key和你php.ini的配置里面的 xdebug.idekey 值一致</p>

