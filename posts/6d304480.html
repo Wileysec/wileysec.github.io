@@ -11,7 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="/img/avatar.jpg">
         <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
-        <title>Ajax跨域请求小知识点 | Wiley的部落格小黑屋</title>
+        <title>Ajax跨域请求小知识点 | Wiley&#39;s Blog</title>
         <meta name="description" content="{{meta_description}}">
         <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
@@ -29,7 +29,7 @@
 	
 
         <header id="header">
-            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley's Blog"></a>
             <h1 class="center"><a href="/">Wiley</a></h1>
             <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
             <span id="follow-icons">
@@ -61,20 +61,20 @@
 <figure class="highlight php"><table><tr><td class="code"><pre><span class="line">$http_origin = <span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_ORIGIN'</span>]) ? $_SERVER[<span class="string">'HTTP_ORIGIN'</span>] : <span class="string">''</span>;</span><br><span class="line"><span class="keyword">if</span> (preg_match(<span class="string">'/domain1.com|domain2.com$/i'</span>, $http_origin)) &#123;</span><br><span class="line">    header(<span class="string">'Access-Control-Allow-Origin: '</span> . $http_origin);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>Nginx</p>
-<figure class="highlight nginx"><table><tr><td class="code"><pre><span class="line"><span class="attribute">location</span> / &#123;</span><br><span class="line"><span class="attribute">if</span> (<span class="variable">$http_origin</span> <span class="regexp">~ 'domain1.com|domain2.com$')</span> &#123;</span><br><span class="line">    <span class="attribute">add_header</span> Access-Control-Allow-Origin <span class="variable">$http_origin</span>;</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">if ($http_origin ~ &apos;domain1.com|domain2.com$&apos;) &#123;</span><br><span class="line">    add_header Access-Control-Allow-Origin $http_origin;</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
 
 <p>上面的例子中，只要匹配到以 <code>domain1.com</code> 或 <code>domain2.com</code> 结尾的域名，就返回 <code>Access-Control-Allow-Origin</code> 头信息，表示通过。</p>
 <h2 id="普通方式"><a href="#普通方式" class="headerlink" title="普通方式"></a>普通方式</h2><h4 id="放行单个域名"><a href="#放行单个域名" class="headerlink" title="放行单个域名"></a>放行单个域名</h4><p>php</p>
 <figure class="highlight php"><table><tr><td class="code"><pre><span class="line">header(<span class="string">'Access-Control-Allow-Origin: http://domain1.com'</span>);</span><br></pre></td></tr></table></figure>
 
 <p>Nginx</p>
-<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">add_header Access-Control-Allow-Origin <span class="string">http:</span><span class="comment">//domain1.com;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">add_header Access-Control-Allow-Origin http://domain1.com;</span><br></pre></td></tr></table></figure>
 
 <h4 id="放行所有域名"><a href="#放行所有域名" class="headerlink" title="放行所有域名"></a>放行所有域名</h4><p>php</p>
 <figure class="highlight php"><table><tr><td class="code"><pre><span class="line">header(<span class="string">'Access-Control-Allow-Origin: *'</span>);</span><br></pre></td></tr></table></figure>
 
 <p>Nginx</p>
-<figure class="highlight mipsasm"><table><tr><td class="code"><pre><span class="line"><span class="keyword">add_header </span>Access-Control-Allow-<span class="keyword">Origin </span>*<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">add_header Access-Control-Allow-Origin *;</span><br></pre></td></tr></table></figure>
 
 <h2 id="跨域学习文章"><a href="#跨域学习文章" class="headerlink" title="跨域学习文章"></a>跨域学习文章</h2><p>跨域资源共享 CORS 详解 <a href="http://www.ruanyifeng.com/blog/2016/04/cors.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/04/cors.html</a></p>
 <p>HTTP 访问控制(CORS) <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS</a></p>

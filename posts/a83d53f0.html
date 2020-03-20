@@ -11,7 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="/img/avatar.jpg">
         <link rel="alternate" type="application/rss+xml" title="Wiley" href="/atom.xml">
-        <title>理解Jsonp跨域请求 | Wiley的部落格小黑屋</title>
+        <title>理解Jsonp跨域请求 | Wiley&#39;s Blog</title>
         <meta name="description" content="{{meta_description}}">
         <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
@@ -29,7 +29,7 @@
 	
 
         <header id="header">
-            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley的部落格小黑屋"></a>
+            <a id="logo" href="/"><img src="/img/avatar.jpg" alt="Wiley's Blog"></a>
             <h1 class="center"><a href="/">Wiley</a></h1>
             <p class="center">信息安全爱好者，未来的CTFer，喜欢写小工具。</p>
             <span id="follow-icons">
@@ -59,7 +59,7 @@
 <p>其实有几个标签是可以跨域访问的，例如：<code>&lt;img&gt;</code> <code>&lt;script&gt;</code> <code>&lt;frame&gt;</code>，比如我们引用js文件时就可以跨域请求访问</p>
 <p>其实Jsonp很好理解，如果客户端需要跨域访问服务端数据，我们可以在服务端将数据装入js格式文件里，供客户端进行调用</p>
 <p>所以Jsonp需要客户端和服务端的配合，两者缺一不可</p>
-<h2 id="Jsonp客户端实现"><a href="#Jsonp客户端实现" class="headerlink" title="Jsonp客户端实现"></a>Jsonp客户端实现</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="actionscript">    <span class="function"><span class="keyword">function</span> <span class="title">callback</span><span class="params">(result)</span></span>&#123;</span></span><br><span class="line">        alert(result.name);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://study.io/index.php?jsoncallback=callback"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Jsonp客户端实现"><a href="#Jsonp客户端实现" class="headerlink" title="Jsonp客户端实现"></a>Jsonp客户端实现</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    function callback(result)&#123;</span><br><span class="line">        alert(result.name);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://study.io/index.php?jsoncallback=callback"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <p><code>http://study.io/index.php?jsoncallback=callback</code> 我们通过传入参数形式，将我们客户端的回调函数名请求发送给服务端，这样服务端就可以根据客户端的函数名封装数据成js格式的文件供客户端调用</p>
 <h2 id="Jsonp服务端实现"><a href="#Jsonp服务端实现" class="headerlink" title="Jsonp服务端实现"></a>Jsonp服务端实现</h2><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">header(<span class="string">"Content-type: application/json"</span>);</span><br><span class="line"></span><br><span class="line">$jsoncallback = $_GET[<span class="string">'jsoncallback'</span>];</span><br><span class="line"></span><br><span class="line">$json_data = <span class="string">'&#123;"id":1,"name":"hello"&#125;'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> $jsoncallback . <span class="string">"("</span> . $json_data . <span class="string">")"</span>;</span><br></pre></td></tr></table></figure>
