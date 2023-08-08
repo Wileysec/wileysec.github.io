@@ -305,7 +305,7 @@ dl dd {
 code {
   padding: 0.2em 0.4em;
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   background-color: var(--bg-code);
   border-radius: 3px;
   color: #6200ee;
@@ -318,7 +318,7 @@ code,
 kbd,
 pre {
   font-family: monospace, monospace;
-  font-size: 16px;
+  font-size: 14px;
 }
 hr:after,
 hr:before {
@@ -349,7 +349,7 @@ ul ul ol {
 code,
 pre {
   font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
-  font-size: 16px;
+  font-size: 14px;
 }
 input::-webkit-inner-spin-button,
 input::-webkit-outer-spin-button {
@@ -419,7 +419,7 @@ figure table td.gutter {
 pre {
   padding: 0;
   overflow: auto;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.45;
   border-radius: 3px;
 }
@@ -705,7 +705,7 @@ overflows table td {
   color: var(--title-color);
   margin-top: 0;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 450;
   line-height: 1.125;
 }
@@ -777,7 +777,7 @@ overflows table td {
 }
 .post__content p {
   line-height: 1.8;
-  font-size: 1.1rem;
+  font-size: 16px;
 }
 .post__content img.inline {
   display: inline;
