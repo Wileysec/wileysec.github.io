@@ -11,6 +11,7 @@
   --border-color: rgba(0,0,0,0.1);
   --space: 3.5rem;
   --content-width: 1200px;
+  --code-cloro: #6200ee;
 }
 ::-webkit-scrollbar {
   width: 0.55rem !important;
@@ -308,7 +309,7 @@ code {
   font-size: 14px;
   background-color: var(--bg-code);
   border-radius: 3px;
-  color: #6200ee;
+  color: var(--code-cloro);
 }
 a:active,
 a:hover {

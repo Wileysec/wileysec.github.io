@@ -19,6 +19,10 @@
     border-left: 0.25em solid rgba(255,255,255,0.5);
     color: rgba(255,255,255,0.5);
   }
+  :root:not([data-user-color-scheme]) code {
+    color: #eee;
+    background-cloro: #6200ee;
+  }
   :root:not([data-user-color-scheme]) .post__license {
     background-color: rgba(255,255,255,0.2);
   }
@@ -56,6 +60,10 @@
 [data-user-color-scheme="dark"] blockquote {
   border-left: 0.25em solid rgba(255,255,255,0.5);
   color: rgba(255,255,255,0.5);
+}
+[data-user-color-scheme="dark"] code {
+  color: #eee;
+  background-cloro: #6200ee;
 }
 [data-user-color-scheme="dark"] .post__license {
   background-color: rgba(255,255,255,0.2);
