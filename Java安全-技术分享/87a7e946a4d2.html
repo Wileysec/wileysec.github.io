@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Fastjson反序列化分析 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, Fastjson, alibaba">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="简介FastJson是Java的一个库，它可以将Java对象转换成JSON字符串，也可以将JSON字符串转换成Java对象 回显Fastjson使用版本在实战中如果不知道使用的是什么版本的Fastjson，可以将请求包中的 Content-Type 改成字段内容改成 application&#x2F;json，请求体中让后端报错，比如 [&amp;#123;&quot;a&quot;:&quot;a\x] Fast">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fastjson反序列化分析">
+<meta property="og:url" content="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/87a7e946a4d2.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="简介FastJson是Java的一个库，它可以将Java对象转换成JSON字符串，也可以将JSON字符串转换成Java对象 回显Fastjson使用版本在实战中如果不知道使用的是什么版本的Fastjson，可以将请求包中的 Content-Type 改成字段内容改成 application&#x2F;json，请求体中让后端报错，比如 [&amp;#123;&quot;a&quot;:&quot;a\x] Fast">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718140453379.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718140605002.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718140829336.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718141324445.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718141501281.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718141547072.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718141805321.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718142250471.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718142607591.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718143433340.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718142716825.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718143631016.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718144105154.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718144202484.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718144636850.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145212500.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145246136.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145348722.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145412974.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145553700.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718145658496.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718150131961.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718150141928.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718150750125.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718150839656.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718150934685.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151014211.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151130807.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151142468.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151227499.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151253009.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151438130.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151914151.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718151943466.png">
+<meta property="og:image" content="https://wileysec.github.io/images/image-20230718152143873.png">
+<meta property="article:published_time" content="2022-11-21T08:37:22.894Z">
+<meta property="article:modified_time" content="2023-08-25T18:05:08.511Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="Fastjson">
+<meta property="article:tag" content="alibaba">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/image-20230718140453379.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Fastjson反序列化分析
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2022/11/" class="post-meta__date button">文章创建于 2022-11-21</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" class="button">Java安全,技术分享</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%98%BEFastjson%E4%BD%BF%E7%94%A8%E7%89%88%E6%9C%AC"><span class="toc-text">回显Fastjson使用版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FastJSON%E4%BD%BF%E7%94%A8"><span class="toc-text">FastJSON使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-text">Fastjson反序列化流程分析</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%98%BEFastjson%E4%BD%BF%E7%94%A8%E7%89%88%E6%9C%AC"><span class="toc-text">回显Fastjson使用版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FastJSON%E4%BD%BF%E7%94%A8"><span class="toc-text">FastJSON使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-text">Fastjson反序列化流程分析</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>FastJson是Java的一个库，它可以将Java对象转换成JSON字符串，也可以将JSON字符串转换成Java对象</p>
+<h2 id="回显Fastjson使用版本"><a href="#回显Fastjson使用版本" class="headerlink" title="回显Fastjson使用版本"></a>回显Fastjson使用版本</h2><p>在实战中如果不知道使用的是什么版本的Fastjson，可以将请求包中的 <code>Content-Type</code> 改成字段内容改成 <code>application/json</code>，请求体中让后端报错，比如 <code>[&#123;&quot;a&quot;:&quot;a\x]</code></p>
+<h2 id="FastJSON使用"><a href="#FastJSON使用" class="headerlink" title="FastJSON使用"></a>FastJSON使用</h2><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">package</span> <span class="token namespace">com<span class="token punctuation">.</span>fastjson_study</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span>serializer<span class="token punctuation">.</span></span><span class="token class-name">SerializerFeature</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> f1 <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Person</span> person <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Person</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> s <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">toJSONString</span><span class="token punctuation">(</span>person<span class="token punctuation">,</span> <span class="token class-name">SerializerFeature<span class="token punctuation">.</span>WriteClassName</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将JavaBean对象转换成JSON字符串，并写入类名，调用构造方法和所有getter方法</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 构造方法被调用...</span>
+        <span class="token comment">// getAge方法被调用...</span>
+        <span class="token comment">// getName方法被调用...</span>
+        <span class="token comment">// &#123;"@type":"com.fastjson_study.Person","age":19,"name":"xiaowang"&#125;</span>
+
+        <span class="token class-name">Object</span> <span class="token class-name">ObjectParse</span> <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将JSON字符串转换成Object对象，会调用构造方法和所有的setter方法</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">ObjectParse</span><span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// com.fastjson_study.Person</span>
+        <span class="token comment">// 构造方法被调用...</span>
+        <span class="token comment">// setAge方法被调用...</span>
+        <span class="token comment">// setName方法被调用...</span>
+        <span class="token comment">// com.fastjson_study.Person</span>
+
+        <span class="token class-name">Person</span> <span class="token class-name">PersonParse</span> <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span><span class="token class-name">Person</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将JSON字符串转换成指定的对象类型，会调用</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">PersonParse</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 构造方法被调用...</span>
+        <span class="token comment">// setAge方法被调用...</span>
+        <span class="token comment">// setName方法被调用...</span>
+        <span class="token comment">// Person&#123;name='xiaowang', age=19&#125;</span>
+
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">package</span> <span class="token namespace">com<span class="token punctuation">.</span>fastjson_study</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Person</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token class-name">String</span> name <span class="token operator">=</span> <span class="token string">"xiaowang"</span><span class="token punctuation">;</span>
+    <span class="token keyword">public</span> <span class="token class-name">Integer</span> age <span class="token operator">=</span> <span class="token number">19</span><span class="token punctuation">;</span>
+    <span class="token keyword">public</span> <span class="token class-name">Person</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"构造方法被调用..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">setName</span><span class="token punctuation">(</span><span class="token class-name">String</span> name<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"setName方法被调用..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">setAge</span><span class="token punctuation">(</span><span class="token class-name">Integer</span> age<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"setAge方法被调用..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>age <span class="token operator">=</span> age<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">String</span> <span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"getName方法被调用..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> name<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">Integer</span> <span class="token function">getAge</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"getAge方法被调用..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> age<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">String</span> <span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token string">"Person&#123;"</span> <span class="token operator">+</span>
+                <span class="token string">"name='"</span> <span class="token operator">+</span> name <span class="token operator">+</span> <span class="token char">'\''</span> <span class="token operator">+</span>
+                <span class="token string">", age="</span> <span class="token operator">+</span> age <span class="token operator">+</span>
+                <span class="token char">'&#125;'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>FastJSON提供了特殊字段<code>@type</code>，该字段可以指定反序列化任意类，会自动调用其类属性的特定的set、get方法。</p>
+<p>在反序列化时，public修饰符的属性会被反序列化赋值，private修饰符的属性不会直接的进行反序列化赋值而是通过setXxx的方法进行赋值。</p>
+<h2 id="Fastjson反序列化流程分析"><a href="#Fastjson反序列化流程分析" class="headerlink" title="Fastjson反序列化流程分析"></a>Fastjson反序列化流程分析</h2><p>根据这一特性，我们可以自己写一个类来测试一下，这里我在Person2类中定义了私有的属性_name，所以 <code>set</code> 和 <code>get</code> 方法都是小写加_</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>alibaba<span class="token punctuation">.</span>fastjson<span class="token punctuation">.</span></span><span class="token class-name">JSON</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Person2</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">private</span> <span class="token class-name">String</span> _name<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">Person2</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"构造方法执行"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">get_name</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"getName执行"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">set_name</span><span class="token punctuation">(</span><span class="token class-name">String</span> cmd<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Test</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> pstr <span class="token operator">=</span> <span class="token string">"&#123;\"@type\":\"FastjsonResearch.Person2\",\"_name\":\"/System/Applications/Calculator.app/Contents/MacOS/Calculator\"&#125;"</span><span class="token punctuation">;</span>
+        <span class="token class-name">Person2</span> p <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parseObject</span><span class="token punctuation">(</span>pstr<span class="token punctuation">,</span> <span class="token class-name">Person2</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/image-20230718140453379.png" alt="image-20230718140453379"></p>
+<p>程序从这开始将json字符串给Fastjson去解析</p>
+<p><img src="/images/image-20230718140605002.png" alt="image-20230718140605002"></p>
+<p>我们来到这里，<code>parseObject</code> 有好几个重写方法，目前我们先熟悉一下Fastjson反序列化整个流程，后面遇到再说。</p>
+<p>这个 <code>pareObject</code> 调用的是另一个重写方法的 <code>pareObject</code> </p>
+<p><img src="/images/image-20230718140829336.png" alt="image-20230718140829336"></p>
+<p>这里还是调用了另一个重写的 <code>pareObject</code> 方法，继续跟进</p>
+<p><img src="/images/image-20230718141324445.png" alt="image-20230718141324445"></p>
+<p><code>DefaultJSONParser</code> 将我们输入的json字符串和全局解析配置创建了一个默认JSON解析器。</p>
+<p><img src="/images/image-20230718141501281.png" alt="image-20230718141501281"></p>
+<p>再往下走，这个默认JSON解析器调用了 <code>pareObject</code> 方法</p>
+<p><img src="/images/image-20230718141547072.png" alt="image-20230718141547072"></p>
+<p><img src="/images/image-20230718141805321.png" alt="image-20230718141805321"></p>
+<p>这里在反序列化器中尝试获取我们写的Person2类的反序列化器，很显然是没有的。</p>
+<p>随后调用了 <code>getDeserializer</code> 方法，再跟进看一下</p>
+<p><img src="/images/image-20230718142250471.png" alt="image-20230718142250471"></p>
+<p>在这里就是获取我们的Person2这个类的全类名，有个替换操作，然后再判断我们的这个类名在不在黑名单（拒绝生成反序列化器列表）内，这个列表里只有一个 <code>java.lang.Thread</code>，当然也是不在的。</p>
+<p><img src="/images/image-20230718142607591.png" alt="image-20230718142607591"></p>
+<p>再往下走，走到了调用 <code>createJavaBeanDeserializer</code> 方法这里，看似是要创建一个JavaBean的反序列化器，继续跟进看一下。</p>
+<p><img src="/images/image-20230718143433340.png" alt="image-20230718143433340"></p>
+<p><img src="/images/image-20230718142716825.png" alt="image-20230718142716825"></p>
+<p>这里获取Person2类上的JSONType注解，我们没有使用该注解，所以返回null</p>
+<p><img src="/images/image-20230718143631016.png" alt="image-20230718143631016"></p>
+<p>再继续往下跟，发现这里实例化了 <code>JavaBeanDeserializer</code> 类</p>
+<p><img src="/images/image-20230718144105154.png" alt="image-20230718144105154"></p>
+<p>进入 <code>JavaBeanDeserializer</code> 类，发现调用自己的另一个重写的构造方法。</p>
+<p><img src="/images/image-20230718144202484.png" alt="image-20230718144202484"></p>
+<p>这里的操作其实就是获取所有的 <code>set</code> 方法，由于我们这里只有一个 <code>set</code> 方法，就继续往下看了。</p>
+<p><img src="/images/image-20230718144636850.png" alt="image-20230718144636850"></p>
+<p>此时， <code>createJavaBeanDeserializer</code> 方法已经执行完毕了，使用 <code>putDeserializer</code> 把Person2类作为键，获取的JavaBean反序列化器作为值存到 <code>ParserConfig</code> 中的 <code>derializers</code> 变量中，该变量是一个HashMap，随后返回了这个JavaBean反序列化器。</p>
+<p><img src="/images/image-20230718145212500.png" alt="image-20230718145212500"></p>
+<p>这里也返回了反序列化器</p>
+<p><img src="/images/image-20230718145246136.png" alt="image-20230718145246136"></p>
+<p>继续往下走，可以看到反序列化器调用了 <code>deserialze</code> 反序列化方法。</p>
+<p><img src="/images/image-20230718145348722.png" alt="image-20230718145348722"></p>
+<p><img src="/images/image-20230718145412974.png" alt="image-20230718145412974"></p>
+<p><img src="/images/image-20230718145553700.png" alt="image-20230718145553700"></p>
+<p>走到这里条件符合，是默认的TYPE KEY（@type）</p>
+<p><img src="/images/image-20230718145658496.png" alt="image-20230718145658496"></p>
+<p>这里判断token是否等于JSONToken.RBRACE，JSONToken.RBRACE也就是 <code>&#125;</code> 符号，符合条件调用了 <code>lexer</code> 的 <code>nextToken</code> 方法，继续下一次循环。</p>
+<p><img src="/images/image-20230718150131961.png" alt="image-20230718150131961"></p>
+<p><img src="/images/image-20230718150141928.png" alt="image-20230718150141928"></p>
+<p>此时，key是 <code>_name</code> 也就是json字符串中的键名，已经不是默认的TYPE KEY（@type）了。</p>
+<p><img src="/images/image-20230718150750125.png" alt="image-20230718150750125"></p>
+<p>再往下走，到这里调用了 <code>createInstance</code> 方法，跟进看一下</p>
+<p><img src="/images/image-20230718150839656.png" alt="image-20230718150839656"></p>
+<p>它获取了JavaBean反序列化器的默认构造方法并且实例化了，返回了一个对象。</p>
+<p><img src="/images/image-20230718150934685.png" alt="image-20230718150934685"></p>
+<p>这里已经得到了一个Person2类的对象了，<code>object</code> 自然不是null</p>
+<p><img src="/images/image-20230718151014211.png" alt="image-20230718151014211"></p>
+<p>再往下，调用了 <code>parseField</code> 方法，看这个名字应该是解析字段，跟进看一下。</p>
+<p><img src="/images/image-20230718151130807.png" alt="image-20230718151130807"></p>
+<p><img src="/images/image-20230718151142468.png" alt="image-20230718151142468"></p>
+<p><img src="/images/image-20230718151227499.png" alt="image-20230718151227499"></p>
+<p><img src="/images/image-20230718151253009.png" alt="image-20230718151253009"></p>
+<p>这一连串的操作是处理字段中的 <code>_</code> 和 <code>-</code> 符号，再通过 <code>getFieldDeserializer</code> 方法就获取对应的字段反序列化器了。</p>
+<p>后面调用这个字段反序列化器的 <code>parseField</code> 方法，继续跟进</p>
+<p><img src="/images/image-20230718151438130.png" alt="image-20230718151438130"></p>
+<p>可以看到这里调用了 <code>setValue</code> 方法，参数 <code>object</code> 正是我们的Person2实例化出来的对象，<code>value</code> 则是71行反序列化获取的 <code>_name</code> 键的值，看看 <code>setValue</code> 方法里面是在干嘛。</p>
+<p><img src="/images/image-20230718151914151.png" alt="image-20230718151914151"></p>
+<p>这里判断了 <code>fieldInfo</code> 的method方法是不是只有一个get方法，很显然不是。</p>
+<p><img src="/images/image-20230718151943466.png" alt="image-20230718151943466"></p>
+<p>再继续往下，好像有点意思了，这里是真正调用 <code>set_name</code> 方法的地方，调用method的invoke方法，method是 <code>set_name</code> 方法，那么正好，我们只需要在Person2类中定义一个对应字段的setter方法，其方法有一个参数即可。<code>value</code> 就是 <code>set_name</code> 方法需要传入的参数，也就是执行的命令。</p>
+<p><img src="/images/image-20230718152143873.png" alt="image-20230718152143873"></p>
+<p>这里，就弹出了计算器了，说明触发点是在这里。</p>
+<p>好了，现在我们已经理清楚了Fastjson整个反序列化流程，接下来我们需要配合一些JDK内的一些链来利用。</p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/87a7e946a4d2.html">https://wileysec.github.io/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/87a7e946a4d2.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-08-26</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/Fastjson/" class="post-tags__link button"># Fastjson</a><a href="/tags/alibaba/" class="post-tags__link button"># alibaba</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/11c62fd672b4.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            Fastjson&lt;=1.2.24反序列化分析
+                        </div>
+                    </div>
+                </a>
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/12f74847cf19.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            CommonsCollections3利用链
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>
