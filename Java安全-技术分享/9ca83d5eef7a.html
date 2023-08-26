@@ -69,7 +69,7 @@
 <meta property="og:image" content="https://wileysec.github.io/images/image-20230823090815563.png">
 <meta property="og:image" content="https://wileysec.github.io/images/image-20230823131125851.png">
 <meta property="article:published_time" content="2023-08-10T13:41:28.200Z">
-<meta property="article:modified_time" content="2023-08-25T18:03:57.376Z">
+<meta property="article:modified_time" content="2023-08-26T02:59:15.587Z">
 <meta property="article:author" content="wileysec">
 <meta property="article:tag" content="Java安全">
 <meta property="article:tag" content="Apache">
@@ -241,9 +241,9 @@
 <p><img src="/images/image-20230822162645111.png" alt="image-20230822162645111"></p>
 <p>在 <code>rememberIdentity</code> 方法里面就是对记住用户身份功能进行一个实现了</p>
 <p><img src="/images/image-20230822163127273.png" alt="image-20230822163127273"></p>
-<p><code>convertPrincipalsToBytes</code> 方法对记住身份的标识转成字节码</p>
+<p><code>convertPrincipalsToBytes</code> 方法对记住身份的标识转成字节数组</p>
 <p><img src="/images/image-20230822164341711.png" alt="image-20230822164341711"></p>
-<p>在这个方法里面其实就是将身份标识进行序列化成字节码，然后判断了 <code>CipherService</code> 对象不为null的话就调用 <code>encrypt</code> 方法对序列化后的字节码进行加密再返回</p>
+<p>在这个方法里面其实就是将身份标识进行序列化成字节数组，然后判断了 <code>CipherService</code> 对象不为null的话就调用 <code>encrypt</code> 方法对序列化后的字节数组进行加密再返回</p>
 <p><img src="/images/image-20230822163744736.png" alt="image-20230822163744736"></p>
 <p><code>getCipherService</code> 方法里面返回了 <code>cipherService</code> 对象，该对象就是一个AES加密服务对象，可以看到加密模式为CBC</p>
 <p><img src="/images/image-20230822165030972.png" alt="image-20230822165030972"></p>
@@ -255,25 +255,25 @@
 <p><img src="/images/image-20230822202828145.png" alt="image-20230822202828145"></p>
 <p><code>getEncryptionCipherKey</code> 方法就是获取了加密的key，这个key是在 <code>AbstractRememberMeManager</code> 类的构造方法中进行设置的</p>
 <p><img src="/images/image-20230822202929082.png" alt="image-20230822202929082"></p>
-<p>后面就是调用了 <code>cipherService.encrypt</code> 方法将key和身份标识进行了AES加密，返回了使用key进行AES加密的字节码</p>
+<p>后面就是调用了 <code>cipherService.encrypt</code> 方法将key和身份标识进行了AES加密，返回了使用key进行AES加密的字节数组</p>
 <p><img src="/images/image-20230822203545912.png" alt="image-20230822203545912"></p>
 <p><img src="/images/image-20230822204155943.png" alt="image-20230822204155943"></p>
-<p>在 <code>CookieRememberMeManager</code> 类 <code>rememberSerializedIdentity</code> 方法中前半部分判断了是不是HTTP请求的，然后使用 <code>WebUtils</code> 类获取了 <code>request</code> 和 <code>response</code> 对象，将使用key加密身份标识后的字节码进行Base64编码</p>
+<p>在 <code>CookieRememberMeManager</code> 类 <code>rememberSerializedIdentity</code> 方法中前半部分判断了是不是HTTP请求的，然后使用 <code>WebUtils</code> 类获取了 <code>request</code> 和 <code>response</code> 对象，将使用key加密身份标识后的字节数组进行Base64编码</p>
 <p><img src="/images/image-20230822205759826.png" alt="image-20230822205759826"></p>
 <p>后面就不过多介绍了，就是设置Cookie了，这就是Shiro从登录成功到设置Cookie的加密身份标识的过程</p>
 <h3 id="解密分析"><a href="#解密分析" class="headerlink" title="解密分析"></a>解密分析</h3><p><img src="/images/image-20230822211310222.png" alt="image-20230822211310222"></p>
 <p><img src="/images/image-20230822211421936.png" alt="image-20230822211421936"></p>
-<p>解密分析当然也是在 <code>CookieRememberMeManager</code> 类中，<code>getRememberedSerializedIdentity</code> 方法用于读取Cookie，这里要注意的是在Cookie中不能带有 <code>deleteMe</code>，<code>ensurePadding</code> 方法用来填充我们传入的Base64编码的Cookie，确保数据长度符合加密算法的要求，再往后就是对我们传入的Cookie进行Base64解码成字节码了</p>
-<p>返回了这个解码后的字节码，我们看下是在哪里调用了这个方法</p>
+<p>解密分析当然也是在 <code>CookieRememberMeManager</code> 类中，<code>getRememberedSerializedIdentity</code> 方法用于读取Cookie，这里要注意的是在Cookie中不能带有 <code>deleteMe</code>，<code>ensurePadding</code> 方法用来填充我们传入的Base64编码的Cookie，确保数据长度符合加密算法的要求，再往后就是对我们传入的Cookie进行Base64解码成字节数组了</p>
+<p>返回了这个解码后的字节数组，我们看下是在哪里调用了这个方法</p>
 <p><img src="/images/image-20230823085830424.png" alt="image-20230823085830424"></p>
 <p>发现在 <code>AbstractRememberMeManager</code> 类的 <code>getRememberedPrincipals</code> 方法中调用了 <code>getRememberedSerializedIdentity</code> 这个方法</p>
-<p>后面调用了 <code>convertBytesToPrincipals</code> 方法将AES加密的字节码转成 <code>Principal</code> 对象</p>
+<p>后面调用了 <code>convertBytesToPrincipals</code> 方法将AES加密的字节数组转成 <code>Principal</code> 对象</p>
 <p><img src="/images/image-20230823090127873.png" alt="image-20230823090127873"></p>
 <p>在该方法中调用了 <code>decrypt</code> 解密方法</p>
 <p><img src="/images/image-20230823090307528.png" alt="image-20230823090307528"></p>
-<p>这里就和加密分析那边反过来，这里是调用了 <code>cipherService</code> 类的 <code>decrypt</code> 方法来进行解密，然后返回了解密后的序列化字节码</p>
+<p>这里就和加密分析那边反过来，这里是调用了 <code>cipherService</code> 类的 <code>decrypt</code> 方法来进行解密，然后返回了解密后的序列化字节数组</p>
 <p><img src="/images/image-20230823090457071.png" alt="image-20230823090457071"></p>
-<p>将解密后的字节码作为参数调用了 <code>deserialize</code> 方法</p>
+<p>将解密后的字节数组作为参数调用了 <code>deserialize</code> 方法</p>
 <p><img src="/images/image-20230823090907855.png" alt="image-20230823090907855"></p>
 <p><img src="/images/image-20230823090815563.png" alt="image-20230823090815563"></p>
 <p><code>deserialize</code> 方法中使用了默认序列化器进行了反序列化，如果我们将恶意的类进行序列化生成 <code>ser.bin</code> 文件，将序列化的文件内容使用Shiro默认key进行加密，再经过Base64编码即可执行恶意代码</p>
@@ -695,7 +695,7 @@ func <span class="token function">pkcs7Unpad</span><span class="token punctuatio
     <div class="nav">
         <div class="nav__prev">
             
-                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/3a3651677a27.html" class="nav__link">
+                <a href="/Java%E5%AE%89%E5%85%A8-%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/4eb101e5c67c.html" class="nav__link">
                     <div>
                         <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
                     </div>
@@ -704,7 +704,7 @@ func <span class="token function">pkcs7Unpad</span><span class="token punctuatio
                             Previous Post
                         </div>
                         <div class="nav__title">
-                            CommonsCollections2利用链
+                            CommonsCollections1利用链
                         </div>
                     </div>
                 </a>

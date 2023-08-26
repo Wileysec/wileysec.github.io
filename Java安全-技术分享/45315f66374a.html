@@ -56,7 +56,7 @@
 <meta property="og:image" content="https://wileysec.github.io/images/image-20230821155026008.png">
 <meta property="og:image" content="https://wileysec.github.io/images/image-20230821155551661.png">
 <meta property="article:published_time" content="2023-08-21T06:48:57.128Z">
-<meta property="article:modified_time" content="2023-08-25T18:00:28.996Z">
+<meta property="article:modified_time" content="2023-08-26T03:00:32.025Z">
 <meta property="article:author" content="wileysec">
 <meta property="article:tag" content="Java安全">
 <meta property="article:tag" content="CommonsBeanutils183">
@@ -180,7 +180,7 @@
 
     <aside class="post-side">
         <div class="post-side__toc">
-            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityQueue"><span class="toc-text">PriorityQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanComparator"><span class="toc-text">BeanComparator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtilsBean"><span class="toc-text">PropertyUtilsBean</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEEXP"><span class="toc-text">反序列化链EXP</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityQueue"><span class="toc-text">PriorityQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanComparator"><span class="toc-text">BeanComparator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtils"><span class="toc-text">PropertyUtils</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtilsBean"><span class="toc-text">PropertyUtilsBean</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TemplatesImpl"><span class="toc-text">TemplatesImpl</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEEXP"><span class="toc-text">反序列化链EXP</span></a></li></ol>
         </div>
     </aside>
     <a class="btn-toc button" id="btn-toc" tabindex="0">
@@ -190,7 +190,7 @@
     </a>
     <div class="toc-menus" id="toc-menus">
         <div class="toc-title">Article Directory</div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityQueue"><span class="toc-text">PriorityQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanComparator"><span class="toc-text">BeanComparator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtilsBean"><span class="toc-text">PropertyUtilsBean</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEEXP"><span class="toc-text">反序列化链EXP</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-text">利用链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityQueue"><span class="toc-text">PriorityQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanComparator"><span class="toc-text">BeanComparator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtils"><span class="toc-text">PropertyUtils</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PropertyUtilsBean"><span class="toc-text">PropertyUtilsBean</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TemplatesImpl"><span class="toc-text">TemplatesImpl</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BEEXP"><span class="toc-text">反序列化链EXP</span></a></li></ol>
     </div>
 
 
@@ -234,16 +234,14 @@ PriorityQueue.readObject()
 <h3 id="BeanComparator"><a href="#BeanComparator" class="headerlink" title="BeanComparator"></a>BeanComparator</h3><p><img src="/images/image-20230821153636434.png" alt="image-20230821153636434"></p>
 <p><img src="/images/image-20230821153744130.png" alt="image-20230821153744130"></p>
 <p>在 <code>BeanComparator</code> 类的 <code>compare()</code> 方法中调用了 <code>PropertyUtils</code> 类的 <code>getProperty()</code> 方法</p>
-<p>###PropertyUtils</p>
-<p><img src="/images/image-20230821154024423.png" alt="image-20230821154024423"></p>
+<h3 id="PropertyUtils"><a href="#PropertyUtils" class="headerlink" title="PropertyUtils"></a>PropertyUtils</h3><p><img src="/images/image-20230821154024423.png" alt="image-20230821154024423"></p>
 <p>在这个类中，获取了 <code>PropertyUtilsBean</code> 的实例并调用 <code>getProperty()</code> 方法</p>
 <h3 id="PropertyUtilsBean"><a href="#PropertyUtilsBean" class="headerlink" title="PropertyUtilsBean"></a>PropertyUtilsBean</h3><p><img src="/images/image-20230821154442312.png" alt="image-20230821154442312"></p>
 <p><img src="/images/image-20230821154712156.png" alt="image-20230821154712156"></p>
 <p><img src="/images/image-20230821154748856.png" alt="image-20230821154748856"></p>
 <p><img src="/images/image-20230821155026008.png" alt="image-20230821155026008"></p>
 <p>接下来就是一连串的调用了，那么我们如何加载恶意字节码呢？之前学CC链的时候我们知道，在 <code>TemplatesImpl</code> 类的 <code>newTransformer()</code> 方法中可以加载字节码并执行，那么在 <code>BeanComparator</code> 类中的 <code>property</code> 属性值就必须是 <code>outputProperties</code>，后续通过反射来修改这个属性值</p>
-<p>###TemplatesImpl</p>
-<p><img src="/images/image-20230821155551661.png" alt="image-20230821155551661"></p>
+<h3 id="TemplatesImpl"><a href="#TemplatesImpl" class="headerlink" title="TemplatesImpl"></a>TemplatesImpl</h3><p><img src="/images/image-20230821155551661.png" alt="image-20230821155551661"></p>
 <p>到了这里，在 <code>TemplatesImpl</code> 类的 <code>getOutputProperties()</code> 方法中调用了 <code>newTransformer()</code> 方法后就成功加载了恶意字节码执行恶意代码了</p>
 <p>根据上面的分析，我们写出利用链EXP的中间部分</p>
 <pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">BeanComparator</span> beanComparator <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">BeanComparator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
