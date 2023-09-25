@@ -49,7 +49,7 @@
 <meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920170751288.png">
 <meta property="og:image" content="https://wileysec.github.io/images/Agent%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230920171847143.png">
 <meta property="article:published_time" content="2023-09-14T01:34:38.823Z">
-<meta property="article:modified_time" content="2023-09-20T14:03:02.873Z">
+<meta property="article:modified_time" content="2023-09-25T05:07:30.246Z">
 <meta property="article:author" content="wileysec">
 <meta property="article:tag" content="Java安全">
 <meta property="article:tag" content="内存马">
@@ -174,7 +174,7 @@
 
     <aside class="post-side">
         <div class="post-side__toc">
-            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%97%B6%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动时加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
         </div>
     </aside>
     <a class="btn-toc button" id="btn-toc" tabindex="0">
@@ -184,7 +184,7 @@
     </a>
     <div class="toc-menus" id="toc-menus">
         <div class="toc-title">Article Directory</div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Agent%E7%AE%80%E4%BB%8B"><span class="toc-text">Java Agent简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%97%B6%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动时加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachine"><span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VirtualMachineDescriptor"><span class="toc-text">VirtualMachineDescriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agentmain%E7%A4%BA%E4%BE%8B"><span class="toc-text">agentmain示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">动态修改字节码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Instrumentation"><span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ClassFileTransformer"><span class="toc-text">ClassFileTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addTransformer"><span class="toc-text">addTransformer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAllLoadedClasses"><span class="toc-text">getAllLoadedClasses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retransformClasses"><span class="toc-text">retransformClasses</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Agent%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">Agent内存马</span></a></li></ol>
     </div>
 
 
@@ -199,8 +199,7 @@
 <li><code>premain</code> 方法，在启动时加载</li>
 <li><code>agentmain</code> 方法，在启动后加载</li>
 </ol>
-<p>##启动时加载</p>
-<p>启动时加载agent，需要实现premain方法，还需要在jar文件清单中包含 <code>Premain-Class</code> 属性</p>
+<h2 id="启动时加载"><a href="#启动时加载" class="headerlink" title="启动时加载"></a>启动时加载</h2><p>启动时加载agent，需要实现premain方法，还需要在jar文件清单中包含 <code>Premain-Class</code> 属性</p>
 <p>编写一个实现premain方法的类</p>
 <pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>instrument<span class="token punctuation">.</span></span><span class="token class-name">Instrumentation</span></span><span class="token punctuation">;</span>
 
@@ -505,13 +504,27 @@ jar cvfm VirtualMachine_Agent.jar VirtualMachine_Agent.MF VirtualMachine_Agent.c
         
     </div>
  
-    <div class="post-footer__meta"><p>文章更新于 2023-09-20</p></div> 
+    <div class="post-footer__meta"><p>文章更新于 2023-09-25</p></div> 
     <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># 内存马</a><a href="/tags/Agent%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># Agent内存马</a></div> 
 </article>
 
 
     <div class="nav">
         <div class="nav__prev">
+            
+                <a href="/fee784a451d7.html" class="nav__link">
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M589.088 790.624L310.464 512l278.624-278.624 45.248 45.248L400.96 512l233.376 233.376z" fill="#808080"></path></svg>
+                    </div>
+                    <div>
+                        <div class="nav__label">
+                            Previous Post
+                        </div>
+                        <div class="nav__title">
+                            Java内存马-WebSocket内存马分析与实现
+                        </div>
+                    </div>
+                </a>
             
         </div>
         <div class="nav__next">

