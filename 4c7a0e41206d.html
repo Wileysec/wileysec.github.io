@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+
+    
+
+    <!-- 渲染优化 -->
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="HandheldFriendly" content="True" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!--icon-->
+
+    
+    
+    
+    
+    
+
+
+    <!-- meta -->
+
+
+<title>甲方安全建设-Elastic Stack基础SIEM平台 | Wileysec&#39;s Blog</title>
+
+
+    <meta name="keywords" content="SIEM, 安全建设, Elastic">
+
+
+
+
+    <!-- OpenGraph -->
+ 
+    <meta name="description" content="前言本文将手把手带你搭建基于ELK基础SIEM平台，将在Centos服务器上创建一个基础SIEM平台，我们将会使用到的技术栈如下：  Elasticsearch用于SIEM平台存储、关联、搜索和索引 Kibana用于可视化展示Elasticsearch中存储的信息日志和安全事件数据  这里我们安装的Elasticsearch和Kibana版本均是8.13.4，Kibana在高版本用户界面已经变成了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="甲方安全建设-Elastic Stack基础SIEM平台">
+<meta property="og:url" content="https://wileysec.github.io/4c7a0e41206d.html">
+<meta property="og:site_name" content="Wileysec&#39;s Blog">
+<meta property="og:description" content="前言本文将手把手带你搭建基于ELK基础SIEM平台，将在Centos服务器上创建一个基础SIEM平台，我们将会使用到的技术栈如下：  Elasticsearch用于SIEM平台存储、关联、搜索和索引 Kibana用于可视化展示Elasticsearch中存储的信息日志和安全事件数据  这里我们安装的Elasticsearch和Kibana版本均是8.13.4，Kibana在高版本用户界面已经变成了">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240530111259124.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606092351834.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602135405092.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606092918061.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605170705446.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605194437232.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602145412899.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605212243756.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606105627708.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606105545384.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110015501.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110104630.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110336528.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110410185.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110915178.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606111237801.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606142124546.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602153828225.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606142758657.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606143037090.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606143300527.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602213420075.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606151638669.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152044008.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602224502422.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603091159674.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603091418376.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602224623396.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603105459338.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152917233.png">
+<meta property="og:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152823532.png">
+<meta property="article:published_time" content="2024-05-30T03:11:16.293Z">
+<meta property="article:modified_time" content="2024-06-06T07:54:10.912Z">
+<meta property="article:author" content="wileysec">
+<meta property="article:tag" content="SIEM">
+<meta property="article:tag" content="安全建设">
+<meta property="article:tag" content="Elastic">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wileysec.github.io/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240530111259124.png">
+
+
+    
+<link rel="stylesheet" href="/css/style/main.css">
+ 
+
+    
+    
+    
+    
+        <link rel="stylesheet" id="hl-default-theme" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/themes/prism-tomorrow.min.css" media="none" >
+        
+    
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.21.0/plugins/line-numbers/prism-line-numbers.min.css" media="none" onload="this.media='all'">
+    
+
+
+    
+    
+<link rel="stylesheet" href="/css/style/dark.css">
+
+    
+<script src="/js/darkmode.js"></script>
+
+
+
+     
+
+    <!-- custom head -->
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <body>
+        <div id="app" tabindex="-1">
+            <header class="header">
+    <div class="header__left">
+        <a href="/" class="button">
+            <span class="logo__text">Wiley&#39;s Blog</span>
+        </a>
+    </div>
+    <div class="header__right">
+        
+            <div class="navbar__menus">
+                
+                    <a href="/" class="navbar-menu button">首页</a>
+                
+                    <a href="/tags/" class="navbar-menu button">标签</a>
+                
+                    <a href="/archives/" class="navbar-menu button">归档</a>
+                
+                    <a href="/links/" class="navbar-menu button">链接</a>
+                
+                    <a href="/about/" class="navbar-menu button">关于我</a>
+                
+            </div>
+        
+        
+        
+    <a href="/search/" id="btn-search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="32"><path d="M192 448c0-141.152 114.848-256 256-256s256 114.848 256 256-114.848 256-256 256-256-114.848-256-256z m710.624 409.376l-206.88-206.88A318.784 318.784 0 0 0 768 448c0-176.736-143.264-320-320-320S128 271.264 128 448s143.264 320 320 320a318.784 318.784 0 0 0 202.496-72.256l206.88 206.88 45.248-45.248z"></path></svg>
+    </a>
+
+
+        
+        
+    <a href="javaScript:void(0);" id="btn-toggle-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </a>
+
+
+        
+            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
+            <div class="dropdown-menus" id="dropdown-menus">
+                
+                    <a href="/" class="dropdown-menu button">首页</a>
+                
+                    <a href="/tags/" class="dropdown-menu button">标签</a>
+                
+                    <a href="/archives/" class="dropdown-menu button">归档</a>
+                
+                    <a href="/links/" class="dropdown-menu button">链接</a>
+                
+                    <a href="/about/" class="dropdown-menu button">关于我</a>
+                
+            </div>
+        
+    </div>
+</header>
+
+
+            <main class="main">
+    
+
+<div class="post-title">
+    <h1 class="post-title__text">
+        甲方安全建设-Elastic Stack基础SIEM平台
+    </h1>
+    <div class="post-title__meta">
+        <a href="/archives/2024/05/" class="post-meta__date button">文章创建于 2024-05-30</a>
+        
+    <span class="separate-dot"></span><a href="/categories/%E5%AE%89%E5%85%A8%E5%BB%BA%E8%AE%BE/" class="button">安全建设</a>
+
+ 
+        
+    
+    
+
+
+ 
+
+ 
+    </div>
+</div>
+
+
+    <aside class="post-side">
+        <div class="post-side__toc">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SIEM%E5%AE%9A%E4%B9%89"><span class="toc-text">SIEM定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Eleastic-SIEM%E6%9E%B6%E6%9E%84"><span class="toc-text">Eleastic SIEM架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2Elastic%E5%B9%B3%E5%8F%B0"><span class="toc-text">部署Elastic平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E9%9B%86%E6%88%90"><span class="toc-text">安装集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Suricata"><span class="toc-text">Suricata</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Auditbeat"><span class="toc-text">Auditbeat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Packetbaet"><span class="toc-text">Packetbaet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Winlogbeat"><span class="toc-text">Winlogbeat</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-text">Reference</span></a></li></ol>
+        </div>
+    </aside>
+    <a class="btn-toc button" id="btn-toc" tabindex="0">
+        <svg viewBox="0 0 1024 1024" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M128 256h64V192H128zM320 256h576V192H320zM128 544h64v-64H128zM320 544h576v-64H320zM128 832h64v-64H128zM320 832h576v-64H320z" fill="currentColor"></path>
+        </svg>
+    </a>
+    <div class="toc-menus" id="toc-menus">
+        <div class="toc-title">Article Directory</div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SIEM%E5%AE%9A%E4%B9%89"><span class="toc-text">SIEM定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Eleastic-SIEM%E6%9E%B6%E6%9E%84"><span class="toc-text">Eleastic SIEM架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2Elastic%E5%B9%B3%E5%8F%B0"><span class="toc-text">部署Elastic平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E9%9B%86%E6%88%90"><span class="toc-text">安装集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Suricata"><span class="toc-text">Suricata</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Auditbeat"><span class="toc-text">Auditbeat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Packetbaet"><span class="toc-text">Packetbaet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Winlogbeat"><span class="toc-text">Winlogbeat</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-text">Reference</span></a></li></ol>
+    </div>
+
+
+<article class="post post__with-toc content-card">
+    <div class="post__header"></div>
+    <div class="post__content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文将手把手带你搭建基于ELK基础SIEM平台，将在Centos服务器上创建一个基础SIEM平台，我们将会使用到的技术栈如下：</p>
+<ul>
+<li>Elasticsearch用于SIEM平台存储、关联、搜索和索引</li>
+<li>Kibana用于可视化展示Elasticsearch中存储的信息日志和安全事件数据</li>
+</ul>
+<p>这里我们安装的Elasticsearch和Kibana版本均是8.13.4，Kibana在高版本用户界面已经变成了Elastic界面了，如果你使用的版本为7.x版本那么可能界面跟本文的界面差距很大。这是因为Elastic Stack由Elasticsearch、Kibana、Integrations三大技术栈组成，目前Elasticsearch、Kibana和Integrations组成了一个全新Elastic平台。</p>
+<p>我们还需要安装一些集成，为Elastic平台提供终端或服务器日志数据和安全事件，Elastic为我们提供了很多集成，本文需要安装的是Auditbeat集成、Filebeat集成、Winlogbeat集成和Suricata集成。</p>
+<p>主机我们需要准备三台，一台Centos Linux用于搭建Elasticsearch服务和Kibana服务（本文称SIEM服务器），另一台Centos Linux用于安装集成采集主机、网络等相关日志数据和安全事件到SIEM服务器，还需要有一台Windows终端或服务器，用于采集Windows相关事件数据。</p>
+<h2 id="SIEM定义"><a href="#SIEM定义" class="headerlink" title="SIEM定义"></a>SIEM定义</h2><p>“SIEM（信息安全和事件管理）可收集日志和事件，从而对这些数据进行标准化处理以供进一步分析，这些分析可以通过可视化、告警、搜索和报告等多种方式进行展现。安全团队通常会将他们的SIEM用作中央仪表板，在平台外执行许多日常操作。安全分析师可以使用SIEM解决方案来处理高级网络安全用例，例如持续监测、威胁猎捕，以及事件调查和响应。”<br>总得来说，SIEM平台主要就是分析日志和事件并且可视化，帮助安全分析人员更可观的分析日志和事件。</p>
+<h2 id="Eleastic-SIEM架构"><a href="#Eleastic-SIEM架构" class="headerlink" title="Eleastic SIEM架构"></a>Eleastic SIEM架构</h2><p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240530111259124.png" alt="image-20240530111259124"></p>
+<p>根据上面的图，我们大概了解Elastic SIEM平台是如何运作的。在最底层，使用Beats数据采集器或者Logstash数据收集引擎提供日志数据，在上一层通过Elastic通用数据定义来解析和规范化数据，最上面的一层则使用Kibana可视化数据和对事件的管理。</p>
+<h2 id="部署Elastic平台"><a href="#部署Elastic平台" class="headerlink" title="部署Elastic平台"></a>部署Elastic平台</h2><p>Elastic官方下载地址 <a target="_blank" rel="noopener" href="https://www.elastic.co/cn/downloads/">https://www.elastic.co/cn/downloads/</a></p>
+<p>首先需要先安装Elasticsearch和Kibana，下载相应的RPM包安装</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载相应RPM包</span>
+<span class="token function">wget</span> https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.4-x86_64.rpm
+<span class="token function">wget</span> https://artifacts.elastic.co/downloads/kibana/kibana-8.13.4-x86_64.rpm
+<span class="token comment"># 安装Elasticsearch和Kibana</span>
+yum <span class="token function">install</span> elasticsearch-8.13.4-x86_64.rpm kibana-8.13.4-x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>安装好Elasticsearch和Kibana后，接下来就是要修改配置文件，需要先查看当前IP，后续配置需要</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606092351834.png" alt="image-20240606092351834"></p>
+<p>先配置Elasticsearch配置文件，该配置位置在 <code>/etc/elasticsearch/elasticsearch.yml</code> 文件中，将对应配置项进行更改</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">cluster.name</span><span class="token punctuation">:</span> siem <span class="token comment"># 集群名</span>
+<span class="token key atrule">node.name</span><span class="token punctuation">:</span> node<span class="token punctuation">-</span><span class="token number">1</span> <span class="token comment"># 节点名</span>
+<span class="token key atrule">network.host</span><span class="token punctuation">:</span> 0.0.0.0 <span class="token comment"># 主机监听地址</span>
+<span class="token key atrule">discovery.seed_hosts</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"0.0.0.0"</span><span class="token punctuation">]</span> <span class="token comment"># 发现主机节点</span>
+<span class="token key atrule">cluster.initial_master_nodes</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"node-1"</span><span class="token punctuation">]</span> <span class="token comment"># 指定集群初始化主节点</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>往下翻还有一个 <code>cluster.initial_master_nodes</code> 重复了，删除或者注释掉都可以</p>
+<p>需要注意的是，如果Elasticsearch版本较高，可能需要Java版本在17版本，否则可能会启动失败。如果启动失败，也可查看配置文件是否有重复项或者格式是否有误等情况</p>
+<p>配置完成后，启动Elasticsearch并且设置自启动</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl start elasticsearch <span class="token comment"># 自启动</span>
+systemctl <span class="token builtin class-name">enable</span> elasticsearch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602135405092.png" alt="image-20240602135405092"></p>
+<p>在Elasticsearch配置文件中默认开启了xpack认证机制和SSL，是需要授权且需要使用https协议才可以访问，不在生产环境这里建议取消SSL证书访问，Elasticsearch账号密码可以使用工具来生成</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">/usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>也可以使用相关工具来修改密码，管理员用户名是 <code>elastic</code></p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">/usr/share/elasticsearch/bin/elasticsearch-reset-password <span class="token parameter variable">-u</span> elastic<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606092918061.png" alt="image-20240606092918061"></p>
+<p>下面开始配置Kibana配置文件，先使用kibana加密密钥程序生成密钥，最好保存一下</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">/usr/share/kibana/bin/kibana-encryption-keys generate <span class="token parameter variable">-q</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605170705446.png" alt="image-20240605170705446"></p>
+<p>打开Kibana配置文件，将对应配置项进行更改，顺便把上面生成的密钥信息也添加进去</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/kibana/kibana.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token comment"># kibana主机地址</span>
+<span class="token key atrule">server.host</span><span class="token punctuation">:</span> <span class="token string">"10.211.55.12"</span>
+<span class="token comment"># 设置中文语言</span>
+<span class="token key atrule">i18n.locale</span><span class="token punctuation">:</span> <span class="token string">"zh-CN"</span>
+<span class="token key atrule">xpack.encryptedSavedObjects.encryptionKey</span><span class="token punctuation">:</span> 110b9a5a64b411c5747ea1d19e39100f
+<span class="token key atrule">xpack.reporting.encryptionKey</span><span class="token punctuation">:</span> d5b767bfd472e8fbce8535da27270699
+<span class="token key atrule">xpack.security.encryptionKey</span><span class="token punctuation">:</span> a04dd648d0d86ea06967315b8bc9d2a4<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>再去设置Kibana平台连接Elasticsearch账号密码，Kibana在高版本已经不允许使用名为elastic超级管理员账号来连接到Elasticsearch了，可以使用Elasticsearch重置密码工具重置名为kibana账号和密码，使用该kibana账号来连接</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">/usr/share/kibana/bin/kibana-keystore <span class="token function">add</span> elasticsearch.username
+/usr/share/kibana/bin/kibana-keystore <span class="token function">add</span> elasticsearch.password<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605194437232.png" alt="image-20240605194437232"></p>
+<p>配置完成后，即可启动Kibana服务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl start kibana
+systemctl <span class="token builtin class-name">enable</span> kibana<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>启动Kibana后，访问Kibana默认5601端口，这里输入elastic账号密码即可登录到Elastic平台</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602145412899.png" alt="image-20240602145412899"></p>
+<p>至此，我们已经成功部署好了Elastic平台</p>
+<h2 id="安装集成"><a href="#安装集成" class="headerlink" title="安装集成"></a>安装集成</h2><p>“从各种应用、终端、基础架构、云、网络、工作场所工具和生态系统中的所有其他常见来源中流式传输日志、指标、痕迹、内容等。向您选择的通知工具发送告警。轻松连接到所有重要系统。”</p>
+<p>根据官方的描述，可以简单的理解为集成就是传输日志的通知工具，可以推送转发日志、事件等内容到Elasticsearch</p>
+<h3 id="Suricata"><a href="#Suricata" class="headerlink" title="Suricata"></a>Suricata</h3><p>告警事件使用Filebeat来将Suricata日志事件数据转发到Elasticsearch</p>
+<p>“Filebeat是一个轻量级的发送器，用于转发和集中日志数据。Filebeat作为代理安装在您的服务器上，监控您指定的日志文件或位置，收集日志事件，并将其转发到Elasticsearch或Logstash进行索引。”</p>
+<p>先安装Filebeat集成</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">curl</span> <span class="token parameter variable">-L</span> <span class="token parameter variable">-O</span> https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.13.4-x86_64.rpm
+<span class="token function">rpm</span> <span class="token parameter variable">-vi</span> filebeat-8.13.4-x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>编辑Filebeat配置文件连接到Kibana和Elasticsearch</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/kibana/kibana.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">setup.kibana</span><span class="token punctuation">:</span>
+  <span class="token key atrule">host</span><span class="token punctuation">:</span> <span class="token string">"10.211.55.12:5601"</span>
+<span class="token key atrule">output.elasticsearch</span><span class="token punctuation">:</span>
+  <span class="token key atrule">username</span><span class="token punctuation">:</span> <span class="token string">"elastic"</span>
+  <span class="token key atrule">password</span><span class="token punctuation">:</span> <span class="token string">"YP4w2dc3GYM2cPDlxxm5"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这里我们开启Filebeat内置的suricata模块，还需要修改一下suricata配置文件，设置事件日志存储路径</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">filebeat modules <span class="token builtin class-name">enable</span> suricata <span class="token comment"># 开启Filebeat内置suricata模块</span>
+<span class="token function">vim</span> /etc/filebeat/modules.d/suricata.yml<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token punctuation">-</span> <span class="token key atrule">module</span><span class="token punctuation">:</span> suricata
+  <span class="token key atrule">eve</span><span class="token punctuation">:</span>
+    <span class="token key atrule">enabled</span><span class="token punctuation">:</span> <span class="token boolean important">true</span>
+    <span class="token key atrule">var.paths</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"/var/log/suricata/eve.json"</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>再将仪表板和管道加载到Kibana，完成之后启动Filebeat</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">filebeat setup
+systemctl start filebeat<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240605212243756.png" alt="image-20240605212243756"></p>
+<p>安装完Filebeat，再安装Suricata</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> epel-release yum-plugin-copr
+yum copr <span class="token builtin class-name">enable</span> @oisf/suricata-7.0
+yum <span class="token function">install</span> suricata<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>安装完suricata，修改suricata配置文件对应配置项内容</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/suricata/suricata.yaml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">vars</span><span class="token punctuation">:</span>
+  <span class="token key atrule">address-groups</span><span class="token punctuation">:</span>
+    <span class="token key atrule">HOME_NET</span><span class="token punctuation">:</span> <span class="token string">"[10.211.55.0/24]"</span> <span class="token comment"># 修改成你想要监听的网段</span>
+<span class="token key atrule">af-packet</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">interface</span><span class="token punctuation">:</span> eth0 <span class="token comment"># 这里选择需要监听的网卡</span>
+
+<span class="token comment"># 在文件末尾添加以下配置</span>
+ <span class="token key atrule">detect-engine</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">rule-reload</span><span class="token punctuation">:</span> <span class="token boolean important">true</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>使用suricata-update命令来更新suricata规则库，更新完成之后再测试一下配置文件有没有配置错误，没有的话重启suricata</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">suricata-update
+suricata <span class="token parameter variable">-T</span> <span class="token parameter variable">-c</span> /etc/suricata/suricata.yaml <span class="token parameter variable">-v</span>
+systemctl restart suricata<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>执行下面命令来测试一下，会不会产生告警</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">curl</span> http://testmynids.org/uid/index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606105627708.png" alt="image-20240606105627708"></p>
+<p>以上执行结果是个返回了root身份，查看日志是成功告警了，如果日志没有告警信息，查看一下 <code>/var/log/suricata/</code> 目录和该目录下面的文件文件所属者是不是suricata，不是的话设置成suricata用户</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cat</span> /var/log/suricata/fast.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606105545384.png" alt="image-20240606105545384"></p>
+<p>进入Kibana的Dashboards面板模块</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110015501.png" alt="image-20240606110015501"></p>
+<p>Suricata主要看两个面板，一个是事件面板另一个告警面板</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110104630.png" alt="image-20240606110104630"></p>
+<p>在右侧我们可以看到告警名称，找到了上面告警日志中的告警名称</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110336528.png" alt="image-20240606110336528"></p>
+<p>在下面可以看到详细的来源IP和目的IP，也可对告警进行展开查看原始告警信息</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110410185.png" alt="image-20240606110410185"></p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606110915178.png" alt="image-20240606110915178"></p>
+<p>通过KQL语法过滤规则来搜索相关告警信息</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606111237801.png" alt="image-20240606111237801"></p>
+<h3 id="Auditbeat"><a href="#Auditbeat" class="headerlink" title="Auditbeat"></a>Auditbeat</h3><p>“Auditbeat是一个轻量级的发送程序，您可以将其安装在服务器上，以审核系统上用户和进程的活动。例如，您可以使用Auditbeat从Linux审计框架收集和集中审计事件。您还可以使用Auditbeat检测对关键文件（如二进制文件和配置文件）的更改，并识别潜在的安全策略违规行为。” </p>
+<p>在另外一台服务器上执行下面的命令安装Auditbeat事件集成</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">curl</span> <span class="token parameter variable">-L</span> <span class="token parameter variable">-O</span> https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-8.13.4-x86_64.rpm
+<span class="token function">rpm</span> <span class="token parameter variable">-vi</span> auditbeat-8.13.4-x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>修改 <code>/etc/auditbeat/auditbeat.yml</code> 配置文件如下：</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">setup.kibana</span><span class="token punctuation">:</span>
+  <span class="token key atrule">host</span><span class="token punctuation">:</span> <span class="token string">"10.211.55.12:5601"</span>
+<span class="token key atrule">output.elasticsearch</span><span class="token punctuation">:</span>
+  <span class="token key atrule">hosts</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"10.211.55.12:9200"</span><span class="token punctuation">]</span>
+  <span class="token key atrule">username</span><span class="token punctuation">:</span> <span class="token string">"elastic"</span>
+  <span class="token key atrule">password</span><span class="token punctuation">:</span> <span class="token string">"vFsYVEHtH-K4OOOkfJd*"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>配置完成后，执行下面命令加载面板和启动auditbeat服务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">auditbeat setup
+systemctl start auditbeat<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606142124546.png" alt="image-20240606142124546"></p>
+<p>这样就加载成功了，然后启动auditbeat服务，现在需要来检查数据是否能够收到</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602153828225.png" alt="image-20240602153828225"></p>
+<p>点击检查数据按钮，显示已成功接受数据说明已经成功了</p>
+<p>Auditbeat面板可以看到系统的基本情况、主机信息、登录事件、所有用户、系统进程、Sockets链接、软件包等信息</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606142758657.png" alt="image-20240606142758657"></p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606143037090.png" alt="image-20240606143037090"></p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606143300527.png" alt="image-20240606143300527"></p>
+<h3 id="Packetbaet"><a href="#Packetbaet" class="headerlink" title="Packetbaet"></a>Packetbaet</h3><p>“Packetbeat是一种实时网络数据包分析器，您可以将其与Elasticsearch一起使用，以提供应用程序监控和性能分析系统。Packetbeat通过提供网络服务器之间的可见性来完善Beats平台。”</p>
+<p>下载packetbeat的rpm安装包后，先安装libpcap数据包捕获库</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">curl</span> <span class="token parameter variable">-L</span> <span class="token parameter variable">-O</span> https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-8.13.4-x86_64.rpm
+yum <span class="token function">install</span> libpcap
+<span class="token function">rpm</span> <span class="token parameter variable">-vi</span> packetbeat-8.13.4-x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>修改 <code>/etc/packetbeat/packetbeat.yml</code> 配置文件如下：</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">setup.kibana</span><span class="token punctuation">:</span>
+  <span class="token key atrule">host</span><span class="token punctuation">:</span> <span class="token string">"10.211.55.12:5601"</span>
+<span class="token key atrule">output.elasticsearch</span><span class="token punctuation">:</span>
+  <span class="token key atrule">hosts</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"10.211.55.12:9200"</span><span class="token punctuation">]</span>
+  <span class="token key atrule">username</span><span class="token punctuation">:</span> <span class="token string">"elastic"</span>
+  <span class="token key atrule">password</span><span class="token punctuation">:</span> <span class="token string">"vFsYVEHtH-K4OOOkfJd*"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>执行下面的命令完成加载面板和启动服务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">packetbeat setup
+systemctl start packetbeat<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602213420075.png" alt="image-20240602213420075"></p>
+<p>来到仪表板，发现packetbeat仪表板已经有了，说明已经安装成功</p>
+<p>Packetbeat面板可以看到DNS、DHCP、TLS、HTTP、RPC、NFS以及数据库等相关网络协议的情况</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606151638669.png" alt="image-20240606151638669"></p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152044008.png" alt="image-20240606152044008"></p>
+<h3 id="Winlogbeat"><a href="#Winlogbeat" class="headerlink" title="Winlogbeat"></a>Winlogbeat</h3><p>“Winlogbeat使用Windows API从一个或多个事件日志中读取数据，根据用户配置的条件筛选事件，然后将事件数据发送到配置的输出（Elasticsearch或Logstash）。Winlogbeat监视事件日志，以便及时发送新的事件数据。每个事件日志的读取位置将保留到磁盘上，以允许Winlogbeat在重新启动后恢复。”</p>
+<p>集成下载地址 <a target="_blank" rel="noopener" href="https://www.elastic.co/cn/downloads/beats/winlogbeat">https://www.elastic.co/cn/downloads/beats/winlogbeat</a></p>
+<p>安装下载的安装包，打开安装的位置，默认安装在 <code>C:\Program Files\Elastic\Beats\8.13.4\winlogbeat</code>，将配置文件 <code>winlogbeat.example.yml</code> 文件名修改成 <code>winlogbeat.yml</code> 并打开编辑，修改相应的配置项</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">setup.kibana</span><span class="token punctuation">:</span>
+  <span class="token key atrule">host</span><span class="token punctuation">:</span> <span class="token string">"10.211.55.12:5601"</span>
+<span class="token key atrule">output.elasticsearch</span><span class="token punctuation">:</span>
+  <span class="token key atrule">hosts</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"10.211.55.12:9200"</span><span class="token punctuation">]</span>
+  <span class="token key atrule">username</span><span class="token punctuation">:</span> <span class="token string">"elastic"</span>
+  <span class="token key atrule">password</span><span class="token punctuation">:</span> <span class="token string">"vFsYVEHtH-K4OOOkfJd*"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>可以执行下面命令查看配置文件是否有错</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">.<span class="token punctuation">\</span>winlogbeat.exe <span class="token builtin class-name">test</span> config <span class="token parameter variable">-c</span> .<span class="token punctuation">\</span>winlogbeat.yml <span class="token parameter variable">-e</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602224502422.png" alt="image-20240602224502422"></p>
+<p>出现 <code>Config OK</code> 说明没有问题，以管理员身份打开CMD执行下面的命令加载面板</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">winlogbeat.exe setup<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603091159674.png" alt="image-20240603091159674"></p>
+<p>以管理员身份打开Powershell工具，进入到winlogbeat目录中执行powershell脚本</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">.<span class="token punctuation">\</span>install-service-winlogbeat.ps1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603091418376.png" alt="image-20240603091418376"></p>
+<p>安装好winlogbeat服务后，启动服务即可</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">net start winlogbeat<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240602224623396.png" alt="image-20240602224623396"></p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240603105459338.png" alt="image-20240603105459338"></p>
+<p>winlogbeat仪表板已经有了，说明安装成功</p>
+<p>从Winlogbeat概述面板中可以看到事件的数量以及分类和按事件ID计数等信息</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152917233.png" alt="image-20240606152917233"></p>
+<p>主要有用户登录事件、登录失败和账号锁定事件、用户管理事件、用户组管理事件这些面板，可以分析用户事件信息</p>
+<p><img src="/images/Elastic%20Stack%E5%9F%BA%E7%A1%80SIEM%E5%B9%B3%E5%8F%B0_img/image-20240606152823532.png" alt="image-20240606152823532"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>使用Kibana+Elasticsearch搭建了基础SIEM平台，通过在终端和服务器上安装集成将日志和事件等内容转发到Elasticsearch，在Kibana平台应用对应的集成面板可视化查看日志信息。该SIEM平台目前还是没有那么好用，可能不像国内市场上的态势感知一样可以实时监控和即时响应，但是SIEM平台可定制化程度高、扩展性也非常强大的</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>1、<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/vcL7eKMYyL-TCsvmvhCI_A">https://mp.weixin.qq.com/s/vcL7eKMYyL-TCsvmvhCI_A</a></p>
+<p>2、<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/iaztHJYAtQSCDUS0_5fgtQ">https://mp.weixin.qq.com/s/iaztHJYAtQSCDUS0_5fgtQ</a></p>
+<p>3、<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/5Jxh-bQEhLnQul9d4hEG8A">https://mp.weixin.qq.com/s/5Jxh-bQEhLnQul9d4hEG8A</a></p>
+<p>4、<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/whk_VOsYjoz1BccePxj0XA">https://mp.weixin.qq.com/s/whk_VOsYjoz1BccePxj0XA</a></p>
+
+    </div>
+    
+    <div class="post__license">
+        <p>
+            <strong>Author: </strong>wileysec
+        </p>
+        <p>
+            <strong>
+                Permalink: 
+            </strong>
+            <a href="https://wileysec.github.io/4c7a0e41206d.html">https://wileysec.github.io/4c7a0e41206d.html</a>
+        </p>
+        
+    </div>
+ 
+    <div class="post-footer__meta"><p>文章更新于 2024-06-06</p></div> 
+    <div class="post-entry__tags"><a href="/tags/SIEM/" class="post-tags__link button"># SIEM</a><a href="/tags/%E5%AE%89%E5%85%A8%E5%BB%BA%E8%AE%BE/" class="post-tags__link button"># 安全建设</a><a href="/tags/Elastic/" class="post-tags__link button"># Elastic</a></div> 
+</article>
+
+
+    <div class="nav">
+        <div class="nav__prev">
+            
+        </div>
+        <div class="nav__next">
+            
+                <a href="/a22ba09b7177.html" class="nav__link">
+                    <div>
+                        <div class="nav__label">
+                            Next Post
+                        </div>
+                        <div class="nav__title">
+                            Java回显-Tomcat回显技术
+                        </div>
+                    </div>
+                    <div>
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M434.944 790.624l-45.248-45.248L623.04 512l-233.376-233.376 45.248-45.248L713.568 512z" fill="#808080"></path></svg>
+                    </div>
+                </a>
+            
+        </div>
+    </div>
+
+
+
+    <div class="post__comments post__with-toc content-card" id="comment">
+        
+    <h4>Comments</h4>
+    
+    
+    
+    <div id="valine_container" class="valine_thread"></div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    </div>
+
+
+
+</main>
+
+            <footer class="footer">
+     
+    <a href="#" class="button" id="b2t" aria-label="Back to Top" title="Back to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32">
+            <path d="M233.376 722.752L278.624 768 512 534.624 745.376 768l45.248-45.248L512 444.128zM192 352h640V288H192z" fill="currentColor"></path>
+        </svg>
+    </a>
+
+    
+
+
+    
+     
+ 
+
+ 
+    
+        
+        <p class="footer-copyright">
+            Copyright © 2024 <a href="/">Wileysec&#39;s Blog</a>
+        </p>
+    
+    
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备18006273号-1</a></p>
+    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
+    <p></p>
+</footer>
+
+        </div>
+         
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
+    
+ 
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.css">
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.4.1/dist/jquery.fancybox.min.js"></script>
+
+    <script>
+        let lazyloadT = Boolean('false'),
+            auto_fancybox = Boolean('false')
+        if (auto_fancybox) {
+            $(".post__content").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        } else {
+            $(".post__content").find("fancybox").find('img').each(function () {
+                var element = document.createElement("a");
+                $(element).attr("data-fancybox", "gallery");
+                $(element).attr("href", $(this).attr("src"));
+                if (lazyloadT) {
+                    $(element).attr("href", $(this).attr("data-srcset"));
+                }
+                $(this).wrap(element);
+            });
+        }
+    </script>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+    
+
+    
+
+    
+    
+    <script>
+        function loadComment() {
+            let e;
+            (e = document.createElement("script")).src = 'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+            document.body.appendChild(e);
+            e.onload = () => {
+                var valineConfig = {"appId":"GwvNoIVYwbmwRKo2fr9bcJHp-gzGzoHsz","appKey":"9olsAGq7SGWYUVcmI5RDrXid","placeholder":"请佬们指正","path":null,"avatar":"wavatar","meta":["nick","mail","link"],"pageSize":10,"lang":["zh-CN","en","zh-TW"],"visitor":null,"highlight":null,"avatarForce":null,"recordIP":true,"serverURLs":null,"enableQQ":null,"requiredFields":["nick","mail"],"emojiCDN":null,"emojiMaps":null};
+                valineConfig.el = '#valine_container';
+                for (var i in valineConfig) {
+                    if (valineConfig[i] === null) delete valineConfig[i];
+                }
+                new Valine(valineConfig);
+            };
+        }
+    
+        var runningOnBrowser = typeof window !== "undefined";
+        var isBot = runningOnBrowser && !("onscroll" in window) || typeof navigator !== "undefined" && /(gle|ing|ro|msn)bot|crawl|spider|yand|duckgo/i.test(navigator.userAgent);
+        var supportsIntersectionObserver = runningOnBrowser && "IntersectionObserver" in window;
+    
+        setTimeout(function () {
+            if (!isBot && supportsIntersectionObserver) {
+                var comment_observer = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        loadComment();
+                        comment_observer.disconnect();
+                    }
+                }, { threshold: [0] });
+                comment_observer.observe(document.getElementById('comment'));
+            } else {
+                loadComment();
+            }
+        }, 1);
+    </script>
+
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+
+    </body>
+</html>
